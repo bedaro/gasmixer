@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:id="@+id/set_topup"
+		android:title="@string/set_topup"
+		android:icon="@drawable/topup_pick" />
+	<item android:id="@+id/about"
+		android:title="@string/about"
+		android:icon="@drawable/about" />
+</menu>
