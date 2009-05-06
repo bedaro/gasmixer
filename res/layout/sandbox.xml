@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+			<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+				android:id="@+id/tab_topup"
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent">
+			<LinearLayout 
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent" 
+				android:orientation="vertical">
+				<TextView
+					android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:text="@string/topup_mix" android:textSize="20sp"/>
+				<org.openintents.widget.Slider
+					android:id="@+id/slider_topup_o2"
+					android:layout_width="fill_parent"
+					android:layout_height="30dip"
+					android:layout_marginLeft="10dip"
+					android:layout_marginRight="10dip"/>
+				<LinearLayout android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal"
+					android:gravity="center">
+					<TextView
+						android:layout_height="wrap_content"
+						android:layout_width="wrap_content"
+						android:text="@string/o2"/>
+					<Button
+						android:id="@+id/minus_topup_o2"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="-"/>
+					<EditText
+						android:id="@+id/topup_o2"
+						android:layout_width="70sp"
+						android:layout_height="wrap_content"
+						android:gravity="center"
+						android:numeric="decimal"/>
+					<Button
+						android:id="@+id/plus_topup_o2"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="+"/>
+				</LinearLayout>
+
+				<org.openintents.widget.Slider
+					android:id="@+id/slider_topup_he"
+					android:layout_width="fill_parent"
+					android:layout_height="30dip"
+					android:layout_marginLeft="10dip"
+					android:layout_marginRight="10dip" android:layout_marginTop="10dip"/>
+				<LinearLayout android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal"
+					android:gravity="center">
+					<TextView
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/he"/>
+					<Button
+						android:id="@+id/minus_topup_he"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="-"/>
+					<EditText
+						android:id="@+id/topup_he"
+						android:layout_width="70sp"
+						android:layout_height="wrap_content"
+						android:gravity="center"
+						android:numeric="decimal"/>
+					<Button
+						android:id="@+id/plus_topup_he"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="+"/>
+				</LinearLayout>
+				<LinearLayout
+					android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:orientation="horizontal" android:paddingLeft="5dp">
+					<TextView
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:text="@string/topup_pres" android:textSize="20sp"/>
+					<Button
+						android:id="@+id/minus_topup_final_pres"
+						android:text="-" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+					<EditText
+						android:id="@+id/topup_final_pres"
+						android:layout_width="75sp"
+						android:layout_height="wrap_content"
+						android:gravity="center"
+						android:numeric="integer"/>
+					<Button
+						android:id="@+id/plus_topup_final_pres"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="+"/>
+				</LinearLayout>
+				<Button
+					android:id="@+id/button_topup"
+					android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:layout_margin="5dp"
+					android:text="@string/button_topup"/>
+			</LinearLayout>
+			</ScrollView>
