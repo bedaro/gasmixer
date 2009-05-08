@@ -2,7 +2,7 @@
 
 = The Sliders =
 
-http://code.google.com/p/gasmixer/w/blend.png
+http://lh6.ggpht.com/_uJWsXw_tI_o/SgOemIgCXdI/AAAAAAAAABI/xq87d7-nz90/s144/blend.png
 
 I designed the app specifically to avoid needing the keyboard. Everything can be done via the touch screen. Use the sliders to adjust the gas component percentages roughly, then use the plus and minus buttons to fine-tune the selection by one percentage point.
 
@@ -14,22 +14,22 @@ Pressures can be changed with the same plus and minus buttons. Each tap of a but
 
 The first tab of the application is for blending a specific gas. You select what gas you want and how much, then you enter what gas and how much is already present in the tank (if any). Then hit blend and you're given the pressures of oxygen, helium, and your top up gas (air) to add.
 
-http://code.google.com/p/gasmixer/w/blendresult.png
+http://lh3.ggpht.com/_uJWsXw_tI_o/SgOemdimsWI/AAAAAAAAABM/JfioV4ogXRY/s144/blendresult.png
 
 The app will also tell you if you need to drain off some gas from your cylinder before beginning.
 
 = Top Up =
 
-http://code.google.com/p/gasmixer/w/topup.png
+http://lh3.ggpht.com/_uJWsXw_tI_o/SgOemsc5OdI/AAAAAAAAABY/MimeJdlyR6Y/s144/topup.png
 
 The top-up tab lets you determine what would happen if you added top-up gas to an existing mix. This is most useful if you have some trimix left over after a dive and want to get an air top-up to see what you'll get.
 
 = Changing top-up gas =
 
-http://code.google.com/p/gasmixer/w/menu.png
+http://lh5.ggpht.com/_uJWsXw_tI_o/SgOemXms8DI/AAAAAAAAABQ/ARuoo5jqO30/s144/menu.png
 
 By pressing the menu button, you can enter a screen to change what top-up gas you are using. Although many of us top up our tanks with air, sometimes it's more convenient to top up with a banked nitrox mix like 32%. Here you can set the top-up gas as any nitrox or helium mix.
 
-http://code.google.com/p/gasmixer/w/settopup.png
+http://lh4.ggpht.com/_uJWsXw_tI_o/SgOemUa_HGI/AAAAAAAAABU/nYvUJISJhn8/s144/settopup.png
 
 When you blend, you'll be reminded what your top-up gas is set to. Currently, there is no such reminder when topping up, so double-check it if you're not sure. This setting is saved as a preference so it does NOT reset back to air.
