@@ -1,4 +1,5 @@
 #summary Feature walkthrough
+#labels Featured
 
 = The Sliders =
 
