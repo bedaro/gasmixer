@@ -2,6 +2,8 @@ package divestoclimb.gasmixer;
 
 import java.text.NumberFormat;
 
+import android.content.Context;
+
 // This is a class for a given gas mix
 public class Mix {
 	// Ten times the percentage of oxygen
@@ -31,18 +33,18 @@ public class Mix {
 		return heTimes10 / 10;
 	}
 	
-	public String friendlyName(NumberFormat nf) {
+	public String friendlyName(NumberFormat nf, Context c) {
 		if(this.getO2()==100) {
-			return "Oxygen";
+			return c.getResources().getString(R.string.oxygen);
 		}
 		if(this.getHe()==100) {
-			return "Helium";
+			return c.getResources().getString(R.string.helium);
 		}
 		if(this.getO2() + this.getHe() == 0) {
-			return "Nitrogen";
+			return c.getResources().getString(R.string.nitrogen);
 		}
 		if((this.getO2()==21) && (this.getHe()==0)) {
-			return "Air";
+			return c.getResources().getString(R.string.air);
 		}
 		if(this.getHe()==0) {
 			// A Nitrox mix
@@ -51,17 +53,6 @@ public class Mix {
 		// After all of the above, we have a trimix
 		return nf.format(this.getO2())+"/"+nf.format(this.getHe());
 	}
-
-	// Returns the pressure in the correct units
-	//public double getPressure() {
-
-	//}
-	
-	// Top up this mix with supply, up to the given pressure.
-	// Return the result. 
-	//public Mix topUp(Mix supply, Pressure p) {
-		
-	//}
 	
 	// Return the Maximum Operating Depth of this mix.
 	//public Depth MOD() {

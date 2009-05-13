@@ -42,7 +42,7 @@ public class SetTopup extends Activity {
 		defaults.put(UICore.KEY_TOPUP | UICore.KEY_HELIUM, mDbHelper.fetchSetting("fhet")*100);
 		
 		// Initialize the UI
-		ui = new UICore(this, buttonIdKeyMap, editTextIdKeyMap, sliderIdKeyMap, defaults);
+		ui = new UICore(this, buttonIdKeyMap, editTextIdKeyMap, sliderIdKeyMap, defaults, null);
 		
 		Button set = (Button) findViewById(R.id.button_topup_set);
 		set.setOnClickListener(new Button.OnClickListener() {

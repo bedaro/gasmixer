@@ -2,6 +2,12 @@
 	<item android:id="@+id/set_topup"
 		android:title="@string/set_topup"
 		android:icon="@drawable/topup_pick" />
+	<item android:id="@+id/switch_unit_metric"
+		android:title="@string/switch_to_metric"
+		android:icon="@drawable/units_metric" />
+	<item android:id="@+id/switch_unit_imperial"
+		android:title="@string/switch_to_imperial"
+		android:icon="@drawable/units_imperial" />
 	<item android:id="@+id/about"
 		android:title="@string/about"
 		android:icon="@drawable/about" />

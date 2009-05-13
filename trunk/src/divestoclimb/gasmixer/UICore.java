@@ -13,6 +13,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 public class UICore {
 	// This is the way to handle lots of widgets!!!
@@ -25,6 +26,10 @@ public class UICore {
 	
 	// A hash of all default values
 	private HashMap<Integer, Float> mDefaults;
+	
+	// An array of ID's of all TextViews containing a pressure unit. These
+	// must be changed when we are told to switch unit systems
+	private int mPressureUnitTexts[];
 
 	// Because we're messing with UI stuff, we need a reference to the
 	// parent Activity
@@ -40,7 +45,7 @@ public class UICore {
 							KEY_PRESSURE=64, KEY_BLEND=128,
 							KEY_TOPUP=256, KEY_BEST=512;
 	
-	public UICore(Activity a, HashMap<Integer,Integer> buttonIdKeyMap, HashMap<Integer,Integer> editTextIdKeyMap, HashMap<Integer,Integer> sliderIdKeyMap, HashMap<Integer,Float> defaults) {
+	public UICore(Activity a, HashMap<Integer,Integer> buttonIdKeyMap, HashMap<Integer,Integer> editTextIdKeyMap, HashMap<Integer,Integer> sliderIdKeyMap, HashMap<Integer,Float> defaults, int[] pressureUnitTexts) {
 		Iterator<Integer> i;
 		int id;
 		
@@ -72,6 +77,8 @@ public class UICore {
 		
 		mDefaults=defaults;
 		
+		mPressureUnitTexts=pressureUnitTexts;
+		
 		// Set all values to defaults
 		i=defaults.keySet().iterator();
 		while(i.hasNext()) {
@@ -99,6 +106,9 @@ public class UICore {
 			MyTextWatcher tw = new MyTextWatcher(key);
 			mEditTextArray.get(key).addTextChangedListener(tw);
 		}
+		
+		// Initialize the unit TextViews
+		setTextViewUnits();
 	}
 	
 	public HashMap<Integer,Float> getDefaults() {
@@ -128,7 +138,7 @@ public class UICore {
 
 			// Determine what the increment is for this type
 			// of data and button
-			int increment = (key & KEY_PRESSURE) != 0? 100: 1;
+			int increment = (int)((key & KEY_PRESSURE) != 0? Units.pressureIncrement(): 1);
 			increment *= (key & KEY_MINUS) != 0? -1: 1;
 			
 			setField(text_key, getField(text_key)+increment);
@@ -157,7 +167,7 @@ public class UICore {
 	// Get the value of a EditText field as a float according to formatting rules
 	public float getField(int key) {
 		float current_val;
-		NumberFormat nf=(key & KEY_PRESSURE) != 0? Params.mPressure: Params.mMixPercent;
+		NumberFormat nf=(key & KEY_PRESSURE) != 0? NumberFormat.getInstance(): Params.mMixPercent;
 		try {
 			current_val=nf.parse(mEditTextArray.get(key).getText().toString()).floatValue();
 		} catch(ParseException e) {
@@ -169,7 +179,7 @@ public class UICore {
 	// Set the value of a EditText field according to formatting rules.
 	// Returns the new value as a String
 	private String setField(int key, float value) {
-		NumberFormat nf=(key & KEY_PRESSURE) != 0? Params.mPressure: Params.mMixPercent;
+		NumberFormat nf=(key & KEY_PRESSURE) != 0? Params.getPressureFormat(): Params.mMixPercent;
 		String new_val=nf.format(value);
 		mEditTextArray.get(key).setText(new_val);
 		return new_val;
@@ -221,6 +231,36 @@ public class UICore {
 		if(update_slider) {
 			Slider sl = mSliderArray.get(editTextKeys);
 			sl.setPosition(Math.round(text_val));
+		}
+	}
+	
+	// Update all units displayed in the UI after a unit switch
+	// Argument is the last unit system that was set; needed to
+	// perform conversions.
+	public void updateUnits(int last_unit) {
+		// Update the units on display in each pressure TextView
+		setTextViewUnits();
+		
+		// Convert all pressures currently set
+		Iterator<Integer> i;
+		int key;
+		i=mEditTextIdKeyMap.keySet().iterator();
+		while(i.hasNext()) {
+			key=mEditTextIdKeyMap.get(i.next());
+			if((key & KEY_PRESSURE) != 0) {
+				setField(key, new Float(Units.convertPressure(getField(key), last_unit)));
+			}
+		}
+	}
+	
+	// Go through every TextView mentioned in mPressureUnitTexts and
+	// set the proper unit
+	private void setTextViewUnits() {
+		if(mPressureUnitTexts == null) { return; }
+		for(int i=0; i<mPressureUnitTexts.length; i++) {
+			TextView tv = (TextView) mA.findViewById(mPressureUnitTexts[i]);
+			
+			tv.setText(Units.pressure(mA)+':');
 		}
 	}
 }

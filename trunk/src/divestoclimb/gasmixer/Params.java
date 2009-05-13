@@ -9,6 +9,16 @@ public class Params {
 	
 	// This is our number format object
 	public static DecimalFormat mMixPercent = new DecimalFormat("#0.0");
+	
 	// Use default formatting for pressures
-	public static NumberFormat mPressure = NumberFormat.getIntegerInstance();
+	public static NumberFormat getPressureFormat() {
+		if(Units.pressureUnit() == Units.PRESSURE_PSI) {
+			return NumberFormat.getIntegerInstance();
+		} else if(Units.pressureUnit() == Units.PRESSURE_BAR) {
+			return new DecimalFormat("#0.0");
+		} else {
+			return new DecimalFormat("#0.0");
+		}
+	}
+	//public static NumberFormat mPressure = NumberFormat.getIntegerInstance();
 }

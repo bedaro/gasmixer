@@ -1,5 +1,6 @@
 package divestoclimb.gasmixer;
 
+import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -28,6 +29,23 @@ public class GasMixer extends TabActivity {
 		setContentView(R.layout.main);
 		
 		mDbHelper = new GasMixDbAdapter(this);
+
+		// Initialize database settings if they are not already set
+		mDbHelper.open();
+		if(mDbHelper.fetchSetting("fo2t") == -1) {
+			mDbHelper.saveSetting("fo2t", (float)0.21, 3);
+		}
+		if(mDbHelper.fetchSetting("fhet") == -1) {
+			mDbHelper.saveSetting("fhet", 0, 3);
+		}
+
+		// Fetch the setting for units
+		float unit=mDbHelper.fetchSetting("units");
+		if(unit == -1) {
+			unit=Units.IMPERIAL;
+			mDbHelper.saveSetting("units", Units.IMPERIAL, 1);
+		}
+		Units.change((int)unit);
 
 		TabHost mTabHost = getTabHost();
 		
@@ -82,26 +100,21 @@ public class GasMixer extends TabActivity {
 		HashMap<Integer,Float> defaults = new HashMap<Integer, Float>();
 		defaults.put(UICore.KEY_BLEND | UICore.KEY_DESIRED | UICore.KEY_OXYGEN, new Float(32));
 		defaults.put(UICore.KEY_BLEND | UICore.KEY_DESIRED | UICore.KEY_HELIUM, new Float(0));
-		defaults.put(UICore.KEY_BLEND | UICore.KEY_DESIRED | UICore.KEY_PRESSURE, new Float(3000));
+		defaults.put(UICore.KEY_BLEND | UICore.KEY_DESIRED | UICore.KEY_PRESSURE, new Float(Units.pressureTankFull()));
 		defaults.put(UICore.KEY_BLEND | UICore.KEY_STARTING | UICore.KEY_OXYGEN, new Float(21));
 		defaults.put(UICore.KEY_BLEND | UICore.KEY_STARTING | UICore.KEY_HELIUM, new Float(0));
 		defaults.put(UICore.KEY_BLEND | UICore.KEY_STARTING | UICore.KEY_PRESSURE, new Float(0));
 		defaults.put(UICore.KEY_TOPUP | UICore.KEY_STARTING | UICore.KEY_OXYGEN, new Float(32));
 		defaults.put(UICore.KEY_TOPUP | UICore.KEY_STARTING | UICore.KEY_HELIUM, new Float(0));
-		defaults.put(UICore.KEY_TOPUP | UICore.KEY_STARTING | UICore.KEY_PRESSURE, new Float(1000));
-		defaults.put(UICore.KEY_TOPUP | UICore.KEY_DESIRED | UICore.KEY_PRESSURE, new Float(3000));
+		defaults.put(UICore.KEY_TOPUP | UICore.KEY_STARTING | UICore.KEY_PRESSURE, new Float(Units.pressureTankLow()));
+		defaults.put(UICore.KEY_TOPUP | UICore.KEY_DESIRED | UICore.KEY_PRESSURE, new Float(Units.pressureTankFull()));
+		
+		int pressureUnitTexts[] = { R.id.desired_pres_unit,
+				R.id.start_pres_unit,
+				R.id.topup_start_pres_unit };
 		
 		// Initialize the UI
-		ui = new UICore(this, buttonIdKeyMap, editTextIdKeyMap, sliderIdKeyMap, defaults);
-		
-		// Initialize database settings if they are not already set
-		mDbHelper.open();
-		if(mDbHelper.fetchSetting("fo2t") == -1) {
-			mDbHelper.saveSetting("fo2t", (float)0.21, 3);
-		}
-		if(mDbHelper.fetchSetting("fhet") == -1) {
-			mDbHelper.saveSetting("fhet", 0, 3);
-		}
+		ui = new UICore(this, buttonIdKeyMap, editTextIdKeyMap, sliderIdKeyMap, defaults, pressureUnitTexts);
 		
 		// Prepare the action buttons
 		Button blend = (Button) findViewById(R.id.button_blend);
@@ -114,7 +127,7 @@ public class GasMixer extends TabActivity {
 				while(it.hasNext()) {
 					int key=it.next();
 					if((key & UICore.KEY_BLEND) != 0) {
-						i.putExtra("PARAM_"+Params.mPressure.format(key), ui.getField(key));
+						i.putExtra("PARAM_"+Params.getPressureFormat().format(key), ui.getField(key));
 					}
 				}
 				GasMixer.this.startActivity(i);
@@ -131,7 +144,7 @@ public class GasMixer extends TabActivity {
 				while(it.hasNext()) {
 					int key=it.next();
 					if((key & UICore.KEY_TOPUP) != 0) {
-						i.putExtra("PARAM_"+Params.mPressure.format(key), ui.getField(key));
+						i.putExtra("PARAM_"+NumberFormat.getIntegerInstance().format(key), ui.getField(key));
 					}
 				}
 				GasMixer.this.startActivity(i);
@@ -145,9 +158,26 @@ public class GasMixer extends TabActivity {
 		super.onCreateOptionsMenu(menu);
 		
 		MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.menu.main, menu);
+		inflater.inflate(R.menu.main, menu);
 		
 		return true;
+	}
+	
+	// Override the onPrepareOptionsMenu class to remove the menu
+	// item for the units system currently in use.
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.clear();
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main, menu);
+
+		if(Units.getCurrentSystem() == Units.IMPERIAL) {
+			menu.removeItem(R.id.switch_unit_imperial);
+		} else if(Units.getCurrentSystem() == Units.METRIC) {
+			menu.removeItem(R.id.switch_unit_metric);
+		}
+		
+		return super.onPrepareOptionsMenu(menu);
 	}
 	
 	@Override
@@ -162,6 +192,16 @@ public class GasMixer extends TabActivity {
 				i = new Intent(this, About.class);
 				startActivityForResult(i, 0);
 				return true;
+			case R.id.switch_unit_metric:
+				Units.change(Units.METRIC);
+				ui.updateUnits(Units.IMPERIAL);
+				mDbHelper.saveSetting("units", Units.METRIC, 1);
+				return true;
+			case R.id.switch_unit_imperial:
+				Units.change(Units.IMPERIAL);
+				ui.updateUnits(Units.METRIC);
+				mDbHelper.saveSetting("units", Units.IMPERIAL, 1);
+				return true;			
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
