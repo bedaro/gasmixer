@@ -45,7 +45,7 @@ public class TopupResult extends Activity {
 		solve();
 		
 		Mix result = new Mix(fo2f, fhef);
-		mResultText = "Result is "+result.friendlyName(nf);
+		mResultText = String.format(getResources().getString(R.string.topup_result), result.friendlyName(nf, this));
 		
 		TextView resultView = (TextView) findViewById(R.id.topup_result);
 		resultView.setText(mResultText);

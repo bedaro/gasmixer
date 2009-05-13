@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 
 import Jama.Matrix;
 import android.app.Activity;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.ClipboardManager;
 import android.view.View;
@@ -48,7 +49,7 @@ public class BlendResult extends Activity {
 
 	private GasMixDbAdapter mDbAdapter;
 	
-	private NumberFormat nf = NumberFormat.getIntegerInstance();
+	private NumberFormat nf = Params.getPressureFormat();
 	
 	private String mResultText;
 	
@@ -92,23 +93,31 @@ public class BlendResult extends Activity {
 		// This is a side effect of the extra checking occurring in
 		// solve(), that the only solution solve() can find is to
 		// increase the starting pressure in the tank.
+		Resources r = getResources();
+		String unit = Units.pressure(this);
 		if(pdrain > pi) {
-			mResultText="Sorry, that can't be done! Check that the top-up mix is correct.";
+			mResultText=r.getString(R.string.result_impossible);
 		} else {
-			mResultText="Start with "+((pi == 0)? "an empty tank": nf.format(pi)+" psi of "+start.friendlyName(nf))+"\n";
+			mResultText=(
+					(pi == 0)? r.getString(R.string.result_start_empty)
+					: String.format(r.getString(R.string.result_start),
+							nf.format(pi),
+							unit,
+							start.friendlyName(nf, this))
+			)+"\n";
 			if((pdrain != pi) && ! ((pdrain == -0) && (pi == 0))) {
-				mResultText+="- Drain to "+nf.format(pdrain)+" psi\n";
+				mResultText+="- "+String.format(r.getString(R.string.result_drain), nf.format(pdrain), unit)+"\n";
 			}
 			if(po2 > 0) {
-				mResultText+="- Add "+nf.format(po2)+" psi of Oxygen\n";
+				mResultText+="- "+String.format(r.getString(R.string.result_add), nf.format(po2), unit, r.getString(R.string.oxygen))+"\n";
 			}
 			if(phe > 0) {
-				mResultText+="- Add "+nf.format(phe)+" psi of Helium\n";
+				mResultText+="- "+String.format(r.getString(R.string.result_add), nf.format(phe), unit, r.getString(R.string.helium))+"\n";
 			}
 			if(pt > 0) {
-				mResultText+="- Top up with "+nf.format(pt)+" psi of "+topup.friendlyName(nf)+"\n";
+				mResultText+="- "+String.format(r.getString(R.string.result_topup), nf.format(pt), unit, topup.friendlyName(nf, this))+"\n";
 			}
-			mResultText+="End with "+nf.format(pf)+" psi of "+desired.friendlyName(nf);
+			mResultText+=String.format(r.getString(R.string.result_end), nf.format(pf), unit, desired.friendlyName(nf, this));
 		}
 		
 		TextView resultView = (TextView) findViewById(R.id.blend_result);
