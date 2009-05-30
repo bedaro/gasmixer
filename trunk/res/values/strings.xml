@@ -19,7 +19,7 @@
 	<string name="helium">Helium</string>
 	<string name="air">Air</string>
 	<string name="nitrogen">Nitrogen</string>
-	<string name="result_impossible">Sorry, that can't be done! Check that the top-up mix is correct.</string>
+	<string name="result_impossible">"Sorry, that can't be done! Check that the top-up mix is correct."</string>
 	<string name="result_start_empty">Start with an empty tank</string>
 	<string name="result_start">Start with %1$s %2$s of %3$s</string>
 	<string name="result_drain">Drain to %1$s %2$s</string>
@@ -27,13 +27,16 @@
 	<string name="result_topup">Top up with %1$s %2$s of %3$s</string>
 	<string name="result_end">End with %1$s %2$s of %3$s</string>
 	<string name="topup_result">Result is %s</string>
+	<string name="topup_reminder">Topped up with %s</string>
 	<string name="topup_pres">Top-Up Pressure</string>
 	<string name="button_topup">Top Up</string>
 	<string name="set_topup">Set Top-Up Gas</string>
 	<string name="about">About</string>
 	<string name="change">Change</string>
+	<string name="close">Close</string>
+	<string name="analyze_warning">"(Don't forget to analyze!)"</string>
 	<string name="about_text">
-		Gas Mixer v.1.0\n\n
+		Gas Mixer v.1.1\n\n
 		Copyright 2009 Ben Roberts. divestoclimb@gmail.com.\n\n
 		Licensed under the Apache License, Version 2.0 (the "License");
 		you may not use any part of this distribution except in

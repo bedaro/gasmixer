@@ -7,6 +7,8 @@ import java.util.Iterator;
 
 import org.openintents.widget.Slider;
 
+import divestoclimb.lib.scuba.Units;
+
 import android.app.Activity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -260,7 +262,7 @@ public class UICore {
 		for(int i=0; i<mPressureUnitTexts.length; i++) {
 			TextView tv = (TextView) mA.findViewById(mPressureUnitTexts[i]);
 			
-			tv.setText(Units.pressure(mA)+':');
+			tv.setText(Params.pressure(mA)+':');
 		}
 	}
 }

@@ -4,6 +4,8 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import divestoclimb.lib.scuba.Units;
+
 import android.app.TabActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -98,8 +100,14 @@ public class GasMixer extends TabActivity {
 
 		// Initialize the mDefaults hash
 		HashMap<Integer,Float> defaults = new HashMap<Integer, Float>();
-		defaults.put(UICore.KEY_BLEND | UICore.KEY_DESIRED | UICore.KEY_OXYGEN, new Float(32));
-		defaults.put(UICore.KEY_BLEND | UICore.KEY_DESIRED | UICore.KEY_HELIUM, new Float(0));
+		// If an Intent was passed, use those parameters as the desired mix
+		Bundle extras = getIntent().getExtras();
+		defaults.put(UICore.KEY_BLEND | UICore.KEY_DESIRED | UICore.KEY_OXYGEN,
+				extras != null? extras.getFloat("O2_DESIRED"): new Float(32)
+			);
+		defaults.put(UICore.KEY_BLEND | UICore.KEY_DESIRED | UICore.KEY_HELIUM,
+				extras != null? extras.getFloat("HE_DESIRED"): new Float(0)
+			);
 		defaults.put(UICore.KEY_BLEND | UICore.KEY_DESIRED | UICore.KEY_PRESSURE, new Float(Units.pressureTankFull()));
 		defaults.put(UICore.KEY_BLEND | UICore.KEY_STARTING | UICore.KEY_OXYGEN, new Float(21));
 		defaults.put(UICore.KEY_BLEND | UICore.KEY_STARTING | UICore.KEY_HELIUM, new Float(0));
