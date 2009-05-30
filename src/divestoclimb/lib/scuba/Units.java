@@ -1,14 +1,14 @@
-package divestoclimb.gasmixer;
-
-import android.content.Context;
+package divestoclimb.lib.scuba;
 
 // This class is a container for a bunch of static methods which are
-// dependent on the current system of units in use in the application.
+// dependent on the current system of units in use in a SCUBA application.
 // This allows the rest of the application to be unit-independent.
 // It defines a heirarchy of types:
 // - Unit System: an arbitrary collection of units, one for each
-//   dimension of measurement available (length, mass, time, temperature, etc.)
-// - Unit: a defined value representing a dimension of measurement
+//   dimension of measurement available (length, mass, time, temperature, etc.).
+//   Real life examples in the strictest sense are SI and CGS.
+// - Unit: a defined value representing a dimension of measurement (foot, meter,
+//   kilogram, Pascal, etc.)
 // The application using this class should reference unit systems as
 // a way to change all the customary units of measurement and for
 // conversions. Any other decision that needs to be made regarding
@@ -69,18 +69,13 @@ public class Units {
 	public static int pressureUnit() {
 		return unitSystem == IMPERIAL? PRESSURE_PSI: PRESSURE_BAR;
 	}
-	
-	// Get the string value for the current unit of pressure
-	public static String pressure(Context c) {
-		return c.getResources().getString(pressureUnit() == IMPERIAL? R.string.pres_imperial: R.string.pres_metric);
-	}
 
 	// Get the amount to increment pressure values for the current units
-	public static double pressureIncrement() { return pressure_increment[pressureUnit()]; }
+	public static float pressureIncrement() { return pressure_increment[pressureUnit()]; }
 	// Get a low tank pressure 
-	public static double pressureTankLow() { return pressure_tank_low[pressureUnit()]; }
+	public static float pressureTankLow() { return pressure_tank_low[pressureUnit()]; }
 	// Get the pressure of a typical full tank
-	public static double pressureTankFull() { return pressure_tank_full[pressureUnit()]; }
+	public static float pressureTankFull() { return pressure_tank_full[pressureUnit()]; }
 	
 	public static final int DEPTH_FOOT = 0;
 	public static final int DEPTH_METER = 1;
@@ -97,17 +92,12 @@ public class Units {
 		return unitSystem == IMPERIAL? DEPTH_FOOT: DEPTH_METER;
 	}
 
-	// Get the string value for the current unit of depth
-	public static String depth(Context c) {
-		return c.getResources().getString(depthUnit() == DEPTH_FOOT? R.string.depth_imperial: R.string.depth_metric);
-	}
-	
 	// Get the amount to increment depth values for the current units
-	public static double depthIncrement() { return depth_increment[depthUnit()]; }
+	public static float depthIncrement() { return depth_increment[depthUnit()]; }
 	
 	// Get the depth of one atmosphere of seawater in the current unit
 	// system
-	public static double depthPerAtm() { return atm_depth[depthUnit()]; }
+	public static float depthPerAtm() { return atm_depth[depthUnit()]; }
 	
 	// Unit conversion functions. These aren't influenced by the current
 	// value of unit. They are only used when the user switches unit
@@ -122,7 +112,7 @@ public class Units {
 	// (and yes, there are more than two "unit systems" :) )
 	// This needs to be redone to interface with the Unit definitions,
 	// instead of relying on Unit Systems
-	private static double convert(double value, double multiplier_imperial_to_metric, int from_unit, int to_unit) {
+	private static float convert(float value, float multiplier_imperial_to_metric, int from_unit, int to_unit) {
 		// Convert to metric as a standard
 		if(from_unit == IMPERIAL) {
 			value /= multiplier_imperial_to_metric;
@@ -138,12 +128,12 @@ public class Units {
 		return value;
 	}
 	
-	public static double convertPressure(double pressure, int from_unit) {
-		return convert(pressure, 14.5, from_unit, unitSystem);
+	public static float convertPressure(float pressure, int from_unit) {
+		return convert(pressure, (float)14.5, from_unit, unitSystem);
 	}
 	
 	// Convert depth from one unit system to another
-	public static double convertDepth(double depth, int from_unit) {
+	public static float convertDepth(float depth, int from_unit) {
 		return convert(depth, 33, from_unit, unitSystem);
 	}
 }

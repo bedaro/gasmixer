@@ -2,8 +2,14 @@ package divestoclimb.gasmixer;
 
 import java.text.NumberFormat;
 
+import divestoclimb.lib.scuba.Mix;
+
 import android.app.Activity;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.TextView;
 
 public class TopupResult extends Activity {
@@ -44,11 +50,25 @@ public class TopupResult extends Activity {
 		
 		solve();
 		
+		Mix topup = new Mix(fo2t, fhet);
 		Mix result = new Mix(fo2f, fhef);
-		mResultText = String.format(getResources().getString(R.string.topup_result), result.friendlyName(nf, this));
+		Resources r = getResources();
+		mResultText = String.format(r.getString(R.string.topup_result), Params.mixFriendlyName(result, this));
 		
 		TextView resultView = (TextView) findViewById(R.id.topup_result);
 		resultView.setText(mResultText);
+		TextView reminderView = (TextView) findViewById(R.id.topup_reminders);
+		reminderView.setText(
+				String.format(r.getString(R.string.topup_reminder), Params.mixFriendlyName(topup, this))+
+				"\n"+
+				r.getString(R.string.analyze_warning));
+		
+		Button close = (Button) findViewById(R.id.button_close);
+		close.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				finish();
+			}
+		});
 	}
 	
 	private void solve() {

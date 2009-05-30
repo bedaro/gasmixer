@@ -12,9 +12,22 @@
 			android:layout_marginTop="10dip"
 			android:layout_marginBottom="10dip"
 			android:textSize="20sp"/>
+			
+	<TextView android:id="@+id/topup_reminders"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginLeft="10dip"
+			android:layout_marginRight="10dip"
+			android:layout_marginBottom="10dip"/>
+
 	<!-- <Button android:id="@+id/button_enough"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:text="@string/enough"/> -->
+
+	<Button android:id="@+id/button_close"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/close"/>
 
 </LinearLayout>

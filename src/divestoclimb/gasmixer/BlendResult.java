@@ -2,6 +2,8 @@ package divestoclimb.gasmixer;
 
 import java.text.NumberFormat;
 
+import divestoclimb.lib.scuba.Mix;
+
 import Jama.Matrix;
 import android.app.Activity;
 import android.content.res.Resources;
@@ -84,7 +86,7 @@ public class BlendResult extends Activity {
 		
 		// Now we're ready. Solve. Solution will be stored in our class
 		// variables
-		solve();
+		boolean solved = solve();
 		
 		// Make Mixes of our gases
 		Mix start=new Mix(fo2i, fhei), desired=new Mix(fo2f, fhef), topup=new Mix(fo2t, fhet);
@@ -94,8 +96,8 @@ public class BlendResult extends Activity {
 		// solve(), that the only solution solve() can find is to
 		// increase the starting pressure in the tank.
 		Resources r = getResources();
-		String unit = Units.pressure(this);
-		if(pdrain > pi) {
+		String unit = Params.pressure(this);
+		if(! solved) {
 			mResultText=r.getString(R.string.result_impossible);
 		} else {
 			mResultText=(
@@ -103,7 +105,7 @@ public class BlendResult extends Activity {
 					: String.format(r.getString(R.string.result_start),
 							nf.format(pi),
 							unit,
-							start.friendlyName(nf, this))
+							Params.mixFriendlyName(start, this))
 			)+"\n";
 			if((pdrain != pi) && ! ((pdrain == -0) && (pi == 0))) {
 				mResultText+="- "+String.format(r.getString(R.string.result_drain), nf.format(pdrain), unit)+"\n";
@@ -115,13 +117,13 @@ public class BlendResult extends Activity {
 				mResultText+="- "+String.format(r.getString(R.string.result_add), nf.format(phe), unit, r.getString(R.string.helium))+"\n";
 			}
 			if(pt > 0) {
-				mResultText+="- "+String.format(r.getString(R.string.result_topup), nf.format(pt), unit, topup.friendlyName(nf, this))+"\n";
+				mResultText+="- "+String.format(r.getString(R.string.result_topup), nf.format(pt), unit, Params.mixFriendlyName(topup, this))+"\n";
 			}
-			mResultText+=String.format(r.getString(R.string.result_end), nf.format(pf), unit, desired.friendlyName(nf, this));
+			mResultText+=String.format(r.getString(R.string.result_end), nf.format(pf), unit, Params.mixFriendlyName(desired, this));
 		}
 		
 		TextView resultView = (TextView) findViewById(R.id.blend_result);
-		resultView.setText(mResultText);
+		resultView.setText(mResultText+(solved? "\n\n"+r.getString(R.string.analyze_warning): ""));
 		
 		// set button listeners
 		Button copy = (Button) findViewById(R.id.button_copy);
@@ -133,10 +135,17 @@ public class BlendResult extends Activity {
 			}
 		});
 		
+		Button close = (Button) findViewById(R.id.button_close);
+		close.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				finish();
+			}
+		});
+		
 		// TODO: do I have enough gas button
 	}
 	
-	private void solve() {
+	private boolean solve() {
 		pdrain=pi;
 		double a[][] = { {1, 0, fo2t}, {0, 1, fhet}, {0, 0, 1-fo2t-fhet} };
 		double b[][] = { {pf*fo2f-pi*fo2i}, {pf*fhef-pi*fhei}, {pf*(1-fo2f-fhef)-pi*(1-fo2i-fhei)} };
@@ -156,10 +165,14 @@ public class BlendResult extends Activity {
 			b[1][0]=pf*fhef;
 			b[2][0]=pf*(1-fo2f-fhef);
 			Matrix aTake2=new Matrix(a), bTake2 = new Matrix(b);
-			Matrix take2 = aTake2.solve(bTake2);
-			pdrain=(float) take2.get(0, 0);
-			phe=(float) take2.get(1, 0);
-			pt=(float) take2.get(2, 0);
+			try {
+				Matrix take2 = aTake2.solve(bTake2);
+				pdrain=(float) take2.get(0, 0);
+				phe=(float) take2.get(1, 0);
+				pt=(float) take2.get(2, 0);
+			} catch(RuntimeException e) {
+				return false;
+			}
 		}
 		if(phe < 0) {
 			phe=0;
@@ -171,10 +184,14 @@ public class BlendResult extends Activity {
 			b[1][0]=pf*fhef;
 			b[2][0]=pf*(1-fo2f-fhef);
 			Matrix aTake3=new Matrix(a), bTake3=new Matrix(b);
-			Matrix take3 = aTake3.solve(bTake3);
-			pdrain=(float) take3.get(1, 0);
-			po2=(float) take3.get(0, 0);
-			pt=(float) take3.get(2, 0);
+			try {
+				Matrix take3 = aTake3.solve(bTake3);
+				pdrain=(float) take3.get(1, 0);
+				po2=(float) take3.get(0, 0);
+				pt=(float) take3.get(2, 0);
+			} catch(RuntimeException e) {
+				return false;
+			}
 		}
 		if(pt < 0) {
 			pt=0;
@@ -186,10 +203,16 @@ public class BlendResult extends Activity {
 			b[1][0]=pf*fhef;
 			b[2][0]=pf*(1-fo2f-fhef);
 			Matrix aTake4=new Matrix(a), bTake4=new Matrix(b);
-			Matrix take4 = aTake4.solve(bTake4);
-			pdrain=(float) take4.get(2, 0);
-			po2=(float) take4.get(0, 0);
-			phe=(float) take4.get(1, 0);
+			try {
+				Matrix take4 = aTake4.solve(bTake4);
+				pdrain=(float) take4.get(2, 0);
+				po2=(float) take4.get(0, 0);
+				phe=(float) take4.get(1, 0);
+			} catch(RuntimeException e) {
+				return false;
+			}
 		}
+		return pdrain <= pi;
 	}
+
 }
