@@ -2,6 +2,8 @@ package divestoclimb.lib.scuba;
 
 import java.text.NumberFormat;
 
+import android.util.Log;
+
 // This is a class for a given gas mix of oxygen, nitrogen, and helium
 public class Mix implements GasSource {
 	// Ten times the percentage of oxygen
@@ -24,53 +26,53 @@ public class Mix implements GasSource {
 	}
 	
 	public float getO2() {
-		return o2Times10 / 10;
+		return (float)(o2Times10 / 10.0);
 	}
 	
 	public float getfO2() {
-		return o2Times10 / 1000;
+		return (float)(o2Times10 / 1000.0);
 	}
 	
 	public float getHe() {
-		return heTimes10 / 10;
+		return (float)(heTimes10 / 10.0);
 	}
 	
 	public float getfHe() {
-		return heTimes10 / 1000;
+		return (float)(heTimes10 / 1000.0);
 	}
 	
 	public String friendlyName() {
 		NumberFormat nf = NumberFormat.getIntegerInstance();
-		if(this.getO2()==100) {
+		if(getO2()==100) {
 			return OXYGEN;
 		}
-		if(this.getHe()==100) {
+		if(getHe()==100) {
 			return HELIUM;
 		}
-		if(this.getO2() + this.getHe() == 0) {
+		if(getO2() + this.getHe() == 0) {
 			return NITROGEN;
 		}
-		if((this.getO2()==21) && (this.getHe()==0)) {
+		if((getO2()==21) && (getHe()==0)) {
 			return AIR;
 		}
 		if(this.getHe()==0) {
 			// A Nitrox mix
-			return nf.format(this.getO2())+"%";
+			return nf.format(getO2())+"%";
 		}
 		// After all of the above, we have a trimix
-		return nf.format(this.getO2())+"/"+nf.format(this.getHe());
+		return nf.format(getO2())+"/"+nf.format(getHe());
 	}
 
 	public float pHeAtDepth(int depth) {
-		return (depth / Units.depthPerAtm() + 1) * this.getfHe();
+		return (depth / Units.depthPerAtm() + 1) * getfHe();
 	}
 
 	public float pN2AtDepth(int depth) {
-		return (depth / Units.depthPerAtm() + 1) * (1 - this.getfHe() - this.getfO2());
+		return (depth / Units.depthPerAtm() + 1) * (1 - getfHe() - getfO2());
 	}
 
 	public float pO2AtDepth(int depth) {
-		return (depth / Units.depthPerAtm() + 1) * this.getfO2();
+		return (depth / Units.depthPerAtm() + 1) * getfO2();
 	}
 	
 	/**
@@ -79,7 +81,18 @@ public class Mix implements GasSource {
 	 * @return The maximum operating depth in the current system of units, rounded down to the nearest standard depth increment
 	 */
 	public float MOD(float maxpO2) {
-		return ((int) Math.ceil((maxpO2 / this.getfO2() - 1) * Units.depthPerAtm()) / Units.depthIncrement()) * Units.depthIncrement();
+		return ((int) Math.floor((maxpO2 * 1000 / o2Times10 - 1) * Units.depthPerAtm()) / Units.depthIncrement()) * Units.depthIncrement();
+	}
+	
+	/**
+	 * Return the Equivalent Air Depth of this mix at a given depth.
+	 * @param depth The depth to determine the EAD for.
+	 * @return The equivalent air depth in the current system of units, rounded up to the nearest standard depth increment
+	 */
+	public float EAD(int depth) {
+		// This is the same computation as END without considering the narcotic effect of
+		// oxygen
+		return END(depth, false);
 	}
 
 	/**
@@ -90,8 +103,8 @@ public class Mix implements GasSource {
 	 */
 	public float END(int depth, boolean oxygenIsNarcotic) {
 		float pNarc = oxygenIsNarcotic? pO2AtDepth(depth) + pN2AtDepth(depth): pN2AtDepth(depth);
-		float pNarc0 = oxygenIsNarcotic? 1: (float) 0.79;
-		return ((int) Math.floor((pNarc / pNarc0 - 1) * Units.depthPerAtm()) / Units.depthIncrement()) * Units.depthIncrement();
+		float pNarc0 = oxygenIsNarcotic? 1: 0.79f;
+		return Math.max(((int) Math.ceil((pNarc / pNarc0 - 1) * Units.depthPerAtm()) / Units.depthIncrement()) * Units.depthIncrement(), 0);
 	}
 	
 	/**
@@ -102,7 +115,7 @@ public class Mix implements GasSource {
 	public float ceiling(float minpO2) {
 		// This function is nearly identical to MOD except we round up instead of
 		// down
-		return ((int) Math.floor((minpO2 / this.getfO2() - 1) * Units.depthPerAtm()) / Units.depthIncrement()) * Units.depthIncrement();
+		return ((int) Math.ceil((minpO2 / getfO2() - 1) * Units.depthPerAtm()) / Units.depthIncrement()) * Units.depthIncrement();
 	}
 	
 	/**
@@ -115,16 +128,22 @@ public class Mix implements GasSource {
 	 * @return The Mix containing the highest possible percentage of oxygen and the lowest possible percentage of helium for the given parameters, rounded down/up to whole percentages.
 	 */
 	public static Mix best(int depth, int maxEND, float maxpO2, boolean oxygenIsNarcotic) {
-		float fO2Best = maxpO2 / (depth / Units.depthPerAtm() + 1);
+		float dpa = Units.depthPerAtm();
+		float pAbs = depth / dpa + 1;
+		float fO2Best = maxpO2 / pAbs;
 		if(fO2Best > 1) {
 			fO2Best = 1;
 		} else {
-			fO2Best = (float) (Math.ceil(fO2Best * 100) / 100);
+			fO2Best = (float) (Math.floor(fO2Best * 100) / 100);
 		}
-		float pNarc0 = oxygenIsNarcotic? 1: (float) 0.79;
-		float pAbs = depth / Units.depthPerAtm() + 1;
-		float fNarcBest = (float) (Math.ceil((maxEND / Units.depthPerAtm() + 1) * pNarc0 / pAbs * 100) / 100);
-		float fHeBest = 1 - (oxygenIsNarcotic? fNarcBest: fNarcBest - fO2Best);
-		return new Mix(fO2Best, fHeBest);
+		maxEND = Math.min(depth, maxEND);
+		float fNarcBest = (float) (Math.floor((maxEND / dpa + 1) / pAbs * 100) / 100);
+		Log.w("Mix", String.format("fNarcBest: %s", fNarcBest));
+		float fHeBest = 1 - (oxygenIsNarcotic? fNarcBest: fNarcBest + fO2Best);
+		if(fO2Best + fHeBest > 1) {
+			return null;
+		} else { 
+			return new Mix(fO2Best, fHeBest);
+		}
 	}
 }

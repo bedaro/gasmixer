@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+				xmlns:app="http://schemas.android.com/apk/res/divestoclimb.gasmixer"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content">
+	<SeekBar
+		android:id="@+id/slider_o2"
+		android:progressDrawable="@drawable/progress_horizontal_green"
+		android:layout_width="fill_parent"
+		android:layout_height="30dip" />
+	<divestoclimb.gasmixer.NumberSelector
+		android:id="@+id/number_o2"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:gravity="center"
+		android:layout_below="@id/slider_o2"
+		android:layout_centerHorizontal="true"
+		app:textboxwidth="70sp"
+		app:decimalplaces="1"
+		app:lowerlimit="5"
+		app:upperlimit="100"
+		app:increment="1" />
+	<TextView
+		android:layout_height="wrap_content"
+		android:layout_width="wrap_content"
+		android:text="@string/o2"
+		android:layout_marginTop="7sp"
+		android:layout_toLeftOf="@id/number_o2"
+		android:layout_alignTop="@id/number_o2" />
+
+	<SeekBar
+		android:id="@+id/slider_he"
+		android:progressDrawable="@drawable/progress_horizontal_brown"
+		android:layout_width="fill_parent"
+		android:layout_height="30dip"
+		android:layout_marginTop="10dip"
+		android:layout_below="@id/number_o2"
+		android:layout_alignParentRight="true" />
+	<divestoclimb.gasmixer.NumberSelector
+		android:id="@+id/number_he"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:gravity="center"
+		android:layout_below="@id/slider_he"
+		android:layout_centerHorizontal="true"
+		app:textboxwidth="70sp"
+		app:decimalplaces="1"
+		app:lowerlimit="0"
+		app:upperlimit="100"
+		app:increment="5" />
+	<TextView
+		android:layout_height="wrap_content"
+		android:layout_width="wrap_content"
+		android:text="@string/he"
+		android:layout_marginTop="7sp"
+ 		android:layout_toLeftOf="@id/number_he"
+		android:layout_alignTop="@id/number_he" />
+</RelativeLayout>

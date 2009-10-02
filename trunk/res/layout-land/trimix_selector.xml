@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+				xmlns:app="http://schemas.android.com/apk/res/divestoclimb.gasmixer"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content">
+	<SeekBar
+		android:id="@+id/slider_o2"
+		android:progressDrawable="@drawable/progress_horizontal_green"
+		android:layout_width="fill_parent"
+		android:layout_height="30dip" />
+	<TextView
+		android:id="@+id/label_o2"
+		android:layout_height="wrap_content"
+		android:layout_width="wrap_content"
+		android:text="@string/o2"
+		android:layout_below="@id/slider_o2"
+		android:layout_alignParentLeft="true"
+		android:layout_marginTop="7sp"  />
+	<divestoclimb.gasmixer.NumberSelector
+		android:id="@+id/number_o2"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toRightOf="@id/label_o2"
+		android:layout_below="@id/slider_o2"
+		app:textboxwidth="70sp"
+		app:decimalplaces="1"
+		app:lowerlimit="5"
+		app:upperlimit="100"
+		app:increment="1" />
+	<divestoclimb.gasmixer.NumberSelector
+		android:id="@+id/number_he"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/slider_o2"
+		android:layout_alignParentRight="true"
+		app:textboxwidth="70sp"
+		app:decimalplaces="1"
+		app:lowerlimit="0"
+		app:upperlimit="100"
+		app:increment="5" />
+	<TextView
+		android:layout_height="wrap_content"
+		android:layout_width="wrap_content"
+		android:text="@string/he"
+		android:layout_toLeftOf="@id/number_he"
+		android:layout_below="@id/slider_o2"
+		android:layout_marginTop="7sp" />
+	<SeekBar
+		android:id="@+id/slider_he"
+		android:progressDrawable="@drawable/progress_horizontal_brown"
+		android:layout_width="fill_parent"
+		android:layout_height="30dip"
+		android:layout_below="@id/number_he"
+		android:layout_centerHorizontal="true" />
+</RelativeLayout>

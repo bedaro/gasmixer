@@ -1,13 +1,17 @@
 package divestoclimb.gasmixer;
 
 import java.text.NumberFormat;
+import java.text.ParseException;
 
 import divestoclimb.lib.scuba.Mix;
+import divestoclimb.lib.scuba.Units;
 
 import Jama.Matrix;
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -49,7 +53,7 @@ public class BlendResult extends Activity {
 	// The parameters we are solving for
 	private float po2, phe, pt, pdrain;
 
-	private GasMixDbAdapter mDbAdapter;
+	private SharedPreferences mSettings, mState;
 	
 	private NumberFormat nf = Params.getPressureFormat();
 	
@@ -58,79 +62,107 @@ public class BlendResult extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		setContentView(R.layout.blend_result);
 		
-		// get our parameters
-		Bundle extras = getIntent().getExtras();
-		if(extras == null) {
-			// TODO: handle this
-			// This may happen if our app gets restarted from this
-			// screen. In that case, we should go back to the
-			// GasMixer Activity.
-			finish();
-		}
-		
-		pi=extras.getFloat("PARAM_"+nf.format(UICore.KEY_BLEND | UICore.KEY_STARTING | UICore.KEY_PRESSURE));
-		pf=extras.getFloat("PARAM_"+nf.format(UICore.KEY_BLEND | UICore.KEY_DESIRED | UICore.KEY_PRESSURE));
-		fo2f=extras.getFloat("PARAM_"+nf.format(UICore.KEY_BLEND | UICore.KEY_DESIRED | UICore.KEY_OXYGEN))/100;
-		fhef=extras.getFloat("PARAM_"+nf.format(UICore.KEY_BLEND | UICore.KEY_DESIRED | UICore.KEY_HELIUM))/100;
-		fo2i=extras.getFloat("PARAM_"+nf.format(UICore.KEY_BLEND | UICore.KEY_STARTING | UICore.KEY_OXYGEN))/100;
-		fhei=extras.getFloat("PARAM_"+nf.format(UICore.KEY_BLEND | UICore.KEY_STARTING | UICore.KEY_HELIUM))/100;
-		
-		mDbAdapter = new GasMixDbAdapter(this);
-		mDbAdapter.open();
-		
-		fo2t=mDbAdapter.fetchSetting("fo2t");
-		fhet=mDbAdapter.fetchSetting("fhet");
+		mSettings = PreferenceManager.getDefaultSharedPreferences(this);
+		mState = getSharedPreferences(Params.STATE_NAME, 0);
+		int unit;
+		try {
+			unit = NumberFormat.getIntegerInstance().parse(mSettings.getString("units", "0")).intValue();
+		} catch(ParseException e) { unit = 0; }
+		Units.change(unit);
+
+		pi   = mState.getFloat("start_pres", 0);
+		pf   = mState.getFloat("desired_pres", 0);
+		fo2f = mState.getFloat("desired_o2", 0.21f);
+		fhef = mState.getFloat("desired_he", 0f);
+		fo2i = mState.getFloat("start_o2", 0.21f);
+		fhei = mState.getFloat("start_he", 0);
+
+		Mix topup = TrimixPreference.stringToMix(mSettings.getString("topup_gas", "0.21 0"));
+		fo2t = topup.getfO2();
+		fhet = topup.getfHe();
 		
 		// Now we're ready. Solve. Solution will be stored in our class
 		// variables
 		boolean solved = solve();
 		
 		// Make Mixes of our gases
-		Mix start=new Mix(fo2i, fhei), desired=new Mix(fo2f, fhef), topup=new Mix(fo2t, fhet);
+		Mix start=new Mix(fo2i, fhei), desired=new Mix(fo2f, fhef);
 
 		// No solution manifests itself as pdrain being greater than pi.
 		// This is a side effect of the extra checking occurring in
 		// solve(), that the only solution solve() can find is to
 		// increase the starting pressure in the tank.
 		Resources r = getResources();
-		String unit = Params.pressure(this);
+		String presUnit = Params.pressure(this);
 		if(! solved) {
 			mResultText=r.getString(R.string.result_impossible);
 		} else {
-			mResultText=(
-					(pi == 0)? r.getString(R.string.result_start_empty)
-					: String.format(r.getString(R.string.result_start),
+			mResultText=String.format(r.getString(R.string.start_with),
+					(pi == 0)? r.getString(R.string.empty_tank)
+					: String.format(r.getString(R.string.gas_amount),
 							nf.format(pi),
-							unit,
+							presUnit,
 							Params.mixFriendlyName(start, this))
 			)+"\n";
 			if((pdrain != pi) && ! ((pdrain == -0) && (pi == 0))) {
-				mResultText+="- "+String.format(r.getString(R.string.result_drain), nf.format(pdrain), unit)+"\n";
+				// Drain
+				mResultText+="- "+String.format(r.getString(R.string.result_drain),
+						nf.format(pdrain),
+						presUnit
+				)+"\n";
 			}
-			if(po2 > 0) {
-				mResultText+="- "+String.format(r.getString(R.string.result_add), nf.format(po2), unit, r.getString(R.string.oxygen))+"\n";
+			if(Math.round(po2) > 0) {
+				mResultText+="- "+String.format(r.getString(R.string.result_add),
+						String.format(r.getString(R.string.gas_amount),
+								nf.format(po2),
+								presUnit,
+								r.getString(R.string.oxygen)
+						)
+				)+"\n";
 			}
-			if(phe > 0) {
-				mResultText+="- "+String.format(r.getString(R.string.result_add), nf.format(phe), unit, r.getString(R.string.helium))+"\n";
+			if(Math.round(phe) > 0) {
+				mResultText+="- "+String.format(r.getString(R.string.result_add),
+						String.format(r.getString(R.string.gas_amount),
+								nf.format(phe),
+								presUnit,
+								r.getString(R.string.helium)
+						)
+				)+"\n";
 			}
-			if(pt > 0) {
-				mResultText+="- "+String.format(r.getString(R.string.result_topup), nf.format(pt), unit, Params.mixFriendlyName(topup, this))+"\n";
+			if(Math.round(pt) > 0) {
+				mResultText+="- "+String.format(r.getString(R.string.result_topup),
+						String.format(r.getString(R.string.gas_amount),
+								nf.format(pt),
+								presUnit,
+								Params.mixFriendlyName(topup, this)
+						)
+				)+"\n";
 			}
-			mResultText+=String.format(r.getString(R.string.result_end), nf.format(pf), unit, Params.mixFriendlyName(desired, this));
+			mResultText+=String.format(r.getString(R.string.result_end),
+					String.format(r.getString(R.string.gas_amount),
+							nf.format(pf),
+							presUnit,
+							Params.mixFriendlyName(desired, this)
+					)
+			);
 		}
 		
 		TextView resultView = (TextView) findViewById(R.id.blend_result);
-		resultView.setText(mResultText+(solved? "\n\n"+r.getString(R.string.analyze_warning): ""));
+		resultView.setText(mResultText);
+		if(solved) {
+			TextView reminderView = (TextView) findViewById(R.id.reminder1);
+			reminderView.setText(r.getString(R.string.analyze_warning));
+		}
 		
 		// set button listeners
 		Button copy = (Button) findViewById(R.id.button_copy);
 		copy.setOnClickListener(new OnClickListener() {
-
 			public void onClick(View v) {
-				ClipboardManager c = (ClipboardManager)BlendResult.this.getSystemService(CLIPBOARD_SERVICE);
+				ClipboardManager c = (ClipboardManager)BlendResult.this
+						.getSystemService(CLIPBOARD_SERVICE);
 				c.setText(mResultText);
 			}
 		});
@@ -148,7 +180,8 @@ public class BlendResult extends Activity {
 	private boolean solve() {
 		pdrain=pi;
 		double a[][] = { {1, 0, fo2t}, {0, 1, fhet}, {0, 0, 1-fo2t-fhet} };
-		double b[][] = { {pf*fo2f-pi*fo2i}, {pf*fhef-pi*fhei}, {pf*(1-fo2f-fhef)-pi*(1-fo2i-fhei)} };
+		double b[][] = { {pf*fo2f-pi*fo2i}, {pf*fhef-pi*fhei},
+				{pf*(1-fo2f-fhef)-pi*(1-fo2i-fhei)} };
 		Matrix aM=new Matrix(a), bM = new Matrix(b);
 		Matrix gases=aM.solve(bM);
 		po2=(float) gases.get(0,0);
@@ -212,7 +245,7 @@ public class BlendResult extends Activity {
 				return false;
 			}
 		}
-		return pdrain <= pi;
+		return pdrain >= 0 && pdrain <= pi;
 	}
 
 }
