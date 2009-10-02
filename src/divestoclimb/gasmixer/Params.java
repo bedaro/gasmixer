@@ -10,11 +10,18 @@ import divestoclimb.lib.scuba.Mix;
 import divestoclimb.lib.scuba.Units;
 
 public class Params {
+	// The state preference filename
+	public static final String STATE_NAME = "State";
+
 	// This is the minimum percentage of O2 that's allowed in any mix.
 	public static final int O2_LOWER_LIMIT=5;
 	
+	public static final float PO2_LOWER_LIMIT=new Float(0.4);
+	public static final float PO2_UPPER_LIMIT=new Float(1.6);
+	
 	// This is our number format object
 	public static DecimalFormat mMixPercent = new DecimalFormat("#0.0");
+	public static DecimalFormat mPartialPressure = new DecimalFormat("#0.0");
 	
 	// Use default formatting for pressures
 	public static NumberFormat getPressureFormat() {

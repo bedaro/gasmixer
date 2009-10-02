@@ -1,29 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="wrap_content" android:gravity="center">
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:gravity="center">
 	
-	<TextView android:id="@+id/topup_result"
+	<TextView android:id="@+id/result"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_marginLeft="10dip"
-			android:layout_marginRight="10dip"
-			android:layout_marginTop="10dip"
 			android:layout_marginBottom="10dip"
 			android:textSize="20sp"/>
 			
-	<TextView android:id="@+id/topup_reminders"
+	<TextView android:id="@+id/reminder1"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"/>
+			
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:gravity="center_vertical"
+		android:layout_marginBottom="10dip">
+		<ToggleButton
+			android:id="@+id/button_po2_hi"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_marginLeft="10dip"
-			android:layout_marginRight="10dip"
-			android:layout_marginBottom="10dip"/>
-
-	<!-- <Button android:id="@+id/button_enough"
-			android:layout_width="wrap_content"
+			android:textOff="@string/po2_hi"
+			android:textOn="@string/po2_hi"/>
+		<LinearLayout
+			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			android:text="@string/enough"/> -->
+			android:layout_weight="1"
+			android:orientation="vertical"
+			android:layout_marginLeft="5dip"
+			android:layout_marginRight="5dip">
+			<LinearLayout
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent"
+				android:orientation="horizontal">
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:text="@string/mod"
+					android:singleLine="true"/>
+				<TextView
+					android:id="@+id/mod"
+					android:layout_width="80sp"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					android:textSize="20sp"
+					android:singleLine="true"/>
+			</LinearLayout>
+			<LinearLayout
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent"
+				android:orientation="horizontal">
+				<TextView
+					android:id="@+id/ead_end_label"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:singleLine="true"/>
+				<TextView
+					android:id="@+id/ead_end"
+					android:layout_width="90sp"
+					android:layout_height="wrap_content"
+					android:gravity="right"
+					android:textSize="20sp"
+					android:singleLine="true"/>
+			</LinearLayout>
+		</LinearLayout>
+	</LinearLayout>
+	
+	<TextView android:id="@+id/reminder2"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="10dip"
+		android:layout_marginRight="10dip"/>
 
 	<Button android:id="@+id/button_close"
 			android:layout_width="wrap_content"

@@ -1,14 +1,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-	<item android:id="@+id/set_topup"
+	<!-- <item android:id="@+id/set_topup"
 		android:title="@string/set_topup"
-		android:icon="@drawable/topup_pick" />
-	<item android:id="@+id/switch_unit_metric"
+		android:icon="@drawable/topup_pick" /> -->
+	<item android:id="@+id/settings"
+		android:title="@string/settings"
+		android:icon="@android:drawable/ic_menu_preferences" />
+	<!-- <item android:id="@+id/switch_unit_metric"
 		android:title="@string/switch_to_metric"
 		android:icon="@drawable/units_metric" />
 	<item android:id="@+id/switch_unit_imperial"
 		android:title="@string/switch_to_imperial"
-		android:icon="@drawable/units_imperial" />
+		android:icon="@drawable/units_imperial" /> -->
 	<item android:id="@+id/about"
 		android:title="@string/about"
-		android:icon="@drawable/about" />
+		android:icon="@android:drawable/ic_menu_info_details" />
 </menu>

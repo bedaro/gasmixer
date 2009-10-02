@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<declare-styleable name="NumberSelector">
+		<attr name="textboxwidth" format="dimension" />
+		<attr name="decimalplaces" format="integer" />
+		<attr name="increment" format="float" />
+		<attr name="lowerlimit" format="float" />
+		<attr name="upperlimit" format="float" />
+	</declare-styleable>
+	
+	<declare-styleable name="TrimixPreference">
+		<attr name="defaultO2" format="float" />
+		<attr name="defaultHe" format="float" />
+	</declare-styleable>
+	
+	<declare-styleable name="NumberPreference">
+		<attr name="unitLabel" format="string" />
+	</declare-styleable>
+</resources>

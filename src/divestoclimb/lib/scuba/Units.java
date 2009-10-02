@@ -62,6 +62,7 @@ public class Units {
 	// the application.
 	private static final int pressure_tank_low[] = { 700, 50 };
 	private static final int pressure_tank_full[] = { 3000, 200 };
+	private static final int pressure_tank_max[] = { 4500, 300 };
 	
 	// This method defines which unit of pressure is defined for each
 	// unit system. Use this method when determining what the unit is
@@ -76,6 +77,7 @@ public class Units {
 	public static float pressureTankLow() { return pressure_tank_low[pressureUnit()]; }
 	// Get the pressure of a typical full tank
 	public static float pressureTankFull() { return pressure_tank_full[pressureUnit()]; }
+	public static float pressureTankMax() { return pressure_tank_max[pressureUnit()]; }
 	
 	public static final int DEPTH_FOOT = 0;
 	public static final int DEPTH_METER = 1;
@@ -86,6 +88,11 @@ public class Units {
 	// An array to store the depth of seawater per atmosphere of
 	// pressure
 	private static final int atm_depth[] = { 33, 10 };
+	
+	private static final int depth_narcotic[] = { 100, 30 };
+	private static final int depth_max_narcotic[] = { 200, 60 };
+	private static final int depth_toxic[] = { 180, 60 };
+	private static final int depth_max[] = { 1000, 330 };
 
 	// Get the unit of depth for this unit system
 	public static int depthUnit() {
@@ -98,6 +105,11 @@ public class Units {
 	// Get the depth of one atmosphere of seawater in the current unit
 	// system
 	public static float depthPerAtm() { return atm_depth[depthUnit()]; }
+	
+	public static int depthNarcotic() { return depth_narcotic[depthUnit()]; }
+	public static int depthMaxNarcotic() { return depth_max_narcotic[depthUnit()]; }
+	public static int depthToxic() { return depth_toxic[depthUnit()]; }
+	public static int depthMax() { return depth_max[depthUnit()]; }
 	
 	// Unit conversion functions. These aren't influenced by the current
 	// value of unit. They are only used when the user switches unit
@@ -129,11 +141,11 @@ public class Units {
 	}
 	
 	public static float convertPressure(float pressure, int from_unit) {
-		return convert(pressure, (float)14.5, from_unit, unitSystem);
+		return convert(pressure, 14.5f, from_unit, unitSystem);
 	}
 	
 	// Convert depth from one unit system to another
 	public static float convertDepth(float depth, int from_unit) {
-		return convert(depth, 33, from_unit, unitSystem);
+		return convert(depth, 3.28f, from_unit, unitSystem);
 	}
 }
