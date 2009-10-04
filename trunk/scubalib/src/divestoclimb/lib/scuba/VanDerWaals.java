@@ -23,7 +23,7 @@ public class VanDerWaals {
 		double total = 0;
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 3; j++) {
-				total += (float)(Math.sqrt(a[i]*a[j])*x[1]*x[j]);
+				total += (float)(Math.sqrt(a[i]*a[j])*x[i]*x[j]);
 			}
 		}
 		return total;
@@ -41,7 +41,7 @@ public class VanDerWaals {
 		double total = 0;
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 3; j++) {
-				total += (float)(Math.sqrt(b[i]*b[j])*x[1]*x[j]);
+				total += (float)(Math.sqrt(b[i]*b[j])*x[i]*x[j]);
 			}
 		}
 		return total;

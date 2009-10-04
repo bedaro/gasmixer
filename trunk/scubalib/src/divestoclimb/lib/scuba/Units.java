@@ -45,6 +45,54 @@ public class Units {
 		return unitSystem;
 	}
 	
+	// The different units for volumes and capacities
+	// This is a little complicated because a capacity measurement and a
+	// volume measurement may be in two different unit systems where cylinders
+	// are concerned.
+	public static final int VOLUME_CUIN = 0;
+	public static final int VOLUME_LITER = 1;
+	public static final int CAPACITY_CUFT = 0;
+	public static final int CAPACITY_LITER = 1;
+	
+	private static final float volume_increment[] = { 1, 0.5f };
+	public static float volumeIncrement() { return volume_increment[unitSystem]; }
+
+	private static final float capacity_increment[] = { 1, 1 };
+	public static float capacityIncrement() { return capacity_increment[unitSystem]; }
+
+	private static final int volume_norm_tank[] = { 678, 12 };
+	public static float volumeNormalTank() { return volume_norm_tank[unitSystem]; }
+
+	private static int capacity_precision[] = { 1, 0 };
+	public static int capacityPresision() { return capacity_precision[unitSystem]; }
+
+	private static int volume_precision[] = { 0, 1 };
+	public static int volumePrecision() { return volume_precision[unitSystem]; }
+
+	public static int volumeUnit() {
+		return unitSystem == IMPERIAL? VOLUME_CUIN: VOLUME_LITER;
+	}
+
+	public static int capacityUnit() {
+		return unitSystem == IMPERIAL? CAPACITY_CUFT: CAPACITY_LITER;
+	}
+
+	public static float capacityToVolume(float capacity) {
+		if(capacityUnit() == CAPACITY_CUFT && volumeUnit() == VOLUME_CUIN) {
+			return capacity * 1728;
+		} else {
+			return capacity;
+		}
+	}
+
+	public static float volumeToCapacity(float capacity) {
+		if(capacityUnit() == CAPACITY_CUFT && volumeUnit() == VOLUME_CUIN) {
+			return capacity / 1728;
+		} else {
+			return capacity;
+		}
+	}
+
 	// The different units of pressure available
 	public static final int PRESSURE_PSI = 0;
 	public static final int PRESSURE_BAR = 1;
@@ -70,6 +118,10 @@ public class Units {
 	public static int pressureUnit() {
 		return unitSystem == IMPERIAL? PRESSURE_PSI: PRESSURE_BAR;
 	}
+	
+	private static final float pressure_atm[] = { 14.7f, 1 };
+	
+	public static float pressureAtm() { return pressure_atm[pressureUnit()]; }
 
 	// Get the amount to increment pressure values for the current units
 	public static float pressureIncrement() { return pressure_increment[pressureUnit()]; }
@@ -111,6 +163,24 @@ public class Units {
 	public static int depthToxic() { return depth_toxic[depthUnit()]; }
 	public static int depthMax() { return depth_max[depthUnit()]; }
 	
+	// Temperatures
+	public static final int ABSTEMP_RANKINE = 0;
+	public static final int ABSTEMP_KELVIN = 1;
+	
+	public static int absTempUnit() {
+		return unitSystem == IMPERIAL? ABSTEMP_RANKINE: ABSTEMP_KELVIN;
+	}
+	
+	private static final int abs_temp_ambient[] = { 535, 297 };
+	
+	public static int absTempAmbient() { return abs_temp_ambient[absTempUnit()]; }
+	
+	// Gas constants in imperial (ft^3 psi R^-1 lb-mol^-1), metric (L bar K^-1 mol^-1)
+	// Source: http://en.wikipedia.org/wiki/Ideal_gas_constant
+	private static final float gas_constant[] = { 10.731f, 8.3145E-2f };
+	
+	public static float gasConstant() { return gas_constant[unitSystem]; }
+	
 	// Unit conversion functions. These aren't influenced by the current
 	// value of unit. They are only used when the user switches unit
 	// systems and existing input values need to be converted.
@@ -141,11 +211,31 @@ public class Units {
 	}
 	
 	public static float convertPressure(float pressure, int from_unit) {
-		return convert(pressure, 14.5f, from_unit, unitSystem);
+		return convertPressure(pressure, from_unit, unitSystem);
+	}
+	
+	public static float convertPressure(float pressure, int from_unit, int to_unit) {
+		return convert(pressure, 14.5f, from_unit, to_unit);
 	}
 	
 	// Convert depth from one unit system to another
 	public static float convertDepth(float depth, int from_unit) {
 		return convert(depth, 3.28f, from_unit, unitSystem);
+	}
+	
+	public static float convertVolume(float volume, int from_unit) {
+		return convertVolume(volume, from_unit, unitSystem);
+	}
+	
+	public static float convertVolume(float volume, int from_unit, int to_unit) {
+		return convert(volume, 61.02f, from_unit, to_unit);
+	}
+	
+	public static float convertCapacity(float capacity, int from_unit) {
+		return convertCapacity(capacity, from_unit, unitSystem);
+	}
+	
+	public static float convertCapacity(float capacity, int from_unit, int to_unit) {
+		return convert(capacity, 3.531E-2f, from_unit, to_unit);
 	}
 }
