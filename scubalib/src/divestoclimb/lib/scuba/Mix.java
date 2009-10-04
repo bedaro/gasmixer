@@ -2,8 +2,6 @@ package divestoclimb.lib.scuba;
 
 import java.text.NumberFormat;
 
-import android.util.Log;
-
 // This is a class for a given gas mix of oxygen, nitrogen, and helium
 public class Mix implements GasSource {
 	// Ten times the percentage of oxygen
@@ -41,6 +39,10 @@ public class Mix implements GasSource {
 		return (float)(heTimes10 / 1000.0);
 	}
 	
+	public float getfN2() {
+		return (float)(1 - (heTimes10 + o2Times10) / 1000.0);
+	}
+	
 	public String friendlyName() {
 		NumberFormat nf = NumberFormat.getIntegerInstance();
 		if(getO2()==100) {
@@ -68,7 +70,7 @@ public class Mix implements GasSource {
 	}
 
 	public float pN2AtDepth(int depth) {
-		return (depth / Units.depthPerAtm() + 1) * (1 - getfHe() - getfO2());
+		return (depth / Units.depthPerAtm() + 1) * getfN2();
 	}
 
 	public float pO2AtDepth(int depth) {
@@ -138,7 +140,6 @@ public class Mix implements GasSource {
 		}
 		maxEND = Math.min(depth, maxEND);
 		float fNarcBest = (float) (Math.floor((maxEND / dpa + 1) / pAbs * 100) / 100);
-		Log.w("Mix", String.format("fNarcBest: %s", fNarcBest));
 		float fHeBest = 1 - (oxygenIsNarcotic? fNarcBest: fNarcBest + fO2Best);
 		if(fO2Best + fHeBest > 1) {
 			return null;
