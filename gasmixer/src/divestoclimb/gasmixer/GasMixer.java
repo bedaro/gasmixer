@@ -93,7 +93,7 @@ public class GasMixer extends TabActivity {
 		mStartingMix = (TextView)findViewById(R.id.start_mix);
 
 		NumberSelector.ValueChangedListener updateBestMix = new NumberSelector.ValueChangedListener() {
-			public void onChange(NumberSelector ns, Float new_val) {
+			public void onChange(NumberSelector ns, Float new_val, boolean from_user) {
 				updateBestMix();
 			}
 		};

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-				xmlns:app="http://schemas.android.com/apk/res/divestoclimb.gasmixer"
-	android:layout_width="fill_parent"
-	android:layout_height="wrap_content">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+	   xmlns:app="http://schemas.android.com/apk/res/divestoclimb.gasmixer">
 	<SeekBar
 		android:id="@+id/slider_o2"
 		android:progressDrawable="@drawable/progress_horizontal_green"
@@ -55,4 +53,4 @@
 		android:layout_marginTop="7sp"
  		android:layout_toLeftOf="@id/number_he"
 		android:layout_alignTop="@id/number_he" />
-</RelativeLayout>
+</merge>
