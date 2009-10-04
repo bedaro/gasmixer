@@ -132,12 +132,13 @@
 				android:layout_width="fill_parent"
 				android:layout_height="fill_parent"
 				android:orientation="vertical"
-				android:paddingTop="5dp">
+				android:paddingTop="5dp"
+				android:paddingLeft="15dp"
+				android:paddingRight="15dp">
 				<TextView
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:layout_marginTop="5dp"
-					android:layout_marginLeft="15dp"
 					android:text="@string/starting"
 					android:textSize="20sp" />
 				<divestoclimb.gasmixer.NumberSelector
@@ -145,7 +146,6 @@
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:layout_alignParentRight="true"
-					android:layout_marginRight="15dp"
 					app:textboxwidth="75sp" />
 				<TextView
 					android:id="@+id/topup_start_pres_unit"
@@ -157,8 +157,6 @@
 					android:id="@+id/topup"
 					android:layout_width="fill_parent"
 					android:layout_height="wrap_content"
-					android:layout_marginLeft="15dp"
-					android:layout_marginRight="15dp"
 					android:layout_below="@id/topup_start_pres" />
 
 				<TextView
@@ -166,7 +164,6 @@
 					android:layout_height="wrap_content"
 					android:layout_below="@id/topup"
 					android:layout_alignParentLeft="true"
-					android:layout_marginLeft="15dp"
 					android:layout_marginTop="5dp"
 					android:text="@string/topup_pres"
 					android:textSize="20sp" />
@@ -174,7 +171,6 @@
 					android:id="@+id/button_topup"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:layout_marginLeft="5dp"
 					android:layout_below="@id/topup"
 					android:layout_alignParentRight="true"
 					android:text="@string/topup"/>

@@ -31,8 +31,9 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 		 * Called when the value of the number in the NumberSelector changes
 		 * @param ns The NumberSelector containing the number that changed 
 		 * @param new_val The new value
+		 * @param from_user Set to true if the user manipulated the value manually.
 		 */
-		abstract void onChange(NumberSelector ns, Float new_val);
+		abstract void onChange(NumberSelector ns, Float new_val, boolean from_user);
 	}
 
 	private ImageButton mMinusButton, mPlusButton;
@@ -42,6 +43,7 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 	
 	private Float mIncrement, mLowerLimit, mUpperLimit, mCachedValue;
 	private int mDecimalPlaces;
+	private boolean mChangeFromUser = true;
 	private ValueChangedListener mValueChangedListener;
 	private NumberFormat mNumberFormat;
 
@@ -78,6 +80,7 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 	 * @param value The value to set
 	 */
 	public void setValue(float value) {
+		mChangeFromUser = false;
 		mEditText.setText(mNumberFormat.format(value));
 	}
 
@@ -146,8 +149,12 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 		// restore it if the Activity is destroyed and recreated.
 		setEditTextId(ViewId.generateUnique(getRootView()));
 
-		mPlusButton.setOnClickListener(this);
-		mMinusButton.setOnClickListener(this);
+		if(mPlusButton != null) {
+			mPlusButton.setOnClickListener(this);
+		}
+		if(mMinusButton != null) {
+			mMinusButton.setOnClickListener(this);
+		}
 		mEditText.addTextChangedListener(this);
 	}
 
@@ -239,7 +246,7 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 		if(mLowerLimit != null) {
 			new_val = Math.max(new_val, mLowerLimit);
 		}
-		setValue(new_val);
+		mEditText.setText(mNumberFormat.format(new_val));
 	}
 
 	/**
@@ -266,13 +273,14 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 				} else {
 					mCachedValue = validValue;
 					if(mValueChangedListener != null) {
-						mValueChangedListener.onChange(this, validValue);
+						mValueChangedListener.onChange(this, validValue, mChangeFromUser);
 					}
 				}
 			} catch(ParseException e) {
 				setValue(mCachedValue);
 			}
 		}
+		mChangeFromUser = true;
 	}
 
 	public void beforeTextChanged(CharSequence s, int start, int count,

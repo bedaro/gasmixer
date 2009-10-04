@@ -84,7 +84,7 @@ public class TrimixSelector extends RelativeLayout implements SeekBar.OnSeekBarC
 	/**
 	 * NumberSelector ValueChangeListener implementation
 	 */
-	public void onChange(NumberSelector ns, Float new_val) {
+	public void onChange(NumberSelector ns, Float new_val, boolean from_user) {
 		SeekBar sb;
 		if(ns == mO2Field) {
 			sb = mO2Bar;
