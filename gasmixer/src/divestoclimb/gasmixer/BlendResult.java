@@ -59,8 +59,6 @@ public class BlendResult extends Activity {
 	// The parameters we are solving for
 	private float po2, phe, pt, pdrain;
 	
-	private NumberFormat nf = Params.getPressureFormat();
-	
 	private String mResultText;
 	
 	@Override
@@ -75,7 +73,9 @@ public class BlendResult extends Activity {
 		try {
 			unit = NumberFormat.getIntegerInstance().parse(settings.getString("units", "0")).intValue();
 		} catch(ParseException e) { unit = 0; }
-		Units.change(unit);
+		Units units = new Units(unit);
+
+		NumberFormat nf = Params.getPressureFormat(units);
 
 		pi   = state.getFloat("start_pres", 0);
 		pf   = state.getFloat("desired_pres", 0);
@@ -87,10 +87,10 @@ public class BlendResult extends Activity {
 
 		// Now we're ready. Solve. Solution will be stored in our class
 		// variables
-		boolean solved = solve(settings, state);
+		boolean solved = solve(settings, state, units);
 
 		Resources r = getResources();
-		String presUnit = Params.pressure(this);
+		String presUnit = Params.pressure(this, units);
 		if(! solved) {
 			mResultText=r.getString(R.string.result_impossible);
 		} else {
@@ -101,28 +101,28 @@ public class BlendResult extends Activity {
 							presUnit,
 							Params.mixFriendlyName(mStart, this))
 			)+"\n";
-			if(pi - pdrain >= Math.pow(10, Units.pressurePrecision() * -1) * 0.5) {
+			if(pi - pdrain >= Math.pow(10, units.pressurePrecision() * -1) * 0.5) {
 				// Drain
 				mResultText+="- "+String.format(r.getString(R.string.result_drain),
 						nf.format(pdrain),
 						presUnit
 				)+"\n";
 			}
-			if(Math.round(po2) > 0) {
+			if(Math.round(po2) > Math.round(pdrain)) {
 				mResultText+="- "+String.format(r.getString(R.string.result_fillto),
 						nf.format(po2),
 						presUnit,
 						r.getString(R.string.oxygen)
 				)+"\n";
 			}
-			if(phe > po2) {
+			if(Math.round(phe) > Math.round(po2)) {
 				mResultText+="- "+String.format(r.getString(R.string.result_fillto),
 						nf.format(phe),
 						presUnit,
 						r.getString(R.string.helium)
 				)+"\n";
 			}
-			if(pt > phe) {
+			if(Math.round(pt) > Math.round(phe)) {
 				mResultText+="- "+String.format(r.getString(R.string.result_fillto),
 						nf.format(pt),
 						presUnit,
@@ -165,7 +165,7 @@ public class BlendResult extends Activity {
 		// TODO: do I have enough gas button
 	}
 
-	private boolean solve(SharedPreferences settings, SharedPreferences state) {
+	private boolean solve(SharedPreferences settings, SharedPreferences state, Units units) {
 		boolean real = settings.getBoolean("vdw", false);
 		Cylinder c;
 		if(real) {
@@ -173,10 +173,10 @@ public class BlendResult extends Activity {
 							String.valueOf(state.getLong("cylinderid", -1))
 					), null, null, null, null);
 			cu.moveToFirst();
-			c = CylinderSizeClient.cursorToCylinder(cu);
+			c = CylinderSizeClient.cursorToCylinder(cu, units);
 			cu.close();
 		} else {
-			c = new Cylinder(Units.volumeNormalTank(), (int)Units.pressureTankFull());
+			c = new Cylinder(units, units.volumeNormalTank(), (int)units.pressureTankFull());
 		}
 
 		GasSupply have = new GasSupply(c, mStart, (int)pi),

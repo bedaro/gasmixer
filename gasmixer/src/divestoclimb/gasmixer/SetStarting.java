@@ -23,6 +23,7 @@ public class SetStarting extends Activity implements Button.OnClickListener {
 	private TextView mPressureUnit, mCylinderDescription;
 	private TrimixSelector mGasSelector;
 	private SharedPreferences mSettings, mState;
+	private Units mUnits;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -41,7 +42,7 @@ public class SetStarting extends Activity implements Button.OnClickListener {
 		try {
 			unit = NumberFormat.getIntegerInstance().parse(mSettings.getString("units", "0")).intValue();
 		} catch(ParseException e) { unit = 0; }
-		Units.change(unit);
+		mUnits = new Units(unit);
 
 		mPressureSelector = (NumberSelector)findViewById(R.id.pressure);
 		mPressureUnit = (TextView)findViewById(R.id.pressure_unit);
@@ -61,10 +62,10 @@ public class SetStarting extends Activity implements Button.OnClickListener {
 	public void onResume() {
 		super.onResume();
 		mPressureSelector.setDecimalPlaces(0);
-		mPressureSelector.setLimits(0f, new Float(Units.pressureTankMax()));
-		mPressureSelector.setIncrement(new Float(Units.pressureIncrement()));
+		mPressureSelector.setLimits(0f, new Float(mUnits.pressureTankMax()));
+		mPressureSelector.setIncrement(new Float(mUnits.pressureIncrement()));
 		mPressureSelector.setValue(mState.getFloat("start_pres", 0));
-		mPressureUnit.setText(Params.pressure(this)+":");
+		mPressureUnit.setText(Params.pressure(this, mUnits)+":");
 		mGasSelector.setMix(new Mix(mState.getFloat("start_o2", 0.21f), mState.getFloat("start_he", 0)));
 
 		if(mCylinderDescription != null) {

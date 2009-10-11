@@ -7,6 +7,12 @@
 		android:title="@string/topup_gas"
 		android:defaultValue="0.21 0"
 		android:dialogIcon="@drawable/topup_pick" />
+		
+	<CheckBoxPreference
+		android:key="vdw"
+		android:title="@string/real_gas"
+		android:summary="@string/real_gas_summary"
+		android:defaultValue="true" />
 
 	<divestoclimb.gasmixer.NumberPreference
 		android:key="max_norm_po2"
@@ -29,12 +35,6 @@
 		app:increment="0.1"
 		app:lowerlimit="0.4"
 		app:upperlimit="1.6" />
-		
-	<CheckBoxPreference
-		android:key="vdw"
-		android:title="@string/real_gas"
-		android:summary="@string/real_gas_summary"
-		android:defaultValue="true" />
 
 	<CheckBoxPreference
 		android:key="o2_is_narcotic"

@@ -12,22 +12,16 @@ import divestoclimb.lib.scuba.Units;
 public class Params {
 	// The state preference filename
 	public static final String STATE_NAME = "State";
-
-	// This is the minimum percentage of O2 that's allowed in any mix.
-	public static final int O2_LOWER_LIMIT=5;
-	
-	public static final float PO2_LOWER_LIMIT=new Float(0.4);
-	public static final float PO2_UPPER_LIMIT=new Float(1.6);
 	
 	// This is our number format object
 	public static DecimalFormat mMixPercent = new DecimalFormat("#0.0");
 	public static DecimalFormat mPartialPressure = new DecimalFormat("#0.0");
 	
 	// Use default formatting for pressures
-	public static NumberFormat getPressureFormat() {
-		if(Units.pressureUnit() == Units.PRESSURE_PSI) {
+	public static NumberFormat getPressureFormat(Units u) {
+		if(u.pressureUnit() == Units.PRESSURE_PSI) {
 			return NumberFormat.getIntegerInstance();
-		} else if(Units.pressureUnit() == Units.PRESSURE_BAR) {
+		} else if(u.pressureUnit() == Units.PRESSURE_BAR) {
 			return new DecimalFormat("#0.0");
 		} else {
 			return new DecimalFormat("#0.0");
@@ -58,13 +52,13 @@ public class Params {
 	}
 	
 	// Get the string value for the current unit of pressure
-	public static String pressure(Context c) {
-		return c.getResources().getString(Units.pressureUnit() == Units.IMPERIAL? R.string.pres_imperial: R.string.pres_metric);
+	public static String pressure(Context c, Units u) {
+		return c.getResources().getString(u.pressureUnit() == Units.IMPERIAL? R.string.pres_imperial: R.string.pres_metric);
 	}
 	
 	// Get the string value for the current unit of depth
-	public static String depth(Context c) {
-		return c.getResources().getString(Units.depthUnit() == Units.DEPTH_FOOT? R.string.depth_imperial: R.string.depth_metric);
+	public static String depth(Context c, Units u) {
+		return c.getResources().getString(u.depthUnit() == Units.DEPTH_FOOT? R.string.depth_imperial: R.string.depth_metric);
 	}
 	
 }

@@ -46,6 +46,8 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 	private ToggleButton mTogglePo2;
 	private Mix mBestMix;
 	
+	private Units mUnits;
+	
 	private static final int DIALOG_INSTALL_SCUBATANKS = 1;
 
 	@Override
@@ -68,7 +70,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		try {
 			unit = NumberFormat.getIntegerInstance().parse(mSettings.getString("units", "0")).intValue();
 		} catch(ParseException e) { unit = 0; }
-		Units.change(unit);
+		mUnits = new Units(unit);
 
 		TabHost tabhost = getTabHost();
 
@@ -171,7 +173,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		mO2IsNarcotic = settings.getBoolean("o2_is_narcotic", true);
 		
 		// Also retrieve any state preferences that other activities change
-		mBlendStartPressure = state.getFloat("start_pres", Units.pressureTankLow());
+		mBlendStartPressure = state.getFloat("start_pres", mUnits.pressureTankLow());
 		mBlendStartMix = new Mix(
 				state.getFloat("start_o2", 0.21f),
 				state.getFloat("start_he", 0f)
@@ -182,10 +184,10 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		try {
 			unit = NumberFormat.getIntegerInstance().parse(settings.getString("units", "0")).intValue();
 		} catch(ParseException e) { unit = 0; }
-		if(unit.compareTo(Units.getCurrentSystem()) != 0) {
+		if(unit.compareTo(mUnits.getCurrentSystem()) != 0) {
 			// The user switched units since we were last loaded.
-			last_unit = Units.getCurrentSystem();
-			Units.change(unit);
+			last_unit = mUnits.getCurrentSystem();
+			mUnits.change(unit);
 		}
 		
 		// Check to make sure a Content Provider for cylinders is available if
@@ -220,6 +222,11 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 					ed.commit();
 					c.close();
 				}
+				// Explicitly set the preference value to on, since it may have been
+				// undefined before
+				SharedPreferences.Editor e = settings.edit();
+				e.putBoolean("vdw", true);
+				e.commit();
 			}
 		}
 
@@ -342,22 +349,24 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 	}
 
 	private void initFields(Bundle extras) {
+		Units u = mUnits;
 		SharedPreferences state = mState;
-		mBlendDesiredPressure.setValue(state.getFloat("desired_pres", Units.pressureTankFull()));
-		mDesiredGas.setMix(new Mix(
+		mBlendDesiredPressure.setValue(state.getFloat("desired_pres", u.pressureTankFull()));
+		/*mDesiredGas.setMix(new Mix(
 				extras != null? extras.getFloat("O2_DESIRED"): state.getFloat("desired_o2", 0.32f),
 				extras != null? extras.getFloat("HE_DESIRED"): state.getFloat("desired_he", 0)
-		));
+		));*/
+		mDesiredGas.setMix(new Mix(state.getFloat("desired_o2", 0.32f), state.getFloat("desired_he", 0)));
 		mTogglePo2.setChecked(state.getBoolean("po2_high", false));
-		mMaxDepth.setValue(state.getFloat("max_depth", new Float(Units.depthToxic())));
-		mMaxEnd.setValue(state.getFloat("max_end", new Float(Units.depthNarcotic())));
+		mMaxDepth.setValue(state.getFloat("max_depth", new Float(u.depthToxic())));
+		mMaxEnd.setValue(state.getFloat("max_end", new Float(u.depthNarcotic())));
 		mMaxPo2.setValue(state.getFloat("max_po2", 1.4f));
 		mTopupGas.setMix(new Mix(
 				state.getFloat("topup_start_o2", 0.32f),
 				state.getFloat("topup_start_he", 0)
 		));
-		mTopupStartPressure.setValue(state.getFloat("topup_start_pres", Units.pressureTankLow()));
-		mTopupFinalPressure.setValue(state.getFloat("topup_final_pres", Units.pressureTankFull()));
+		mTopupStartPressure.setValue(state.getFloat("topup_start_pres", u.pressureTankLow()));
+		mTopupFinalPressure.setValue(state.getFloat("topup_final_pres", u.pressureTankFull()));
 		
 		if(mCylinderDescription != null) {
 			updateCylinder();
@@ -388,66 +397,68 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 				topup_final_pressure = mTopupFinalPressure,
 				max_depth = mMaxDepth,
 				max_end = mMaxEnd;
+		Units u = mUnits;
 		blend_desired_pressure.setDecimalPlaces(0);
-		blend_desired_pressure.setLimits(0f, new Float(Units.pressureTankMax()));
-		blend_desired_pressure.setIncrement(new Float(Units.pressureIncrement()));
-		mBlendDesiredPressureUnit.setText(Params.pressure(this)+":");
+		blend_desired_pressure.setLimits(0f, new Float(u.pressureTankMax()));
+		blend_desired_pressure.setIncrement(new Float(u.pressureIncrement()));
+		mBlendDesiredPressureUnit.setText(Params.pressure(this, u)+":");
 
 		topup_start_pressure.setDecimalPlaces(0);
-		topup_start_pressure.setLimits(0f, new Float(Units.pressureTankMax()));
-		topup_start_pressure.setIncrement(new Float(Units.pressureIncrement()));
-		mTopupStartPressureUnit.setText(Params.pressure(this)+":");
+		topup_start_pressure.setLimits(0f, new Float(u.pressureTankMax()));
+		topup_start_pressure.setIncrement(new Float(u.pressureIncrement()));
+		mTopupStartPressureUnit.setText(Params.pressure(this, u)+":");
 
 		topup_final_pressure.setDecimalPlaces(0);
-		topup_final_pressure.setLimits(0f, new Float(Units.pressureTankMax()));
-		topup_final_pressure.setIncrement(new Float(Units.pressureIncrement()));
+		topup_final_pressure.setLimits(0f, new Float(u.pressureTankMax()));
+		topup_final_pressure.setIncrement(new Float(u.pressureIncrement()));
 
 		max_depth.setDecimalPlaces(0);
-		max_depth.setLimits(0f, new Float(Units.depthMax()));
-		max_depth.setIncrement(new Float(Units.depthIncrement()));
-		mMaxDepthUnit.setText(Params.depth(this)+":");
+		max_depth.setLimits(0f, new Float(u.depthMax()));
+		max_depth.setIncrement(new Float(u.depthIncrement()));
+		mMaxDepthUnit.setText(Params.depth(this, u)+":");
 
 		max_end.setDecimalPlaces(0);
-		max_end.setLimits(0f, new Float(Units.depthMaxNarcotic()));
-		max_end.setIncrement(new Float(Units.depthIncrement()));
-		mMaxEndUnit.setText(Params.depth(this)+":");
+		max_end.setLimits(0f, new Float(u.depthMaxNarcotic()));
+		max_end.setIncrement(new Float(u.depthIncrement()));
+		mMaxEndUnit.setText(Params.depth(this, u)+":");
 
 		if(last_unit != null) {
 			// Convert existing values to new units
-			max_depth.setValue(Units.convertDepth(max_depth.getValue(), last_unit));
-			max_end.setValue(Units.convertDepth(max_end.getValue(), last_unit));
+			max_depth.setValue(u.convertDepth(max_depth.getValue(), last_unit));
+			max_end.setValue(u.convertDepth(max_end.getValue(), last_unit));
 			blend_desired_pressure.setValue(
-					Units.convertPressure(blend_desired_pressure.getValue(), last_unit));
+					u.convertPressure(blend_desired_pressure.getValue(), last_unit));
 			topup_start_pressure.setValue(
-					Units.convertPressure(topup_start_pressure.getValue(), last_unit));
+					u.convertPressure(topup_start_pressure.getValue(), last_unit));
 			topup_final_pressure.setValue(
-					Units.convertPressure(topup_final_pressure.getValue(), last_unit));
-			mBlendStartPressure = Units.convertPressure(mBlendStartPressure, last_unit);
+					u.convertPressure(topup_final_pressure.getValue(), last_unit));
+			mBlendStartPressure = u.convertPressure(mBlendStartPressure, last_unit);
 		}
 	}
 	
 	private void updateModEnd(Mix m) {
+		Units u = mUnits;
 		NumberFormat nf = NumberFormat.getIntegerInstance();
-		float mod = m.MOD(mTogglePo2.isChecked()? mPo2High: mPo2Low);
-		mDesiredMOD.setText(nf.format(mod)+" "+Params.depth(this));
+		float mod = m.MOD(u, mTogglePo2.isChecked()? mPo2High: mPo2Low);
+		mDesiredMOD.setText(nf.format(mod)+" "+Params.depth(this, u));
 		if(m.getHe() > 0) {
 			mDesiredEADENDLabel.setText(getResources().getString(R.string.end));
-			mDesiredEADEND.setText(nf.format(m.END(Math.round(mod), mO2IsNarcotic))+" "+Params.depth(this));
+			mDesiredEADEND.setText(nf.format(m.END(Math.round(mod), u, mO2IsNarcotic))+" "+Params.depth(this, u));
 		} else {
 			mDesiredEADENDLabel.setText(getResources().getString(R.string.ead));
-			mDesiredEADEND.setText(nf.format(m.EAD(Math.round(mod)))+" "+Params.depth(this));
+			mDesiredEADEND.setText(nf.format(m.EAD(Math.round(mod), u))+" "+Params.depth(this, u));
 		}
 	}
 
 	private void updateStartMix() {
-		NumberFormat nf = Params.getPressureFormat();
+		NumberFormat nf = Params.getPressureFormat(mUnits);
 		if(mBlendStartPressure == 0) {
 			mStartingMix.setText(getResources().getString(R.string.empty_tank));
 		} else {
 			mStartingMix.setText(String.format(
 					getResources().getString(R.string.gas_amount),
 					nf.format(mBlendStartPressure),
-					Params.pressure(this),
+					Params.pressure(this, mUnits),
 					Params.mixFriendlyName(mBlendStartMix, this)
 			));
 		}
@@ -461,6 +472,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 			mBestMix = Mix.best(
 					Math.round(maxdepth),
 					Math.round(maxend),
+					mUnits,
 					maxpo2,
 					mO2IsNarcotic
 			);
