@@ -4,11 +4,11 @@ import java.text.NumberFormat;
 
 // This is a class for a given gas mix of oxygen, nitrogen, and helium
 public class Mix implements GasSource {
-	// Ten times the percentage of oxygen
-	private int o2Times10;
+	// The fraction of oxygen
+	private double mO2;
 	
-	// Ten times the percentage of helium
-	private int heTimes10;
+	// The fraction of helium
+	private double mHe;
 	
 	// These static fields are returned by getFriendlyName. They can be used
 	// to map gas names to names in other languages.
@@ -18,29 +18,49 @@ public class Mix implements GasSource {
 	public static final String AIR="AIR";
 
 	// Constructor. Takes fractions of oxygen and helium (between 0 and 1)
-	public Mix(float o2, float he) {
-		o2Times10=(int)Math.round(o2*1000);
-		heTimes10=(int)Math.round(he*1000);
+	public Mix(double o2, double he) {
+		mO2=o2;
+		mHe=he;
 	}
 	
+	/**
+	 * Get the percentage of O2 in the mix, from 0 to 100.
+	 * @return The O2 %
+	 */
 	public float getO2() {
-		return (float)(o2Times10 / 10.0);
+		return (float)(mO2 * 100);
 	}
 	
-	public float getfO2() {
-		return (float)(o2Times10 / 1000.0);
+	/**
+	 * Get the fraction of O2 in the mix, from 0 to 1.
+	 * @return The O2 fraction
+	 */
+	public double getfO2() {
+		return mO2;
 	}
 	
+	/**
+	 * Get the percentage of helium in the mix, from 0 to 100.
+	 * @return The helium %
+	 */
 	public float getHe() {
-		return (float)(heTimes10 / 10.0);
+		return (float)(mHe * 100);
 	}
 	
-	public float getfHe() {
-		return (float)(heTimes10 / 1000.0);
+	/**
+	 * Get the fraction of helium in the mix, from 0 to 1.
+	 * @return The helium fraction
+	 */
+	public double getfHe() {
+		return mHe;
 	}
 	
-	public float getfN2() {
-		return (float)(1 - (heTimes10 + o2Times10) / 1000.0);
+	/**
+	 * Get the fraction of nitrogen in the mix, from 0 to 1.
+	 * @return The nitrogen fraction
+	 */
+	public double getfN2() {
+		return 1 - mHe - mO2;
 	}
 	
 	public String friendlyName() {
@@ -64,16 +84,20 @@ public class Mix implements GasSource {
 		// After all of the above, we have a trimix
 		return nf.format(getO2())+"/"+nf.format(getHe());
 	}
+	
+	public boolean isEqualTo(Mix m2) {
+		return getfO2() == m2.getfO2() && getfHe() == m2.getfHe();
+	}
 
-	public float pHeAtDepth(int depth) {
+	public double pHeAtDepth(int depth) {
 		return (depth / Units.depthPerAtm() + 1) * getfHe();
 	}
 
-	public float pN2AtDepth(int depth) {
+	public double pN2AtDepth(int depth) {
 		return (depth / Units.depthPerAtm() + 1) * getfN2();
 	}
 
-	public float pO2AtDepth(int depth) {
+	public double pO2AtDepth(int depth) {
 		return (depth / Units.depthPerAtm() + 1) * getfO2();
 	}
 	
@@ -83,7 +107,7 @@ public class Mix implements GasSource {
 	 * @return The maximum operating depth in the current system of units, rounded down to the nearest standard depth increment
 	 */
 	public float MOD(float maxpO2) {
-		return ((int) Math.floor((maxpO2 * 1000 / o2Times10 - 1) * Units.depthPerAtm()) / Units.depthIncrement()) * Units.depthIncrement();
+		return ((int) Math.floor((maxpO2 / mO2 - 1) * Units.depthPerAtm()) / Units.depthIncrement()) * Units.depthIncrement();
 	}
 	
 	/**
@@ -104,7 +128,7 @@ public class Mix implements GasSource {
 	 * @return The equivalent narcotic depth in the current system of units, rounded up to the nearest standard depth increment
 	 */
 	public float END(int depth, boolean oxygenIsNarcotic) {
-		float pNarc = oxygenIsNarcotic? pO2AtDepth(depth) + pN2AtDepth(depth): pN2AtDepth(depth);
+		double pNarc = oxygenIsNarcotic? pO2AtDepth(depth) + pN2AtDepth(depth): pN2AtDepth(depth);
 		float pNarc0 = oxygenIsNarcotic? 1: 0.79f;
 		return Math.max(((int) Math.ceil((pNarc / pNarc0 - 1) * Units.depthPerAtm()) / Units.depthIncrement()) * Units.depthIncrement(), 0);
 	}
@@ -117,7 +141,7 @@ public class Mix implements GasSource {
 	public float ceiling(float minpO2) {
 		// This function is nearly identical to MOD except we round up instead of
 		// down
-		return ((int) Math.ceil((minpO2 / getfO2() - 1) * Units.depthPerAtm()) / Units.depthIncrement()) * Units.depthIncrement();
+		return ((int) Math.ceil((minpO2 / mO2 - 1) * Units.depthPerAtm()) / Units.depthIncrement()) * Units.depthIncrement();
 	}
 	
 	/**

@@ -103,6 +103,8 @@ public class Units {
 	// tend to increment pressures in 100 imperial units (psi), and
 	// in metric it's in 10 metric units (bar)
 	private static final int pressure_increment[] = { 100, 10 };
+	
+	private static final int pressure_precision[] = { 0, 1 };
 		
 	// This may be a little pedantic, but store some standard values
 	// in each unit system for different customary qualitative 
@@ -125,6 +127,8 @@ public class Units {
 
 	// Get the amount to increment pressure values for the current units
 	public static float pressureIncrement() { return pressure_increment[pressureUnit()]; }
+	
+	public static int pressurePrecision() { return pressure_precision[pressureUnit()]; }
 	// Get a low tank pressure 
 	public static float pressureTankLow() { return pressure_tank_low[pressureUnit()]; }
 	// Get the pressure of a typical full tank

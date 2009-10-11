@@ -1,6 +1,9 @@
 package divestoclimb.lib.scuba;
 
-// A class that represents a gas cylinder (or a manifolded set of cylinders)
+/**
+ * A class that represents a gas cylinder (or a manifolded set of cylinders)
+ * @author benr
+ */
 public class Cylinder {
 	// The total physical volume of the cylinder(s)
 	// Internal volume is stored in standard "capacity units" for the defined
@@ -31,9 +34,15 @@ public class Cylinder {
 	 * @param service_pressure Service pressure of the cylinder
 	 * @return A Cylinder object initialized with the given parameters
 	 */
-	public static Cylinder fromCapacity(float capacity, int service_pressure) {
+	public static Cylinder fromCapacityVdw(float capacity, int service_pressure) {
 		Cylinder c = new Cylinder(0, service_pressure);
-		c.setCapacity(capacity);
+		c.setVdwCapacity(capacity);
+		return c;
+	}
+	
+	public static Cylinder fromCapacityIdeal(float capacity, int service_pressure) {
+		Cylinder c = new Cylinder(0, service_pressure);
+		c.setIdealCapacity(capacity);
 		return c;
 	}
 
@@ -42,11 +51,19 @@ public class Cylinder {
 	 * pressure when the cylinder is filled with air to the service pressure, in
 	 * capacity units
 	 */
-	public float getCapacity() {
-		return getVdwCapacityAtPressure(mServicePressure, new Mix(0.21f, 0));
+	public float getVdwCapacity() {
+		return (float)getVdwCapacityAtPressure(mServicePressure, new Mix(0.21f, 0));
+	}
+	
+	public float getIdealCapacity() {
+		return (float)getIdealCapacityAtPressure(mServicePressure);
+	}
+	
+	public void setIdealCapacity(float capacity) {
+		mInternalVolume = capacity * Units.pressureAtm() / mServicePressure;
 	}
 
-	public void setCapacity(float capacity) {
+	public void setVdwCapacity(float capacity) {
 		//mInternalVolume = capacity * Units.pressureAtm() / mServicePressure;
 		// This is quite similar to getVdwCapacityAtPressure, except
 		// we are solving for V instead of n. The cubic
@@ -99,12 +116,12 @@ public class Cylinder {
 		mServicePressure = service_pressure;
 	}
 
-	public float getIdealCapacityAtPressure(int pressure) {
-		return (float)(Math.floor(mInternalVolume * pressure / Units.pressureAtm() * 10) / 10);
+	public double getIdealCapacityAtPressure(double pressure) {
+		return mInternalVolume * pressure / (double)Units.pressureAtm();
 	}
 
-	public int getIdealPressureAtCapacity(float capacity) {
-		return (int)Math.ceil(capacity * Units.pressureAtm() / mInternalVolume);
+	public double getIdealPressureAtCapacity(double capacity) {
+		return capacity * Units.pressureAtm() / (double)mInternalVolume;
 	}
 
 	/**
@@ -114,7 +131,12 @@ public class Cylinder {
 	 * @param mix The mix in the cylinder, needed to determine a and b constants.
 	 * @return The amount of gas in the cylinder to one decimal place
 	 */
-	public float getVdwCapacityAtPressure(int P, Mix m) {
+	public double getVdwCapacityAtPressure(double P, Mix m) {
+		// First, the trivial solution. This will cause a divide by 0 if we try to
+		// solve.
+		if(P == 0) {
+			return 0;
+		}
 		// This is solved by finding the root of a cubic polynomial
 		// for the molar volume v = V/n:
 		// choose a reasonable value for T
@@ -149,18 +171,18 @@ public class Cylinder {
 			v1 = v0 - f / fprime;
 		} while(Math.abs(v0 - v1) / uncertainty_multiplier >= v1 * v1);
 
-		return (float)(Math.floor(mInternalVolume * RT / (Units.pressureAtm() * v1) * 10) / 10);
+		return mInternalVolume * RT / (Units.pressureAtm() * v1);
 	}
 	
-	public int getVdwPressureAtCapacity(int capacity, Mix m) {
+	public double getVdwPressureAtCapacity(double capacity, Mix m) {
 		// This is given by the following:
 		// choose a reasonable value for T
 		// n = Patm*V/(R*T) (since volume is at atmospheric pressure, it's close enough to ideal)
 		// v = V/n
 		// P = R * T / (v - b) - a / v^2
-		float RT = Units.absTempAmbient() * Units.gasConstant();
+		double RT = Units.absTempAmbient() * Units.gasConstant();
 		double v = mInternalVolume * RT / (Units.pressureAtm() * capacity),
 				a = VanDerWaals.computeA(m), b = VanDerWaals.computeB(m);
-		return (int)Math.ceil(RT / (v - b) - a / Math.pow(v, 2));
+		return RT / (v - b) - a / Math.pow(v, 2);
 	}
 }
