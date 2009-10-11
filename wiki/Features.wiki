@@ -3,38 +3,43 @@
 
 = The Sliders =
 
-http://lh6.ggpht.com/_uJWsXw_tI_o/SgOemIgCXdI/AAAAAAAAABI/xq87d7-nz90/s400/blend.png
+http://lh5.ggpht.com/_uJWsXw_tI_o/StJFXmh8ayI/AAAAAAAAADM/SYJvSxI6yRg/Picture%201.png
 
-I designed the app specifically to avoid needing the keyboard. Everything can be done via the touch screen. Use the sliders to adjust the gas component percentages roughly, then use the plus and minus buttons to fine-tune the selection by one percentage point.
+I designed the app specifically to avoid needing a keyboard. Everything can be done via the touch screen. Use the sliders to adjust the gas component percentages roughly, then use the plus and minus buttons to fine-tune the selection. Oxygen can be adjusted in one-percent increments and helium in five-percent increments. If you want to get more specific, you'll have to type it in manually.
 
 The oxygen and helium sliders are coupled so the two percentages added together cannot exceed 100%.
 
 Pressures can be changed with the same plus and minus buttons. Each tap of a button changes the value by 100 psi in imperial, 10.0 bar in metric.
 
+You can see the MOD (maximum operating depth) for the desired mix here at the currently set pO2's (see Preferences below). If the mix is a Nitrox mix, you'll also see the EAD (equivalent air depth) at the MOD; otherwise you'll see the END (equivalend narcotic depth) at the MOD. The "pO2 HI" button lets you switch between seeing these values computed at the configured normal and high pO2.
+
 = Blending =
 
 The first tab of the application is for blending a specific gas. You select what gas you want and how much, then you enter what gas and how much is already present in the tank (if any). Then hit blend and you're given the pressures of oxygen, helium, and your top up gas (air) to add.
 
-http://lh3.ggpht.com/_uJWsXw_tI_o/SiFsYypOG7I/AAAAAAAAACI/mogmJl9wlQg/s400/blendresult.png
+http://lh4.ggpht.com/_uJWsXw_tI_o/StJGC--ep4I/AAAAAAAAADo/Zyp1YjwK5Iw/Picture%208.png
 
 The app will also tell you if you need to drain off some gas from your cylinder before beginning.
 
 = Top Up =
 
-http://lh3.ggpht.com/_uJWsXw_tI_o/SgOemsc5OdI/AAAAAAAAABY/MimeJdlyR6Y/s400/topup.png
+http://lh5.ggpht.com/_uJWsXw_tI_o/StJFXzKDRyI/AAAAAAAAADU/s6_bYF9qkbM/Picture%203.png
 
 The top-up tab lets you determine what would happen if you added top-up gas to an existing mix. This is most useful if you have some trimix left over after a dive and want to get an air top-up to see what you'll get.
 
-= Changing top-up gas =
+If real gas calculations are enabled, you'll also be able to select a cylinder to use. Theoretically, cylinder size should affect the exact calculations under the Van der Waals equation, but I have not been able to find a case where the results come out different under different volumes...
 
-http://lh5.ggpht.com/_uJWsXw_tI_o/SiFsY3xo_gI/AAAAAAAAACE/hnuW1gdtgyk/menu.png
+= Preferences =
 
-By pressing the menu button, you can enter a screen to change what top-up gas you are using. Although many of us top up our tanks with air, sometimes it's more convenient to top up with a banked nitrox mix like 32%. Here you can set the top-up gas as any nitrox or helium mix.
+http://lh4.ggpht.com/_uJWsXw_tI_o/StJFYJb5fPI/AAAAAAAAADc/QqGcJ_l5SJA/Picture%205.png
 
-http://lh4.ggpht.com/_uJWsXw_tI_o/SgOemUa_HGI/AAAAAAAAABU/nYvUJISJhn8/s400/settopup.png
+By pressing the menu button, you can enter the preferences section:
 
-When you blend or top up, you'll be reminded what your top-up gas is set to. This setting is saved as a preference so it does NOT reset back to air.
+http://lh3.ggpht.com/_uJWsXw_tI_o/StJGCs76-5I/AAAAAAAAADg/qCnVyBtcciw/Picture%206.png
 
-= Changing Units =
-
-In the menu you can switch between metric (bar) and imperial (psi) units for pressure. When you switch, it will convert all pressures already entered into the new unit system and the next time you run the application you'll be given sensible defaults for pressures in the new system.
+Here you can adjust the following:
+  * What top-up gas you are using. Although many of us top up our tanks with air, sometimes it's more convenient to top up with a banked nitrox mix like 32%. Here you can set the top-up gas as any nitrox or helium mix. When you blend or top up, you'll be reminded what your top-up gas is set to. This setting is saved as a preference so it does NOT reset back to air.
+  * Switching between ideal and real gas equations. Enabling real gas equations requires my Scuba Tanks application to specify cylinder size.
+  * Normal and high pO2's. These are used for calculating MOD's in blend and topup modes.
+  * Whether or not to consider oxygen a narcotic gas like nitrogen when computing END's.
+  * Switch between metric and imperial units for pressures and depths. When you switch units, all entered values are converted for you.
