@@ -18,7 +18,7 @@ public class VanDerWaals {
 	 * @return The value of a.
 	 */
 	public static double computeA(Mix m) {
-		float x[] = { m.getfO2(), m.getfN2(), m.getfHe() };
+		double x[] = { m.getfO2(), m.getfN2(), m.getfHe() };
 		float a[] = { A_OXYGEN, A_NITROGEN, A_HELIUM };
 		double total = 0;
 		for(int i = 0; i < 3; i++) {
@@ -36,7 +36,7 @@ public class VanDerWaals {
 	 * @return The value of b.
 	 */
 	public static double computeB(Mix m) {
-		float x[] = {m.getfO2(), m.getfN2(), m.getfHe() };
+		double x[] = {m.getfO2(), m.getfN2(), m.getfHe() };
 		float b[] = { B_OXYGEN, B_NITROGEN, B_HELIUM };
 		double total = 0;
 		for(int i = 0; i < 3; i++) {
