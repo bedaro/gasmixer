@@ -32,6 +32,8 @@ public class TopupResult extends Activity {
 	// Cached storage of preferences
 	private boolean mO2IsNarcotic;
 	private float mPo2Low, mPo2High;
+	
+	private Units mUnits;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -45,8 +47,8 @@ public class TopupResult extends Activity {
 		try {
 			unit = NumberFormat.getIntegerInstance().parse(settings.getString("units", "0")).intValue();
 		} catch(ParseException e) { unit = 0; }
-		Units.change(unit);
-		
+		mUnits = new Units(unit);
+
 		// Gas computation options
 		mPo2Low = settings.getFloat("max_norm_po2", 1.4f);
 		mPo2High = settings.getFloat("max_hi_po2", 1.6f);
@@ -61,10 +63,10 @@ public class TopupResult extends Activity {
 							String.valueOf(state.getLong("cylinderid", -1))
 					), null, null, null, null);
 			cu.moveToFirst();
-			c = CylinderSizeClient.cursorToCylinder(cu);
+			c = CylinderSizeClient.cursorToCylinder(cu, mUnits);
 			cu.close();
 		} else {
-			c = new Cylinder(Units.volumeNormalTank(), (int)Units.pressureTankFull());
+			c = new Cylinder(mUnits, mUnits.volumeNormalTank(), (int)mUnits.pressureTankFull());
 		}
 		GasSupply fill = new GasSupply(c,
 				new Mix(state.getFloat("topup_start_o2", 0.21f), state.getFloat("topup_start_he", 0)),
@@ -119,15 +121,16 @@ public class TopupResult extends Activity {
 	}*/
 	
 	private void updateModEnd() {
+		Units u = mUnits;
 		NumberFormat nf = NumberFormat.getIntegerInstance();
-		float mod = mResult.MOD(mTogglePo2.isChecked()? mPo2High: mPo2Low);
-		mFinalMOD.setText(nf.format(mod)+" "+Params.depth(this));
+		float mod = mResult.MOD(u, mTogglePo2.isChecked()? mPo2High: mPo2Low);
+		mFinalMOD.setText(nf.format(mod)+" "+Params.depth(this, u));
 		if(mResult.getHe() > 0) {
 			mFinalEADENDLabel.setText(getResources().getString(R.string.end));
-			mFinalEADEND.setText(nf.format(mResult.END(Math.round(mod), mO2IsNarcotic))+" "+Params.depth(this));
+			mFinalEADEND.setText(nf.format(mResult.END(Math.round(mod), u, mO2IsNarcotic))+" "+Params.depth(this, u));
 		} else {
 			mFinalEADENDLabel.setText(getResources().getString(R.string.ead));
-			mFinalEADEND.setText(nf.format(mResult.EAD(Math.round(mod)))+" "+Params.depth(this));
+			mFinalEADEND.setText(nf.format(mResult.EAD(Math.round(mod), u))+" "+Params.depth(this, u));
 		}
 	}
 }

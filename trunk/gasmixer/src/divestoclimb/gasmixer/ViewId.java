@@ -12,7 +12,7 @@ public class ViewId {
 		int id;
 		do {
 			id = r.nextInt();
-		} while(v.findViewById(id) != null);
+		} while(id <= 0 || v.findViewById(id) != null);
 		return id;
 	}
 }

@@ -2,12 +2,16 @@ package divestoclimb.gasmixer;
 
 import divestoclimb.lib.scuba.Mix;
 import android.content.Context;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 
-public class TrimixSelector extends RelativeLayout implements SeekBar.OnSeekBarChangeListener, NumberSelector.ValueChangedListener {
+public class TrimixSelector extends RelativeLayout
+		implements SeekBar.OnSeekBarChangeListener, NumberSelector.ValueChangedListener {
 	
 	public static interface MixChangeListener {
 		abstract void onChange(TrimixSelector ts, Mix m);
@@ -53,8 +57,19 @@ public class TrimixSelector extends RelativeLayout implements SeekBar.OnSeekBarC
 
 		mO2Bar = (SeekBar)findViewById(R.id.slider_o2);
 		mHeBar = (SeekBar)findViewById(R.id.slider_he);
+		// We can't keep the slider ID's because they would conflict with other
+		// instances of this class and screw up saving/restoring the SeekBars'
+		// states.
+		// Instead we have to give each SeekBar a random ID, then save and
+		// restore it if the Activity is destroyed and recreated.
+		setViewId(mO2Bar, ViewId.generateUnique(getRootView()));
+		setViewId(mHeBar, ViewId.generateUnique(getRootView()));
+
 		mO2Field = (NumberSelector)findViewById(R.id.number_o2);
 		mHeField = (NumberSelector)findViewById(R.id.number_he);
+		// Because the NumberSelectors save state too, ditto for them
+		setViewId(mO2Field, ViewId.generateUnique(getRootView()));
+		setViewId(mHeField, ViewId.generateUnique(getRootView()));
 
 		mO2Bar.setOnSeekBarChangeListener(this);
 		mHeBar.setOnSeekBarChangeListener(this);
@@ -120,6 +135,87 @@ public class TrimixSelector extends RelativeLayout implements SeekBar.OnSeekBarC
 				field.setValue(100 - other_field.getValue());
 			}
 		}
+	}
+
+	/**
+	 * Set the view ID of the given view, and also update any layout parameters of
+	 * sibling views that referenced it by its ID.
+	 * @param v The view whose ID should be updated
+	 * @param id The new ID to assign the view
+	 */
+	protected void setViewId(View v, int id) {
+		int current_id = v.getId();
+		v.setId(id);
+		for(int i = 0; i < getChildCount(); i++) {
+			RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)getChildAt(i).getLayoutParams();
+			int rules[] = params.getRules();
+			for(int j = 0; j < rules.length; j++) {
+				if(rules[j] == current_id) {
+					params.addRule(j, id);
+				}
+			}
+		}
+	}
+
+	public static class SavedState extends BaseSavedState {
+		int o2SliderId, heSliderId, o2FieldId, heFieldId;
+
+		SavedState(Parcelable superState) {
+			super(superState);
+		}
+
+		@Override
+		public void writeToParcel(Parcel out, int flags) {
+			super.writeToParcel(out, flags);
+			
+			out.writeInt(o2SliderId);
+			out.writeInt(heSliderId);
+			out.writeInt(o2FieldId);
+			out.writeInt(heFieldId);
+		}
+
+		public static final Parcelable.Creator<SavedState> CREATOR
+				= new Parcelable.Creator<SavedState>() {
+			public SavedState createFromParcel(Parcel in) {
+				return new SavedState(in);
+			}
+
+			public SavedState[] newArray(int size) {
+				return new SavedState[size];
+			}
+		};
+
+		private SavedState(Parcel in) {
+			super(in);
+			o2SliderId = in.readInt();
+			heSliderId = in.readInt();
+			o2FieldId = in.readInt();
+			heFieldId = in.readInt();
+		}
+	}
+
+	@Override
+	public Parcelable onSaveInstanceState() {
+		Parcelable superState = super.onSaveInstanceState();
+
+		SavedState ss = new SavedState(superState);
+		ss.o2SliderId = mO2Bar.getId();
+		ss.heSliderId = mHeBar.getId();
+		ss.o2FieldId = mO2Field.getId();
+		ss.heFieldId = mHeField.getId();
+
+		return ss;
+	}
+
+	@Override
+	public void onRestoreInstanceState(Parcelable state) {
+		SavedState ss = (SavedState)state;
+		super.onRestoreInstanceState(ss.getSuperState());
+
+		setViewId(mO2Bar, ss.o2SliderId);
+		setViewId(mHeBar, ss.heSliderId);
+		setViewId(mO2Field, ss.o2FieldId);
+		setViewId(mHeField, ss.heFieldId);
 	}
 
 }
