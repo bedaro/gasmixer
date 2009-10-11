@@ -3,9 +3,15 @@ package divestoclimb.gasmixer;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.os.Handler;
+import android.os.Message;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.Editable;
@@ -81,7 +87,7 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 	 */
 	public void setValue(float value) {
 		mChangeFromUser = false;
-		mEditText.setText(mNumberFormat.format(value));
+		mEditText.setText(mNumberFormat.format(getValidValue(value)));
 	}
 
 	/**
@@ -140,6 +146,14 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 		LayoutInflater i = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		i.inflate(SELECTOR_LAYOUT, this);
 
+		// This is a workaround originally for a bug that was caused by the EditText
+		// restoring its state via the setText() method, bypassing our API. This
+		// caused the TextWatcher to fire and think the change was just from the user.
+		// I'm making the assumption here that the first time the value changes it
+		// will be the system doing it--if that assumption is valid this workaround
+		// is fine.
+		mChangeFromUser = false;
+
 		mPlusButton = (ImageButton)findViewById(R.id.plus);
 		mMinusButton = (ImageButton)findViewById(R.id.minus);
 		mEditText = (EditText)findViewById(R.id.text1);
@@ -158,24 +172,41 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 		mEditText.addTextChangedListener(this);
 	}
 
+	/**
+	 * Constructs a valid value out of a candidate field value, subject
+	 * to the limits assigned on the NumberSelector.
+	 * @param value The raw value to validate
+	 * @return A valid value as close as possible to the parsed value.
+	 */
+	private float getValidValue(float value) {
+		float validValue = value;
+		if(mUpperLimit != null) {
+			validValue = Math.min(validValue, mUpperLimit);
+		}
+		if(mLowerLimit != null) {
+			validValue = Math.max(validValue, mLowerLimit);
+		}
+		return validValue;
+	}
+
 	protected void setEditTextId(int id) {
 		mEditText.setId(id);
 	}
 
 	public static class SavedState extends BaseSavedState {
 		int textId;
-		
+
 		SavedState(Parcelable superState) {
 			super(superState);
 		}
-		
+
 		@Override
 		public void writeToParcel(Parcel out, int flags) {
 			super.writeToParcel(out, flags);
 			
 			out.writeInt(textId);
 		}
-		
+
 		public static final Parcelable.Creator<SavedState> CREATOR
 				= new Parcelable.Creator<SavedState>() {
 			public SavedState createFromParcel(Parcel in) {
@@ -248,6 +279,19 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 		}
 		mEditText.setText(mNumberFormat.format(new_val));
 	}
+	
+	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+	private ScheduledFuture<?> mValidateHandle = null;
+	private static final int ACTION_SETFROMCACHE = 1;
+	
+	private Handler mMessageHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			if(msg.what == ACTION_SETFROMCACHE) {
+				NumberSelector.this.setValue(mCachedValue);
+			}
+		}
+	};
 
 	/**
 	 * Our TextWatcher for the text field. Enforces upper and lower limits on the field,
@@ -256,30 +300,42 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 	 * @param s The new value of the text field
 	 */
 	public void afterTextChanged(Editable s) {
-		// This check prevents a parseException from being thrown if
-		// the user removes all text from the field.
-		if(s.length() > 0) {
-			try {
-				Float newValue = mNumberFormat.parse(s.toString()).floatValue();
-				Float validValue = newValue;
-				if(mUpperLimit != null) {
-					validValue = Math.min(validValue, mUpperLimit);
-				}
-				if(mLowerLimit != null) {
-					validValue = Math.max(validValue, mLowerLimit);
-				}
-				if(newValue.compareTo(validValue) != 0) {
-					setValue(validValue);
-				} else {
-					mCachedValue = validValue;
-					if(mValueChangedListener != null) {
-						mValueChangedListener.onChange(this, validValue, mChangeFromUser);
-					}
-				}
-			} catch(ParseException e) {
-				setValue(mCachedValue);
-			}
+		// The user is continuing the edit the field, so cancel any pending
+		// automated edits.
+		if(mValidateHandle != null) {
+			mValidateHandle.cancel(false);
 		}
+
+		try {
+			Float newValue = mNumberFormat.parse(s.toString()).floatValue(),
+				validValue = getValidValue(newValue);
+			mCachedValue = validValue;
+			if(newValue.compareTo(validValue) != 0) {
+				// We've cached the valid equivalent, but the invalid value is still
+				// set in the text field. Throw an exception so the exception handler
+				// can deal with the problem.
+				throw new Exception();
+			}
+			// If we got here, everything went fine. Call our change listener if we
+			// have one.
+			if(mValueChangedListener != null) {
+				NumberSelector.this.mValueChangedListener.onChange(NumberSelector.this, mCachedValue, mChangeFromUser);
+			}
+		} catch(Exception e) {
+			// Don't reset the value immediately; this can be annoying if
+			// the user is actively editing the contents. Instead, schedule
+			// for our message handler to receive a message to reset the
+			// value within 2 seconds. If the user continues editing, this
+			// task gets cancelled above.
+			mValidateHandle = scheduler.schedule(new Runnable() {
+				public void run() {
+					Message m = Message.obtain();
+					m.what = NumberSelector.ACTION_SETFROMCACHE;
+					mMessageHandler.sendMessage(m);
+				}
+			}, 2, TimeUnit.SECONDS);
+		}
+		
 		mChangeFromUser = true;
 	}
 

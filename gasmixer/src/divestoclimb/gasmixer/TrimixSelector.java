@@ -92,6 +92,9 @@ public class TrimixSelector extends RelativeLayout implements SeekBar.OnSeekBarC
 			sb = mHeBar;
 		}
 		sb.setProgress(Math.round(new_val));
+		if(from_user) {
+			handlePercentUpdate(ns);
+		}
 		if(mMixChangeListener != null) {
 			Mix m = getMix();
 			if(m != null) {

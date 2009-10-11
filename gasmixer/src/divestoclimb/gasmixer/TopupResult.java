@@ -3,12 +3,17 @@ package divestoclimb.gasmixer;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
+import divestoclimb.lib.scuba.Cylinder;
+import divestoclimb.lib.scuba.GasSupply;
 import divestoclimb.lib.scuba.Mix;
 import divestoclimb.lib.scuba.Units;
+import divestoclimb.scuba.equipment.CylinderSizeClient;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -20,11 +25,6 @@ import android.widget.ToggleButton;
 
 public class TopupResult extends Activity {
 
-	private float pi, pf, fo2i, fhei, fo2t, fhet, fo2f, fhef;
-
-	private SharedPreferences mSettings, mState;
-
-	private String mResultText;
 	private Mix mResult;
 	private TextView mFinalMOD, mFinalEADENDLabel, mFinalEADEND;
 	private ToggleButton mTogglePo2;
@@ -38,39 +38,51 @@ public class TopupResult extends Activity {
 
 		setContentView(R.layout.topup_result);
 
-		mSettings = PreferenceManager.getDefaultSharedPreferences(this);
-		mState = getSharedPreferences(Params.STATE_NAME, 0);
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this),
+				state = getSharedPreferences(Params.STATE_NAME, 0);
 
 		int unit;
 		try {
-			unit = NumberFormat.getIntegerInstance().parse(mSettings.getString("units", "0")).intValue();
+			unit = NumberFormat.getIntegerInstance().parse(settings.getString("units", "0")).intValue();
 		} catch(ParseException e) { unit = 0; }
 		Units.change(unit);
 		
 		// Gas computation options
-		mPo2Low = mSettings.getFloat("max_norm_po2", 1.4f);
-		mPo2High = mSettings.getFloat("max_hi_po2", 1.6f);
-		mO2IsNarcotic = mSettings.getBoolean("o2_is_narcotic", true);
+		mPo2Low = settings.getFloat("max_norm_po2", 1.4f);
+		mPo2High = settings.getFloat("max_hi_po2", 1.6f);
+		mO2IsNarcotic = settings.getBoolean("o2_is_narcotic", true);
 
-		pi   = mState.getFloat("topup_start_pres", 0);
-		pf   = mState.getFloat("topup_final_pres", 0);
-		fo2i = mState.getFloat("topup_start_o2", 0.21f);
-		fhei = mState.getFloat("topup_start_he", 0);
+		Mix topup = TrimixPreference.stringToMix(settings.getString("topup_gas", "0.21 0"));
 
-		Mix topup = TrimixPreference.stringToMix(mSettings.getString("topup_gas", "0.21 0"));
-		fo2t = topup.getfO2();
-		fhet = topup.getfHe();
+		boolean real = settings.getBoolean("vdw", false);
+		Cylinder c;
+		if(real) {
+			Cursor cu = getContentResolver().query(Uri.withAppendedPath(CylinderSizeClient.CONTENT_URI,
+							String.valueOf(state.getLong("cylinderid", -1))
+					), null, null, null, null);
+			cu.moveToFirst();
+			c = CylinderSizeClient.cursorToCylinder(cu);
+			cu.close();
+		} else {
+			c = new Cylinder(Units.volumeNormalTank(), (int)Units.pressureTankFull());
+		}
+		GasSupply fill = new GasSupply(c,
+				new Mix(state.getFloat("topup_start_o2", 0.21f), state.getFloat("topup_start_he", 0)),
+				(int)state.getFloat("topup_start_pres", 0)
+		);
+		if(! real) {
+			fill.useIdealGasLaws();
+		}
+		mResult = fill.topup(topup, (int)state.getFloat("topup_final_pres", 0)).getMix();
 
-		solve();
-
-		mResult = new Mix(fo2f, fhef);
+		//mResult = new Mix(fo2f, fhef);
 		Resources r = getResources();
-		mResultText = String.format(r.getString(R.string.topup_result),
+		String resultText = String.format(r.getString(R.string.topup_result),
 				Params.mixFriendlyName(mResult, this)
 		);
 
 		TextView resultView = (TextView) findViewById(R.id.result);
-		resultView.setText(mResultText);
+		resultView.setText(resultText);
 		TextView reminder1View = (TextView) findViewById(R.id.reminder1);
 		reminder1View.setText(
 				String.format(r.getString(R.string.topup_reminder),
@@ -100,11 +112,11 @@ public class TopupResult extends Activity {
 			}
 		});
 	}
-	
-	private void solve() {
+
+	/*private void solve() {
 		fo2f = (pi*fo2i+(pf-pi)*fo2t)/pf;
 		fhef = (pi*fhei+(pf-pi)*fhet)/pf;
-	}
+	}*/
 	
 	private void updateModEnd() {
 		NumberFormat nf = NumberFormat.getIntegerInstance();

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+		xmlns:app="http://schemas.android.com/apk/res/divestoclimb.gasmixer">
+	<divestoclimb.gasmixer.TrimixSelector
+		android:id="@+id/topup"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginLeft="15dp"
+		android:layout_marginRight="15dp"
+		android:layout_below="@id/topup_start_pres" />
+
+	<TextView
+		android:id="@+id/topup_pres_label"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="@string/topup_pres"
+		android:textSize="20sp"
+		android:layout_below="@id/topup"
+		android:paddingLeft="5dp" />
+	<divestoclimb.gasmixer.NumberSelector
+		android:id="@+id/topup_final_pres"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentRight="true"
+		android:layout_below="@id/topup"
+		app:textboxwidth="75sp" />
+	<Button
+		android:id="@+id/button_topup"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_margin="5dp"
+		android:layout_below="@id/topup_final_pres"
+		android:text="@string/topup"/>
+</merge>
