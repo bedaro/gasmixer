@@ -21,7 +21,7 @@
 				android:layout_width="fill_parent"
 				android:layout_height="wrap_content" />
 
-			<include layout="@layout/topup"
+			<include layout="@layout/topup_cylinder"
 				android:id="@+id/tab_topup"
 				android:layout_width="fill_parent"
 				android:layout_height="wrap_content" />

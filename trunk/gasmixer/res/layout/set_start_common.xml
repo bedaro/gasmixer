@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+	<TextView
+		android:id="@+id/pressure_unit"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toLeftOf="@id/pressure"
+		android:layout_alignTop="@id/pressure"
+		android:paddingTop="7sp" />
+			
+	<divestoclimb.gasmixer.TrimixSelector
+		android:id="@+id/mix"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/pressure" />
+
+	<Button
+		android:id="@+id/button"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/mix"
+		android:text="@string/change" />
+</merge>

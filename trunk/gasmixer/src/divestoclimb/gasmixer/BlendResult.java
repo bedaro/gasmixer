@@ -3,13 +3,18 @@ package divestoclimb.gasmixer;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
+import divestoclimb.lib.scuba.Cylinder;
+import divestoclimb.lib.scuba.GasSupply;
 import divestoclimb.lib.scuba.Mix;
 import divestoclimb.lib.scuba.Units;
+import divestoclimb.scuba.equipment.CylinderSizeClient;
 
 import Jama.Matrix;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
@@ -49,11 +54,10 @@ import android.widget.TextView;
 public class BlendResult extends Activity {
 	
 	// Our known parameters
-	private float pi, pf, fo2t, fhet, fo2f, fhef, fo2i, fhei;
+	private float pi, pf;
+	private Mix mStart, mDesired, mTopup;
 	// The parameters we are solving for
 	private float po2, phe, pt, pdrain;
-
-	private SharedPreferences mSettings, mState;
 	
 	private NumberFormat nf = Params.getPressureFormat();
 	
@@ -64,37 +68,27 @@ public class BlendResult extends Activity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.blend_result);
-		
-		mSettings = PreferenceManager.getDefaultSharedPreferences(this);
-		mState = getSharedPreferences(Params.STATE_NAME, 0);
+
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this),
+				state = getSharedPreferences(Params.STATE_NAME, 0);
 		int unit;
 		try {
-			unit = NumberFormat.getIntegerInstance().parse(mSettings.getString("units", "0")).intValue();
+			unit = NumberFormat.getIntegerInstance().parse(settings.getString("units", "0")).intValue();
 		} catch(ParseException e) { unit = 0; }
 		Units.change(unit);
 
-		pi   = mState.getFloat("start_pres", 0);
-		pf   = mState.getFloat("desired_pres", 0);
-		fo2f = mState.getFloat("desired_o2", 0.21f);
-		fhef = mState.getFloat("desired_he", 0f);
-		fo2i = mState.getFloat("start_o2", 0.21f);
-		fhei = mState.getFloat("start_he", 0);
+		pi   = state.getFloat("start_pres", 0);
+		pf   = state.getFloat("desired_pres", 0);
 
-		Mix topup = TrimixPreference.stringToMix(mSettings.getString("topup_gas", "0.21 0"));
-		fo2t = topup.getfO2();
-		fhet = topup.getfHe();
-		
+		// Make Mixes of our gases
+		mStart=new Mix(state.getFloat("start_o2", 0.21f), state.getFloat("start_he", 0));
+		mDesired=new Mix(state.getFloat("desired_o2", 0.21f), state.getFloat("desired_he", 0f));
+		mTopup = TrimixPreference.stringToMix(settings.getString("topup_gas", "0.21 0"));
+
 		// Now we're ready. Solve. Solution will be stored in our class
 		// variables
-		boolean solved = solve();
-		
-		// Make Mixes of our gases
-		Mix start=new Mix(fo2i, fhei), desired=new Mix(fo2f, fhef);
+		boolean solved = solve(settings, state);
 
-		// No solution manifests itself as pdrain being greater than pi.
-		// This is a side effect of the extra checking occurring in
-		// solve(), that the only solution solve() can find is to
-		// increase the starting pressure in the tank.
 		Resources r = getResources();
 		String presUnit = Params.pressure(this);
 		if(! solved) {
@@ -105,9 +99,9 @@ public class BlendResult extends Activity {
 					: String.format(r.getString(R.string.gas_amount),
 							nf.format(pi),
 							presUnit,
-							Params.mixFriendlyName(start, this))
+							Params.mixFriendlyName(mStart, this))
 			)+"\n";
-			if((pdrain != pi) && ! ((pdrain == -0) && (pi == 0))) {
+			if(pi - pdrain >= Math.pow(10, Units.pressurePrecision() * -1) * 0.5) {
 				// Drain
 				mResultText+="- "+String.format(r.getString(R.string.result_drain),
 						nf.format(pdrain),
@@ -115,37 +109,31 @@ public class BlendResult extends Activity {
 				)+"\n";
 			}
 			if(Math.round(po2) > 0) {
-				mResultText+="- "+String.format(r.getString(R.string.result_add),
-						String.format(r.getString(R.string.gas_amount),
-								nf.format(po2),
-								presUnit,
-								r.getString(R.string.oxygen)
-						)
+				mResultText+="- "+String.format(r.getString(R.string.result_fillto),
+						nf.format(po2),
+						presUnit,
+						r.getString(R.string.oxygen)
 				)+"\n";
 			}
-			if(Math.round(phe) > 0) {
-				mResultText+="- "+String.format(r.getString(R.string.result_add),
-						String.format(r.getString(R.string.gas_amount),
-								nf.format(phe),
-								presUnit,
-								r.getString(R.string.helium)
-						)
+			if(phe > po2) {
+				mResultText+="- "+String.format(r.getString(R.string.result_fillto),
+						nf.format(phe),
+						presUnit,
+						r.getString(R.string.helium)
 				)+"\n";
 			}
-			if(Math.round(pt) > 0) {
-				mResultText+="- "+String.format(r.getString(R.string.result_topup),
-						String.format(r.getString(R.string.gas_amount),
-								nf.format(pt),
-								presUnit,
-								Params.mixFriendlyName(topup, this)
-						)
+			if(pt > phe) {
+				mResultText+="- "+String.format(r.getString(R.string.result_fillto),
+						nf.format(pt),
+						presUnit,
+						Params.mixFriendlyName(mTopup, this)
 				)+"\n";
 			}
 			mResultText+=String.format(r.getString(R.string.result_end),
 					String.format(r.getString(R.string.gas_amount),
 							nf.format(pf),
 							presUnit,
-							Params.mixFriendlyName(desired, this)
+							Params.mixFriendlyName(mDesired, this)
 					)
 			);
 		}
@@ -156,7 +144,7 @@ public class BlendResult extends Activity {
 			TextView reminderView = (TextView) findViewById(R.id.reminder1);
 			reminderView.setText(r.getString(R.string.analyze_warning));
 		}
-		
+	
 		// set button listeners
 		Button copy = (Button) findViewById(R.id.button_copy);
 		copy.setOnClickListener(new OnClickListener() {
@@ -176,76 +164,117 @@ public class BlendResult extends Activity {
 		
 		// TODO: do I have enough gas button
 	}
-	
-	private boolean solve() {
-		pdrain=pi;
+
+	private boolean solve(SharedPreferences settings, SharedPreferences state) {
+		boolean real = settings.getBoolean("vdw", false);
+		Cylinder c;
+		if(real) {
+			Cursor cu = getContentResolver().query(Uri.withAppendedPath(CylinderSizeClient.CONTENT_URI,
+							String.valueOf(state.getLong("cylinderid", -1))
+					), null, null, null, null);
+			cu.moveToFirst();
+			c = CylinderSizeClient.cursorToCylinder(cu);
+			cu.close();
+		} else {
+			c = new Cylinder(Units.volumeNormalTank(), (int)Units.pressureTankFull());
+		}
+
+		GasSupply have = new GasSupply(c, mStart, (int)pi),
+		want = new GasSupply(c, mDesired, (int)pf);
+		
+		if(! real) {
+			have.useIdealGasLaws();
+			want.useIdealGasLaws();
+		}
+
+		// Object property caching for performance 
+		double fo2i = mStart.getfO2(), fhei = mStart.getfHe(),
+			fo2t = mTopup.getfO2(), fhet = mTopup.getfHe(),
+			vo2i = have.getO2Amount(), vn2i = have.getN2Amount(),
+			vhei = have.getHeAmount(), vo2f = want.getO2Amount(),
+			vn2f = want.getN2Amount(), vhef = want.getHeAmount();
+
+		double start_vol = have.getGasAmount();
 		double a[][] = { {1, 0, fo2t}, {0, 1, fhet}, {0, 0, 1-fo2t-fhet} };
-		double b[][] = { {pf*fo2f-pi*fo2i}, {pf*fhef-pi*fhei},
-				{pf*(1-fo2f-fhef)-pi*(1-fo2i-fhei)} };
+		double b[][] = { {vo2f-vo2i}, {vhef-vhei}, {vn2f-vn2i} };
 		Matrix aM=new Matrix(a), bM = new Matrix(b);
 		Matrix gases=aM.solve(bM);
-		po2=(float) gases.get(0,0);
-		phe=(float) gases.get(1,0);
-		pt=(float) gases.get(2,0);
-		// Now handle the conditions where a negative pressure was found
-		if(po2 < 0) {
-			po2=0;
-			a=aM.getArrayCopy();
-			a[0][0]=fo2i;
-			a[1][0]=fhei;
-			a[2][0]=1-fo2i-fhei;
-			b[0][0]=pf*fo2f;
-			b[1][0]=pf*fhef;
-			b[2][0]=pf*(1-fo2f-fhef);
+		double o2_added=gases.get(0,0),
+				he_added = gases.get(1,0),
+				topup_added = gases.get(2,0);
+		// Now handle the conditions where a negative volume was found
+		if(o2_added < 0) {
+			o2_added = 0;
+			a = aM.getArrayCopy();
+			a[0][0] = fo2i;
+			a[1][0] = fhei;
+			a[2][0] = 1-fo2i-fhei;
+			b[0][0] = vo2f;
+			b[1][0] = vhef;
+			b[2][0] = vn2f;
 			Matrix aTake2=new Matrix(a), bTake2 = new Matrix(b);
 			try {
 				Matrix take2 = aTake2.solve(bTake2);
-				pdrain=(float) take2.get(0, 0);
-				phe=(float) take2.get(1, 0);
-				pt=(float) take2.get(2, 0);
+				start_vol = take2.get(0, 0);
+				he_added = take2.get(1, 0);
+				topup_added = take2.get(2, 0);
 			} catch(RuntimeException e) {
 				return false;
 			}
 		}
-		if(phe < 0) {
-			phe=0;
-			a=aM.getArrayCopy();
-			a[0][1]=fo2i;
-			a[1][1]=fhei;
-			a[2][1]=1-fo2i-fhei;
-			b[0][0]=pf*fo2f;
-			b[1][0]=pf*fhef;
-			b[2][0]=pf*(1-fo2f-fhef);
+		if(he_added < 0) {
+			he_added = 0;
+			a = aM.getArrayCopy();
+			a[0][1] = fo2i;
+			a[1][1] = fhei;
+			a[2][1] = 1-fo2i-fhei;
+			b[0][0] = vo2f;
+			b[1][0] = vhef;
+			b[2][0] = vn2f;
 			Matrix aTake3=new Matrix(a), bTake3=new Matrix(b);
 			try {
 				Matrix take3 = aTake3.solve(bTake3);
-				pdrain=(float) take3.get(1, 0);
-				po2=(float) take3.get(0, 0);
-				pt=(float) take3.get(2, 0);
+				start_vol = take3.get(1, 0);
+				o2_added = take3.get(0, 0);
+				topup_added = take3.get(2, 0);
 			} catch(RuntimeException e) {
 				return false;
 			}
 		}
-		if(pt < 0) {
-			pt=0;
-			a=aM.getArrayCopy();
-			a[0][2]=fo2i;
-			a[1][2]=fhei;
-			a[2][2]=1-fo2i-fhei;
-			b[0][0]=pf*fo2f;
-			b[1][0]=pf*fhef;
-			b[2][0]=pf*(1-fo2f-fhef);
+		if(topup_added < 0) {
+			topup_added = 0;
+			a = aM.getArrayCopy();
+			a[0][2] = fo2i;
+			a[1][2] = fhei;
+			a[2][2] = 1-fo2i-fhei;
+			b[0][0] = vo2f;
+			b[1][0] = vhef;
+			b[2][0] = vn2f;
 			Matrix aTake4=new Matrix(a), bTake4=new Matrix(b);
 			try {
 				Matrix take4 = aTake4.solve(bTake4);
-				pdrain=(float) take4.get(2, 0);
-				po2=(float) take4.get(0, 0);
-				phe=(float) take4.get(1, 0);
+				start_vol = take4.get(2, 0);
+				o2_added = take4.get(0, 0);
+				he_added = take4.get(1, 0);
 			} catch(RuntimeException e) {
 				return false;
 			}
 		}
-		return pdrain >= 0 && pdrain <= pi;
+		if(start_vol < 0) {
+			// The only solution is to drain to a negative volume? Impossible.
+			return false;
+		}
+		if(start_vol > have.getGasAmount()) {
+			// The only solution is to start with more contents than we have? Impossible.
+			return false;
+		}
+		// If we get here, it means we found a solution. Convert the volumes back to
+		// pressures by doing the blending operation on have.
+		pdrain = (float)have.drainToGasAmount(start_vol).getPressure();
+		po2 = o2_added > 0? (float)have.addO2(o2_added).getPressure(): pdrain;
+		phe = he_added > 0? (float)have.addHe(he_added).getPressure(): po2;
+		pt = topup_added > 0? (float)have.addGas(mTopup, topup_added).getPressure(): phe;
+		return true;
 	}
 
 }

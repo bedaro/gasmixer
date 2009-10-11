@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+		xmlns:app="http://schemas.android.com/apk/res/divestoclimb.gasmixer">
+	<TextView
+		android:layout_height="wrap_content"
+		android:layout_width="wrap_content"
+		android:text="@string/maxdepth"
+		android:textSize="20dp" />
+	<divestoclimb.gasmixer.NumberSelector
+		android:id="@+id/maxdepth"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:gravity="right"
+		app:textboxwidth="60sp"
+		android:layout_alignParentRight="true"
+		android:layout_alignParentTop="true" />
+	<TextView
+		android:id="@+id/maxdepth_unit"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toLeftOf="@id/maxdepth"
+		android:layout_alignTop="@id/maxdepth"
+		android:layout_marginTop="7sp" />
+	<TextView
+		android:layout_height="wrap_content"
+		android:layout_width="wrap_content"
+		android:layout_alignParentLeft="true"
+		android:layout_below="@id/maxdepth"
+		android:text="@string/maxpo2"
+		android:textSize="20dp"/>
+	<divestoclimb.gasmixer.NumberSelector
+		android:id="@+id/maxpo2"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentRight="true"
+		android:layout_below="@id/maxdepth"
+		app:textboxwidth="60sp"
+		app:decimalplaces="2"
+		app:increment="0.1"
+		app:lowerlimit="0.4"
+		app:upperlimit="1.6"/>
+	<TextView
+		android:id="@+id/maxpo2_unit"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toLeftOf="@id/maxpo2"
+		android:layout_alignTop="@id/maxpo2"
+		android:text="ata:"
+		android:layout_marginTop="7sp" />
+	<TextView
+		android:layout_height="wrap_content"
+		android:layout_width="wrap_content"
+		android:layout_alignParentLeft="true"
+		android:layout_below="@id/maxpo2"
+		android:text="@string/maxend"
+		android:textSize="20dp"/>
+	<divestoclimb.gasmixer.NumberSelector
+		android:id="@+id/maxend"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:gravity="right"
+		android:layout_alignParentRight="true"
+		android:layout_below="@id/maxpo2"
+		app:textboxwidth="60sp"/>
+	<TextView
+		android:id="@+id/maxend_unit"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toLeftOf="@id/maxend"
+		android:layout_alignTop="@id/maxend"
+		android:layout_marginTop="7sp" />
+	<RelativeLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_marginTop="10dp"
+		android:layout_below="@id/maxend"
+		android:layout_centerInParent="true">
+		<TextView
+			android:id="@+id/bestmix_label"
+			android:width="70sp"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:gravity="center"
+			android:text="@string/bestmix" />
+
+		<TextView
+			android:id="@+id/bestmix_result"
+			android:width="70sp"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_below="@id/bestmix_label"
+			android:layout_alignParentLeft="true"
+			android:gravity="center"
+			android:textSize="20sp" />
+
+		<Button
+			android:id="@+id/bestmix_blend"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:width="100sp"
+			android:layout_toRightOf="@id/bestmix_result"
+			android:layout_alignParentTop="true"
+			android:text="@string/blendit" />
+	</RelativeLayout>
+</merge>

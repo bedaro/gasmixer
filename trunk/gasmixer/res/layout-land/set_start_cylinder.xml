@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res/divestoclimb.gasmixer"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:padding="7dp">
+
+	<divestoclimb.gasmixer.NumberSelector
+		android:id="@+id/pressure"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentTop="@id/cylinder_change"
+		android:layout_alignParentRight="true"
+		android:layout_marginBottom="2dp"
+		app:textboxwidth="75sp" />
+
+	<include layout="@layout/set_start_common" />
+
+	<Button
+		android:id="@+id/cylinder_change"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentTop="true"
+		android:layout_toLeftOf="@id/pressure_unit"
+		android:layout_marginRight="10dp"
+		android:text="@string/change" />
+
+	<TextView
+		android:id="@+id/cylinder"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignBaseline="@id/cylinder_change"
+		android:layout_toLeftOf="@id/cylinder_change"
+		android:layout_marginRight="7dp"
+		android:singleLine="true"
+		android:textSize="20sp" />
+</RelativeLayout>

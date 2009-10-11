@@ -5,11 +5,17 @@ import java.text.ParseException;
 
 import divestoclimb.lib.scuba.Mix;
 import divestoclimb.lib.scuba.Units;
+import divestoclimb.scuba.equipment.CylinderSizeClient;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.TabActivity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
@@ -22,7 +28,7 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-public class GasMixer extends TabActivity {
+public class GasMixer extends TabActivity implements Button.OnClickListener {
 
 	protected SharedPreferences mSettings, mState;
 
@@ -30,25 +36,30 @@ public class GasMixer extends TabActivity {
 	private boolean mO2IsNarcotic;
 	private float mPo2Low, mPo2High, mBlendStartPressure;
 	private Mix mBlendStartMix;
-	
-	private TabHost mTabHost;
 
 	private TrimixSelector mDesiredGas, mTopupGas;
 	private NumberSelector mMaxDepth, mMaxEnd, mMaxPo2, mBlendDesiredPressure,
 			mTopupStartPressure, mTopupFinalPressure;
 	private TextView mMaxDepthUnit, mMaxEndUnit, mBlendDesiredPressureUnit,
 			mTopupStartPressureUnit, mDesiredMOD, mDesiredEADENDLabel,
-			mDesiredEADEND, mStartingMix, mBestMixResult;
+			mDesiredEADEND, mStartingMix, mBestMixResult, mCylinderDescription;
 	private ToggleButton mTogglePo2;
 	private Mix mBestMix;
+	
+	private static final int DIALOG_INSTALL_SCUBATANKS = 1;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
 
 		mSettings = PreferenceManager.getDefaultSharedPreferences(this);
 		mState = getSharedPreferences(Params.STATE_NAME, 0);
+
+		if(mSettings.getBoolean("vdw", true) && testCylinders()) {
+			setContentView(R.layout.main_cylinder);
+		} else {
+			setContentView(R.layout.main);
+		}
 
 		int unit;
 		// Android issue 2096 - ListPreference won't work with an integer
@@ -59,16 +70,16 @@ public class GasMixer extends TabActivity {
 		} catch(ParseException e) { unit = 0; }
 		Units.change(unit);
 
-		mTabHost = getTabHost();
+		TabHost tabhost = getTabHost();
 
 		Resources r = getResources();
-		mTabHost.addTab(mTabHost.newTabSpec("tab1")
+		tabhost.addTab(tabhost.newTabSpec("tab1")
 				.setIndicator(r.getString(R.string.blend), r.getDrawable(R.drawable.blend_32))
 				.setContent(R.id.tab_blend));
-		mTabHost.addTab(mTabHost.newTabSpec("tab2")
+		tabhost.addTab(tabhost.newTabSpec("tab2")
 				.setIndicator(r.getString(R.string.topup), r.getDrawable(R.drawable.topup_32))
 				.setContent(R.id.tab_topup));
-		mTabHost.addTab(mTabHost.newTabSpec("tab3")
+		tabhost.addTab(tabhost.newTabSpec("tab3")
 				.setIndicator(r.getString(R.string.bestmix), r.getDrawable(android.R.drawable.btn_star))
 				.setContent(R.id.tab_bestmix));
 
@@ -106,7 +117,8 @@ public class GasMixer extends TabActivity {
 		mMaxPo2 = (NumberSelector)findViewById(R.id.maxpo2);
 		mMaxPo2.setValueChangedListener(updateBestMix);
 		mBestMixResult = (TextView)findViewById(R.id.bestmix_result);
-		
+
+		mCylinderDescription = (TextView)findViewById(R.id.cylinder);
 		mTopupStartPressure = (NumberSelector)findViewById(R.id.topup_start_pres);
 		mTopupStartPressureUnit = (TextView)findViewById(R.id.topup_start_pres_unit);
 		mTopupGas = (TrimixSelector)findViewById(R.id.topup);
@@ -124,41 +136,19 @@ public class GasMixer extends TabActivity {
 		
 		// Prepare the action buttons
 		Button edit_start = (Button) findViewById(R.id.start_change);
-		edit_start.setOnClickListener(new Button.OnClickListener() {
-			public void onClick(View v) {
-				GasMixer.this.startActivity(
-						new Intent(GasMixer.this, SetStarting.class)
-				);
-			}
-		});
+		edit_start.setOnClickListener(this);
 		Button blend = (Button) findViewById(R.id.button_blend);
-		blend.setOnClickListener(new Button.OnClickListener() {
-			public void onClick(View v) {
-				saveState();
-				GasMixer.this.startActivity(
-						new Intent(GasMixer.this, BlendResult.class));
-			}
-		});
+		blend.setOnClickListener(this);
 		
 		Button topup = (Button) findViewById(R.id.button_topup);
-		topup.setOnClickListener(new Button.OnClickListener() {
-			public void onClick(View v) {
-				saveState();
-				GasMixer.this.startActivity(
-						new Intent(GasMixer.this, TopupResult.class));
-			}
-		});
+		topup.setOnClickListener(this);
+		Button cylinderChangeButton = (Button)findViewById(R.id.cylinder_change);
+		if(cylinderChangeButton != null) {
+			cylinderChangeButton.setOnClickListener(this);
+		}
 		
 		Button bestmix_blend = (Button) findViewById(R.id.bestmix_blend);
-		bestmix_blend.setOnClickListener(new Button.OnClickListener() {
-			public void onClick(View v) {
-				if(mBestMix != null) {
-					mDesiredGas.setMix(mBestMix);
-					mTabHost.setCurrentTab(0);
-				}
-			}
-		});
-
+		bestmix_blend.setOnClickListener(this);
 	}
 
 	@Override
@@ -173,29 +163,66 @@ public class GasMixer extends TabActivity {
 
 		// When we resume we need to retrieve all preferences in case they
 		// changed while we were paused.
+		SharedPreferences settings = mSettings, state = mState;
 
 		// Gas computation options
-		mPo2Low = mSettings.getFloat("max_norm_po2", 1.4f);
-		mPo2High = mSettings.getFloat("max_hi_po2", 1.6f);
-		mO2IsNarcotic = mSettings.getBoolean("o2_is_narcotic", true);
+		mPo2Low = settings.getFloat("max_norm_po2", 1.4f);
+		mPo2High = settings.getFloat("max_hi_po2", 1.6f);
+		mO2IsNarcotic = settings.getBoolean("o2_is_narcotic", true);
 		
 		// Also retrieve any state preferences that other activities change
-		mBlendStartPressure = mState.getFloat("start_pres", Units.pressureTankLow());
+		mBlendStartPressure = state.getFloat("start_pres", Units.pressureTankLow());
 		mBlendStartMix = new Mix(
-				mState.getFloat("start_o2", 0.21f),
-				mState.getFloat("start_he", 0f)
+				state.getFloat("start_o2", 0.21f),
+				state.getFloat("start_he", 0f)
 		);
 
 		// Units
 		Integer unit, last_unit = null;
 		try {
-			unit = NumberFormat.getIntegerInstance().parse(mSettings.getString("units", "0")).intValue();
+			unit = NumberFormat.getIntegerInstance().parse(settings.getString("units", "0")).intValue();
 		} catch(ParseException e) { unit = 0; }
 		if(unit.compareTo(Units.getCurrentSystem()) != 0) {
 			// The user switched units since we were last loaded.
 			last_unit = Units.getCurrentSystem();
 			Units.change(unit);
 		}
+		
+		// Check to make sure a Content Provider for cylinders is available if
+		// Van der Waals support is on
+		boolean vdw = settings.getBoolean("vdw", true);
+		if(vdw) {
+			if(! testCylinders()) {
+				// Van der Waals support is enabled but no activity is on the system
+				// to handle cylinder size selection. Show the dialog to let the user
+				// resolve the situation
+				showDialog(DIALOG_INSTALL_SCUBATANKS);
+			} else {
+				// Make sure we have a valid cylinder ID defined in the state.
+				try {
+					long id = state.getLong("cylinderid", -1);
+					if(id == -1) {
+						// No ID in the state
+						throw new Exception();
+					}
+					if(managedQuery(Uri.withAppendedPath(CylinderSizeClient.CONTENT_URI,
+							String.valueOf(id)), null, null, null, null) == null) {
+						// The ID is invalid
+						throw new Exception();
+					}
+				} catch(Exception e) {
+					// Pick the first available cylinder from the list of cylinder
+					// sizes
+					Cursor c = getContentResolver().query(CylinderSizeClient.CONTENT_URI, new String[] { CylinderSizeClient._ID }, null, null, null);
+					c.moveToFirst();
+					SharedPreferences.Editor ed = state.edit();
+					ed.putLong("cylinderid", c.getLong(c.getColumnIndexOrThrow(CylinderSizeClient._ID)));
+					ed.commit();
+					c.close();
+				}
+			}
+		}
+
 		updateUnits(last_unit);
 		updateModEnd(mDesiredGas.getMix());
 		updateStartMix();
@@ -237,23 +264,104 @@ public class GasMixer extends TabActivity {
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
+	
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		switch(id) {
+		case DIALOG_INSTALL_SCUBATANKS:
+			return new AlertDialog.Builder(this)
+				.setIcon(R.drawable.tank_icon)
+				.setTitle(R.string.scubatanks_needed)
+				.setMessage(R.string.scubatanks_message)
+				.setCancelable(false)
+				.setPositiveButton(R.string.download_now, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						Intent findScubaTanks = new Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=pname:divestoclimb.scuba.equipment"));
+						startActivity(findScubaTanks);
+					}
+				})
+				.setNegativeButton(R.string.use_ideal, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						SharedPreferences.Editor e = mSettings.edit();
+						e.putBoolean("vdw", false);
+						e.commit();
+					}
+				})
+				.create();
+		}
+		return null;
+	}
+	
+	public void onClick(View v) {
+		switch(v.getId()) {
+		case R.id.start_change:
+			GasMixer.this.startActivity(
+					new Intent(this, SetStarting.class)
+			);
+			break;
+		case R.id.button_blend:
+			saveState();
+			GasMixer.this.startActivity(
+					new Intent(this, BlendResult.class));
+			break;
+		case R.id.cylinder_change:
+			Intent cylinders = new Intent(Intent.ACTION_GET_CONTENT);
+			cylinders.setType("vnd.android.cursor.item/vnd.divestoclimb.scuba.equipment.cylinders.size");
+			startActivityForResult(cylinders, 0);
+			break;
+		case R.id.button_topup:
+			saveState();
+			GasMixer.this.startActivity(
+					new Intent(this, TopupResult.class));
+			break;
+		case R.id.bestmix_blend:
+			if(mBestMix != null) {
+				mDesiredGas.setMix(mBestMix);
+				getTabHost().setCurrentTab(0);
+			}
+		}
+	}
+	
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		if(resultCode == RESULT_OK) {
+			Bundle b = intent.getExtras();
+			long id = b.getLong("selected");
+			SharedPreferences.Editor editor = mState.edit();
+			editor.putLong("cylinderid", id);
+			editor.commit();
+			updateCylinder();
+		}
+	}
+	
+	// Test for the ability to fetch cylinder ID's on this system
+	private boolean testCylinders() {
+		Intent cylinderTest = new Intent(Intent.ACTION_GET_CONTENT);
+		cylinderTest.setType("vnd.android.cursor.item/vnd.divestoclimb.scuba.equipment.cylinders.size");
+		return (cylinderTest.resolveActivity(getPackageManager()) != null);
+	}
 
-	public void initFields(Bundle extras) {
-		mBlendDesiredPressure.setValue(mState.getFloat("desired_pres", Units.pressureTankFull()));
+	private void initFields(Bundle extras) {
+		SharedPreferences state = mState;
+		mBlendDesiredPressure.setValue(state.getFloat("desired_pres", Units.pressureTankFull()));
 		mDesiredGas.setMix(new Mix(
-				extras != null? extras.getFloat("O2_DESIRED"): mState.getFloat("desired_o2", 0.32f),
-				extras != null? extras.getFloat("HE_DESIRED"): mState.getFloat("desired_he", 0)
+				extras != null? extras.getFloat("O2_DESIRED"): state.getFloat("desired_o2", 0.32f),
+				extras != null? extras.getFloat("HE_DESIRED"): state.getFloat("desired_he", 0)
 		));
-		mTogglePo2.setChecked(mState.getBoolean("po2_high", false));
-		mMaxDepth.setValue(mState.getFloat("max_depth", new Float(Units.depthToxic())));
-		mMaxEnd.setValue(mState.getFloat("max_end", new Float(Units.depthNarcotic())));
-		mMaxPo2.setValue(mState.getFloat("max_po2", 1.4f));
+		mTogglePo2.setChecked(state.getBoolean("po2_high", false));
+		mMaxDepth.setValue(state.getFloat("max_depth", new Float(Units.depthToxic())));
+		mMaxEnd.setValue(state.getFloat("max_end", new Float(Units.depthNarcotic())));
+		mMaxPo2.setValue(state.getFloat("max_po2", 1.4f));
 		mTopupGas.setMix(new Mix(
-				mState.getFloat("topup_start_o2", 0.32f),
-				mState.getFloat("topup_start_he", 0)
+				state.getFloat("topup_start_o2", 0.32f),
+				state.getFloat("topup_start_he", 0)
 		));
-		mTopupStartPressure.setValue(mState.getFloat("topup_start_pres", Units.pressureTankLow()));
-		mTopupFinalPressure.setValue(mState.getFloat("topup_final_pres", Units.pressureTankFull()));
+		mTopupStartPressure.setValue(state.getFloat("topup_start_pres", Units.pressureTankLow()));
+		mTopupFinalPressure.setValue(state.getFloat("topup_final_pres", Units.pressureTankFull()));
+		
+		if(mCylinderDescription != null) {
+			updateCylinder();
+		}
 	}
 
 	public void saveState() {
@@ -261,10 +369,10 @@ public class GasMixer extends TabActivity {
 		e.putFloat("desired_pres", (int)Math.floor(mBlendDesiredPressure.getValue()));
 		Mix desired = mDesiredGas.getMix(), topup_start = mTopupGas.getMix();
 		e.putFloat("start_pres", mBlendStartPressure);
-		e.putFloat("desired_o2", desired.getfO2());
-		e.putFloat("desired_he", desired.getfHe());
-		e.putFloat("topup_start_o2", topup_start.getfO2());
-		e.putFloat("topup_start_he", topup_start.getfHe());
+		e.putFloat("desired_o2", (float)desired.getfO2());
+		e.putFloat("desired_he", (float)desired.getfHe());
+		e.putFloat("topup_start_o2", (float)topup_start.getfO2());
+		e.putFloat("topup_start_he", (float)topup_start.getfHe());
 		e.putBoolean("po2_high", mTogglePo2.isChecked());
 		e.putFloat("max_depth", mMaxDepth.getValue());
 		e.putFloat("max_end", mMaxEnd.getValue());
@@ -275,40 +383,45 @@ public class GasMixer extends TabActivity {
 	}
 
 	public void updateUnits(Integer last_unit) {
-		mBlendDesiredPressure.setDecimalPlaces(0);
-		mBlendDesiredPressure.setLimits(0f, new Float(Units.pressureTankMax()));
-		mBlendDesiredPressure.setIncrement(new Float(Units.pressureIncrement()));
+		NumberSelector blend_desired_pressure = mBlendDesiredPressure,
+				topup_start_pressure = mTopupStartPressure,
+				topup_final_pressure = mTopupFinalPressure,
+				max_depth = mMaxDepth,
+				max_end = mMaxEnd;
+		blend_desired_pressure.setDecimalPlaces(0);
+		blend_desired_pressure.setLimits(0f, new Float(Units.pressureTankMax()));
+		blend_desired_pressure.setIncrement(new Float(Units.pressureIncrement()));
 		mBlendDesiredPressureUnit.setText(Params.pressure(this)+":");
 
-		mTopupStartPressure.setDecimalPlaces(0);
-		mTopupStartPressure.setLimits(0f, new Float(Units.pressureTankMax()));
-		mTopupStartPressure.setIncrement(new Float(Units.pressureIncrement()));
+		topup_start_pressure.setDecimalPlaces(0);
+		topup_start_pressure.setLimits(0f, new Float(Units.pressureTankMax()));
+		topup_start_pressure.setIncrement(new Float(Units.pressureIncrement()));
 		mTopupStartPressureUnit.setText(Params.pressure(this)+":");
 
-		mTopupFinalPressure.setDecimalPlaces(0);
-		mTopupFinalPressure.setLimits(0f, new Float(Units.pressureTankMax()));
-		mTopupFinalPressure.setIncrement(new Float(Units.pressureIncrement()));
+		topup_final_pressure.setDecimalPlaces(0);
+		topup_final_pressure.setLimits(0f, new Float(Units.pressureTankMax()));
+		topup_final_pressure.setIncrement(new Float(Units.pressureIncrement()));
 
-		mMaxDepth.setDecimalPlaces(0);
-		mMaxDepth.setLimits(0f, new Float(Units.depthMax()));
-		mMaxDepth.setIncrement(new Float(Units.depthIncrement()));
+		max_depth.setDecimalPlaces(0);
+		max_depth.setLimits(0f, new Float(Units.depthMax()));
+		max_depth.setIncrement(new Float(Units.depthIncrement()));
 		mMaxDepthUnit.setText(Params.depth(this)+":");
 
-		mMaxEnd.setDecimalPlaces(0);
-		mMaxEnd.setLimits(0f, new Float(Units.depthMaxNarcotic()));
-		mMaxEnd.setIncrement(new Float(Units.depthIncrement()));
+		max_end.setDecimalPlaces(0);
+		max_end.setLimits(0f, new Float(Units.depthMaxNarcotic()));
+		max_end.setIncrement(new Float(Units.depthIncrement()));
 		mMaxEndUnit.setText(Params.depth(this)+":");
 
 		if(last_unit != null) {
 			// Convert existing values to new units
-			mMaxDepth.setValue(Units.convertDepth(mMaxDepth.getValue(), last_unit));
-			mMaxEnd.setValue(Units.convertDepth(mMaxEnd.getValue(), last_unit));
-			mBlendDesiredPressure.setValue(
-					Units.convertPressure(mBlendDesiredPressure.getValue(), last_unit));
-			mTopupStartPressure.setValue(
-					Units.convertPressure(mTopupStartPressure.getValue(), last_unit));
-			mTopupFinalPressure.setValue(
-					Units.convertPressure(mTopupFinalPressure.getValue(), last_unit));
+			max_depth.setValue(Units.convertDepth(max_depth.getValue(), last_unit));
+			max_end.setValue(Units.convertDepth(max_end.getValue(), last_unit));
+			blend_desired_pressure.setValue(
+					Units.convertPressure(blend_desired_pressure.getValue(), last_unit));
+			topup_start_pressure.setValue(
+					Units.convertPressure(topup_start_pressure.getValue(), last_unit));
+			topup_final_pressure.setValue(
+					Units.convertPressure(topup_final_pressure.getValue(), last_unit));
 			mBlendStartPressure = Units.convertPressure(mBlendStartPressure, last_unit);
 		}
 	}
@@ -356,6 +469,17 @@ public class GasMixer extends TabActivity {
 			} else {
 				mBestMixResult.setText(Params.mixFriendlyName(mBestMix, GasMixer.this));
 			}
+		}
+	}
+	
+	private void updateCylinder() {
+		long id = mState.getLong("cylinderid", -1);
+		if(id != -1) {
+			Cursor c = getContentResolver().query(Uri.withAppendedPath(CylinderSizeClient.CONTENT_URI,
+					String.valueOf(id)), new String[] { CylinderSizeClient.NAME }, null, null, null);
+			c.moveToFirst();
+			mCylinderDescription.setText(c.getString(c.getColumnIndexOrThrow(CylinderSizeClient.NAME)));
+			c.close();
 		}
 	}
 
