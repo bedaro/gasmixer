@@ -1,20 +1,23 @@
 package divestoclimb.lib.scuba;
 
-// This class is a container for a bunch of static methods which are
-// dependent on the current system of units in use in a SCUBA application.
-// This allows the rest of the application to be unit-independent.
-// It defines a heirarchy of types:
-// - Unit System: an arbitrary collection of units, one for each
-//   dimension of measurement available (length, mass, time, temperature, etc.).
-//   Real life examples in the strictest sense are SI and CGS.
-// - Unit: a defined value representing a dimension of measurement (foot, meter,
-//   kilogram, Pascal, etc.)
-// The application using this class should reference unit systems as
-// a way to change all the customary units of measurement and for
-// conversions. Any other decision that needs to be made regarding
-// units should be done via the other supplied methods, or as a last
-// resort the different *Unit methods to compare what the actual
-// unit is you're dealing with.
+/**
+ * This class is a container for a bunch of methods which are
+ * dependent on the current system of units in use in a SCUBA application.
+ * This allows the rest of the application to be unit-independent.
+ * It defines a hierarchy of types:
+ * - Unit System: an arbitrary collection of units, one for each
+ *   dimension of measurement available (length, mass, time, temperature, etc.).
+ *   Real life examples in the strictest sense are SI and CGS.
+ * - Unit: a defined value representing a dimension of measurement (foot, meter,
+ *   kilogram, Pascal, etc.)
+ * The application using this class should reference unit systems as
+ * a way to change all the customary units of measurement and for
+ * conversions. Any other decision that needs to be made regarding
+ * units should be done via the other supplied methods, or as a last
+ * resort the different *Unit methods to compare what the actual
+ * unit is you're dealing with.
+ * @author Ben Roberts (divestoclimb@gmail.com)
+ */
 public class Units {
 	
 	// The unit systems for this app
