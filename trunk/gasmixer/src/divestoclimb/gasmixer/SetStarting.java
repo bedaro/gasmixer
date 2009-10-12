@@ -17,6 +17,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+/**
+ * Show and edit the starting mix, pressure, and cylinder from the state.
+ * @author Ben Roberts (divestoclimb@gmail.com)
+ */
 public class SetStarting extends Activity implements Button.OnClickListener {
 	
 	private NumberSelector mPressureSelector;

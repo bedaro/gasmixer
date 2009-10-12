@@ -23,15 +23,23 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
-// Use linear algebra to compute the amounts of gases needed
+/**
+ * Compute and display the results of a blending operation based on the current
+ * state
+ * @author Ben Roberts (divestoclimb@gmail.com)
+ *
+ */
+// We begin by converting the initial and desired pressures to
+// volumes. If using real gases, this is based on the mixes of each.
+// Then, we use linear algebra to compute the amounts of gases needed
 // to blend the desired mix.
 // The matrix equation we need to solve looks like this:
-// [ 1	0	fo2,t			] [ po2 ]	[ pf*fo2,f-pi*fo2,i							]
-// [ 0	1	fhe,t			] [ phe ] = [ pf*fhe,f-pi*fhe,i							]
-// [ 0	0	100-fo2,t-fhe,t ] [ pt	]	[ pf*(100-fo2,f-fhe,f)-pi*(100-fo2,i-fhe,i)	]
+// [ 1	0	fo2,t ] [ vo2 ]   [ vf*fo2,f-vi*fo2,i ]
+// [ 0	1	fhe,t ] [ vhe ] = [ vf*fhe,f-vi*fhe,i ]
+// [ 0	0	vn2,t ] [ vt  ]   [ vf*fn2,f-vi*fn2,i ]
 // Where:
-// - pi = initial pressure in cylinder
-// - pf = desired pressure
+// - vi = initial volume of gas in cylinder
+// - vf = desired volume
 // - fo2,t = fraction of O2 in top-up gas
 // - fhe,t = fraction of He in top-up gas
 // - fo2,f = desired fraction of O2
@@ -39,20 +47,23 @@ import android.widget.TextView;
 // - fo2,i = starting fraction of O2
 // - fhe,i = starting fraction of He
 // And the unknowns:
-// - po2 = pressure of O2 to add
-// - phe = pressure of He to add
-// - pt = pressure of top-up gas to add
+// - vo2 = volume of O2 to add
+// - vhe = volume of He to add
+// - vt = volume of top-up gas to add
+//
+// Once we have the volumes, we can convert these back to pressures.
+// Logic for that is in GasSupply.
 //
 // One invalid solution to the above is if any of the unknowns come
 // out negative. If this happens, we have to set that unknown to 0
-// and solve for pi instead, and the difference between the solved
+// and solve for vi instead, and the difference between the solved
 // value and the given one is the amount the blender will have to
-// drain. Here's an example when setting po2 to 0:
-// [ fo2,i				0	fo2,t			] [ pi 	]	[ pf*fo2,f				]
-// [ fhe,i				1	fhe,t			] [ phe ] = [ pf*fhe,f				]
-// [ 100-fo2,i-fhe,i	0	100-fo2,t-fhe,t	] [ pt	]	[ pf*(100-fo2,f-fhe,f)	]
+// drain. Here's an example when setting vo2 to 0:
+// [ fo2,i	0	fo2,t ] [ vi  ]   [ vf*fo2,f ]
+// [ fhe,i	1	fhe,t ] [ vhe ] = [ vf*fhe,f ]
+// [ fn2,i	0	fn2,t ] [ vt  ]   [ vf*fn2,f ]
 public class BlendResult extends Activity {
-	
+
 	// Our known parameters
 	private float pi, pf;
 	private Mix mStart, mDesired, mTopup;
@@ -77,8 +88,8 @@ public class BlendResult extends Activity {
 
 		NumberFormat nf = Params.getPressureFormat(units);
 
-		pi   = state.getFloat("start_pres", 0);
-		pf   = state.getFloat("desired_pres", 0);
+		pi = state.getFloat("start_pres", 0);
+		pf = state.getFloat("desired_pres", 0);
 
 		// Make Mixes of our gases
 		mStart=new Mix(state.getFloat("start_o2", 0.21f), state.getFloat("start_he", 0));

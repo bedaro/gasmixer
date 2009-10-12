@@ -7,6 +7,12 @@ import android.os.Bundle;
 import android.text.util.Linkify;
 import android.widget.TextView;
 
+/**
+ * A generic activity for displaying information about the application. Looks up
+ * the app name and version, and Linkifies the result text.
+ * @author Ben Roberts (divestoclimb@gmail.com)
+ *
+ */
 public class About extends Activity {
 	
 	public void onCreate(Bundle savedInstanceState) {

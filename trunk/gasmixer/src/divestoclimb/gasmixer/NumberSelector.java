@@ -27,7 +27,7 @@ import android.widget.LinearLayout;
 
 /**
  * A custom component that shows an EditText View surrounded by plus and minus buttons.
- * @author BenR
+ * @author Ben Roberts (divestoclimb@gmail.com)
  *
  */
 public class NumberSelector extends LinearLayout implements Button.OnClickListener, TextWatcher {

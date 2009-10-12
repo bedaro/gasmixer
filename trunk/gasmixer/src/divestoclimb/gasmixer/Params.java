@@ -9,6 +9,11 @@ import android.content.res.Resources;
 import divestoclimb.lib.scuba.Mix;
 import divestoclimb.lib.scuba.Units;
 
+/**
+ * A class of static methods that provides some common functionality to the entire
+ * application. It also serves as an Android glue layer for some parts of ScubaLib
+ * @author Ben Roberts (divestoclimb@gmail.com)
+ */
 public class Params {
 	// The state preference filename
 	public static final String STATE_NAME = "State";
