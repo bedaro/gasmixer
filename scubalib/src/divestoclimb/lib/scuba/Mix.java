@@ -2,7 +2,10 @@ package divestoclimb.lib.scuba;
 
 import java.text.NumberFormat;
 
-// This is a class for a given gas mix of oxygen, nitrogen, and helium
+/**
+ * This is a class for a given gas mix of oxygen, nitrogen, and helium
+ * @author Ben Roberts (divestoclimb@gmail.com)
+ */
 public class Mix implements GasSource {
 	// The fraction of oxygen
 	private double mO2;

@@ -1,5 +1,9 @@
 package divestoclimb.lib.scuba;
 
+/**
+ * An interface for a source of breathing gas at depth.
+ * @author Ben Roberts (divestoclimb@gmail.com)
+ */
 public interface GasSource {
 
 	/**

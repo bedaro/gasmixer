@@ -2,7 +2,7 @@ package divestoclimb.lib.scuba;
 
 /**
  * A class that represents a gas cylinder (or a manifolded set of cylinders)
- * @author benr
+ * @author Ben Roberts (divestoclimb@gmail.com)
  */
 public class Cylinder {
 	// The total physical volume of the cylinder(s)
@@ -167,7 +167,7 @@ public class Cylinder {
 		//   deltaV0 = dV0/dv*deltav
 		// ...where dV0/dv = - V*R*T / (P0 * v^2)
 		// We want to make sure deltaV0 is less than 0.05, so...
-		//   deltav < P0 * v^2 / (2 * V * R * T)
+		//   deltav < P0 * v^2 / (20 * V * R * T)
 		double uncertainty_multiplier = mUnits.pressureAtm() / (20 * mInternalVolume * RT);
 
 		do {

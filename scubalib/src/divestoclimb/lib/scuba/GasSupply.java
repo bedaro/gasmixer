@@ -3,7 +3,7 @@ package divestoclimb.lib.scuba;
 /**
  * A class that represents a complete gas system: a tank containing a mix filled
  * to a given pressure. Supports operations to add and remove gas from the tank.
- * @author BenR
+ * @author Ben Roberts (divestoclimb@gmail.com)
  */
 public class GasSupply {
 	private Mix mMix;
@@ -66,6 +66,10 @@ public class GasSupply {
 		mPressure = p;
 	}
 	
+	/**
+	 * Get the total amount of gas in capacity units at sea level pressure
+	 * @return The amount of gas in the supply
+	 */
 	public double getGasAmount() {
 		if(mUseIdealGasLaws) {
 			return mCylinder.getIdealCapacityAtPressure(mPressure);
@@ -86,6 +90,12 @@ public class GasSupply {
 		return getGasAmount() * mMix.getfHe();
 	}
 	
+	/**
+	 * Adjust the pressure in the supply so there's the given amount of gas. 
+	 * @param amt The amount to leave in the cylinder in capacity units at
+	 * sea level pressure
+	 * @return The GasSupply object
+	 */
 	public GasSupply drainToGasAmount(double amt) {
 		if(mUseIdealGasLaws) {
 			mPressure = mCylinder.getIdealPressureAtCapacity(amt);
@@ -95,6 +105,12 @@ public class GasSupply {
 		return this;
 	}
 	
+	/**
+	 * Adjust the pressure in the supply so there's the given amount of oxygen.
+	 * @param amt The amount of oxygen to leave in the cylinder in capacity
+	 * units at sea level pressure
+	 * @return The GasSupply object
+	 */
 	public GasSupply drainToO2Amount(double amt) {
 		return drainToGasAmount(amt / mMix.getfO2());
 	}
