@@ -28,6 +28,12 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+/**
+ * Gas Mixer main activity: handles the main layout with all tabs: blend, topup,
+ * best mix
+ * @author Ben Roberts (divestoclimb@gmail.com)
+ *
+ */
 public class GasMixer extends TabActivity implements Button.OnClickListener {
 
 	protected SharedPreferences mSettings, mState;
@@ -246,17 +252,6 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		return true;
 	}
 
-	// Override the onPrepareOptionsMenu class to remove the menu
-	// item for the units system currently in use.
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		menu.clear();
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.main, menu);
-
-		return super.onPrepareOptionsMenu(menu);
-	}
-
 	@Override
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		Intent i;
@@ -299,6 +294,10 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		return null;
 	}
 	
+	/**
+	 * Our various button handlers
+	 * @param v The Button that was pressed
+	 */
 	public void onClick(View v) {
 		switch(v.getId()) {
 		case R.id.start_change:
@@ -307,7 +306,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 			);
 			break;
 		case R.id.button_blend:
-			saveState();
+			//saveState();
 			GasMixer.this.startActivity(
 					new Intent(this, BlendResult.class));
 			break;
@@ -317,7 +316,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 			startActivityForResult(cylinders, 0);
 			break;
 		case R.id.button_topup:
-			saveState();
+			//saveState();
 			GasMixer.this.startActivity(
 					new Intent(this, TopupResult.class));
 			break;
@@ -331,6 +330,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 	
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		// Currently the only activity we start that returns a result is CylinderSizes
 		if(resultCode == RESULT_OK) {
 			Bundle b = intent.getExtras();
 			long id = b.getLong("selected");
@@ -341,13 +341,22 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		}
 	}
 	
-	// Test for the ability to fetch cylinder ID's on this system
+	/**
+	 * Test for the ability to fetch cylinder ID's on this system
+	 * @return true if the cylinder size activity was found, false otherwise
+	 */
 	private boolean testCylinders() {
 		Intent cylinderTest = new Intent(Intent.ACTION_GET_CONTENT);
 		cylinderTest.setType("vnd.android.cursor.item/vnd.divestoclimb.scuba.equipment.cylinders.size");
 		return (cylinderTest.resolveActivity(getPackageManager()) != null);
 	}
 
+	/**
+	 * Initialize all fields in the Activity based on values in the state and the
+	 * current units
+	 * @param extras Any special parameters passed to the activity that should
+	 * override the state
+	 */
 	private void initFields(Bundle extras) {
 		Units u = mUnits;
 		SharedPreferences state = mState;
@@ -373,6 +382,10 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		}
 	}
 
+	// Write out all Activity values to the state file.
+	// We use a state file instead of an instance state Bundle so all Activities in
+	// the application can exchange data with it.
+	// Called by onPause()
 	public void saveState() {
 		SharedPreferences.Editor e = mState.edit();
 		e.putFloat("desired_pres", (int)Math.floor(mBlendDesiredPressure.getValue()));
@@ -391,6 +404,11 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		e.commit();
 	}
 
+	/**
+	 * Set everything in the interface that's unit-dependent
+	 * @param last_unit The previous unit system that was being used. If set,
+	 * also converts all values in the state to the new system of units.
+	 */
 	public void updateUnits(Integer last_unit) {
 		NumberSelector blend_desired_pressure = mBlendDesiredPressure,
 				topup_start_pressure = mTopupStartPressure,
@@ -435,7 +453,11 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 			mBlendStartPressure = u.convertPressure(mBlendStartPressure, last_unit);
 		}
 	}
-	
+
+	/**
+	 * Update the MOD, END and/or EAD fields
+	 * @param m The mix to use to compute the MOD/END/EAD
+	 */
 	private void updateModEnd(Mix m) {
 		Units u = mUnits;
 		NumberFormat nf = NumberFormat.getIntegerInstance();

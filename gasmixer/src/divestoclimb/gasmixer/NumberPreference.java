@@ -12,6 +12,10 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+/**
+ * A DialogPreference containing a single NumberSelector
+ * @author Ben Roberts (divestoclimb@gmail.com)
+ */
 public class NumberPreference extends DialogPreference {
 	private NumberSelector mNumberSelector;
 	private LinearLayout mLayout;

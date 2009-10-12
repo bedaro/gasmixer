@@ -15,6 +15,10 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
+/**
+ * A DialogPreference that displays a single TrimixSelector
+ * @author Ben Roberts (divestoclimb@gmail.com)
+ */
 public class TrimixPreference extends DialogPreference {
 	private TrimixSelector mTrimixSelector;
 	

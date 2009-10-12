@@ -10,6 +10,10 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 
+/**
+ * Custom view for selecting a SCUBA mix
+ * @author Ben Roberts (divestoclimb@gmail.com)
+ */
 public class TrimixSelector extends RelativeLayout
 		implements SeekBar.OnSeekBarChangeListener, NumberSelector.ValueChangedListener {
 	

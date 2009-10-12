@@ -23,6 +23,11 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+/**
+ * Frontend for GasSupply's topup capabilities.
+ * @author Ben Roberts (divestoclimb@gmail.com)
+ *
+ */
 public class TopupResult extends Activity {
 
 	private Mix mResult;
@@ -77,7 +82,6 @@ public class TopupResult extends Activity {
 		}
 		mResult = fill.topup(topup, (int)state.getFloat("topup_final_pres", 0)).getMix();
 
-		//mResult = new Mix(fo2f, fhef);
 		Resources r = getResources();
 		String resultText = String.format(r.getString(R.string.topup_result),
 				Params.mixFriendlyName(mResult, this)
