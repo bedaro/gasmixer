@@ -1,5 +1,3 @@
-=summary Documentation of the Intent API and cylinder Content Provider in Scuba Tanks
-
 (this is a stub at the moment, I'll get to it soon)
 
 =Introduction=
