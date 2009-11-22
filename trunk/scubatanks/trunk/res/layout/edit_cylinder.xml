@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res/divestoclimb.scuba.equipment"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:padding="5dp">
+	<TextView
+		android:id="@+id/name_prompt"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="@string/name_prompt"
+		android:textSize="20sp" />
+	<EditText
+		android:id="@+id/name"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/name_prompt" />
+		
+	<TextView
+		android:id="@+id/internal_volume_prompt"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/name"
+		android:layout_alignParentLeft="true"
+		android:text="@string/internal_volume_prompt"
+		android:layout_marginTop="7dp" />
+	<divestoclimb.scuba.equipment.NumberSelector
+		android:id="@+id/internal_volume"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/name"
+		android:layout_alignParentRight="true"
+		app:textboxwidth="70sp" />
+	<TextView
+		android:id="@+id/internal_volume_unit"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toLeftOf="@id/internal_volume"
+		android:layout_alignBaseline="@id/internal_volume_prompt" />
+		
+	<TextView
+		android:id="@+id/capacity_prompt"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/internal_volume"
+		android:layout_alignParentLeft="true"
+		android:text="@string/capacity_prompt"
+		android:layout_marginTop="7dp" />
+	<divestoclimb.scuba.equipment.NumberSelector
+		android:id="@+id/capacity"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/internal_volume"
+		android:layout_alignParentRight="true"
+		app:textboxwidth="70sp" />
+	<TextView
+		android:id="@+id/capacity_unit"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toLeftOf="@id/capacity"
+		android:layout_alignBaseline="@id/capacity_prompt" />
+		
+	<TextView
+		android:id="@+id/serv_pressure_prompt"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/capacity"
+		android:layout_alignParentLeft="true"
+		android:text="@string/serv_pressure_prompt"
+		android:layout_marginTop="7dp" />
+	<divestoclimb.scuba.equipment.NumberSelector
+		android:id="@+id/serv_pressure"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/capacity"
+		android:layout_alignParentRight="true"
+		app:textboxwidth="70sp" />
+	<TextView
+		android:id="@+id/serv_pressure_unit"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toLeftOf="@id/serv_pressure"
+		android:layout_alignBaseline="@id/serv_pressure_prompt" />
+
+	<Button
+		android:id="@+id/button_help"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/serv_pressure"
+		android:layout_alignParentRight="true"
+		android:text="@string/help" />
+	<ToggleButton
+		android:id="@+id/metric_toggle"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toLeftOf="@id/button_help"
+		android:layout_alignTop="@id/button_help"
+		android:layout_marginTop="1dp"
+		android:textOn="@string/metric"
+		android:textOff="@string/imperial" />
+
+	<LinearLayout
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/button_help"
+		android:orientation="horizontal"
+		android:baselineAligned="false">
+
+		<Button
+			android:id="@+id/button_ok"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="2"
+			android:text="@string/ok" />
+		<Button
+			android:id="@+id/button_cancel"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:text="@string/cancel" />
+		<Button
+			android:id="@+id/button_delete"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:text="@string/delete" />
+
+	</LinearLayout>
+</RelativeLayout>

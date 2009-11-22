@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">Scuba Tanks</string>
+	<string name="cylinder_size_list">Scuba Tank Sizes</string>
+	<string name="edit_cylinder">Edit Cylinder Size</string>
+	<string name="create_cylinder">New Cyinder Size</string>
+	<string name="select_cylinder">Select a Tank Size:</string>
+	<string name="create_new">New</string>
+	<string name="edit">Edit</string>
+	<string name="delete">Delete</string>
+	<string name="luxfer_aluminum_80">Aluminum 80 (Luxfer)</string>
+	<string name="double_steel_95s">"Double LP 95's"</string>
+	<string name="name_prompt">Name:</string>
+	<string name="internal_volume_prompt">Internal Volume</string>
+	<string name="capacity_prompt">Capacity</string>
+	<string name="serv_pressure_prompt">Service Pressure</string>
+	<string name="volume_imperial">in<sup><small>3</small></sup>:</string>
+	<string name="volume_metric">L:</string>
+	<string name="capacity_imperial">ft<sup><small>3</small></sup>:</string>
+	<string name="capacity_metric">L:</string>
+	<string name="pres_imperial">psi:</string>
+	<string name="pres_metric">bar:</string>
+	<string name="imperial">US</string>
+	<string name="metric">Metric</string>
+	<string name="ok">OK</string>
+	<string name="cancel">Cancel</string>
+	<string name="help">Help</string>
+	<string name="switch_to_metric">Metric</string>
+	<string name="switch_to_imperial">Imperial</string>
+	<string name="about">About</string>
+	<string name="about_text">%1$s v%2$s
+		\n\nCopyright 2009 Ben Roberts. divestoclimb@gmail.com.
+
+		\n\nLicensed under the Apache License, Version 2.0 (the "License");
+		you may not use any part of this distribution except in
+		compliance with the License. You may obtain a copy of the
+		License at http://www.apache.org/licenses/LICENSE-2.0 Unless
+		required by applicable law or agreed to in writing, software
+		distributed under the License is distributed on an "AS IS"
+		BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+		express or implied. See the License for the specific language
+		governing permissions and limitations under the License.
+		
+		\n\nThanks to Marcus Sundberg for providing common cylinder capacities
+		in metric.
+	</string>
+	<string name="help_edit">About Cylinder Sizes</string>
+	<string name="help_edit_text">In order to store a cylinder size, you must
+		choose a name, set the fill pressure, and specify how big the cylinder is.
+		Size can be set in two ways:
+
+		\n\nIf you know the <b>internal volume</b> of the cylinder, enter that. Cylinder
+		manufacturers usually have this number in their specifications, and
+		divers outside of the U.S. tend to think of their cylinder size this way
+		anyway. If you are using this size for gas blending, you will get the most
+		accurate results by setting this number.
+
+		\n\nDivers in the U.S. and surrounding areas consider cylinder size in terms
+		of <b>capacity</b> at service pressure, e.g. an Aluminum 80 holds 80 cubic
+		feet of gas. If you know only this number, you can enter it in as the
+		Capacity and the internal volume will be computed. This number is not as
+		accurate, though, for describing how much gas the cylinder <i>really</i>
+		holds.
+
+		\n\nIf you wish to use manifolded doubles, enter the total combined size
+		of the two tanks as the "cylinder" size.
+
+		\n\nYou can switch between imperial and metric for all cylinders by pressing
+		the <b>Menu</b> button on the list screen. The units button on the edit
+		screen lets you switch back and forth temporarily, but it will not save
+		for next time.
+	</string>
+</resources>

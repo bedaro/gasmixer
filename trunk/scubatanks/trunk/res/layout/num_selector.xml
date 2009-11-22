@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+	<ImageButton
+		android:src="@drawable/minus"
+		android:id="@+id/minus"
+		android:layout_width="40sp"
+		android:layout_height="40sp"/>
+	<EditText
+		android:id="@+id/text1"
+		android:layout_width="wrap_content"
+		android:layout_height="40sp"
+		android:gravity="center"
+		android:singleLine="true"/>
+	<ImageButton
+		android:src="@drawable/plus"
+		android:id="@+id/plus"
+		android:layout_width="40sp"
+		android:layout_height="40sp"/>
+</merge>
