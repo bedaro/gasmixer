@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+	<Button
+		android:id="@+id/button_help"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/serv_pressure"
+		android:layout_alignParentRight="true"
+		android:text="@string/help" />
+	<ToggleButton
+		android:id="@+id/metric_toggle"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_toLeftOf="@id/button_help"
+		android:layout_alignTop="@id/button_help"
+		android:layout_marginTop="1dp"
+		android:textOn="@string/metric"
+		android:textOff="@string/imperial" />
+
+	<LinearLayout
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/button_help"
+		android:orientation="horizontal"
+		android:baselineAligned="false">
+
+		<Button
+			android:id="@+id/button_ok"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="2"
+			android:text="@string/ok" />
+		<Button
+			android:id="@+id/button_cancel"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:text="@string/cancel" />
+		<Button
+			android:id="@+id/button_delete"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:text="@string/delete" />
+
+	</LinearLayout>
+
+</merge>
