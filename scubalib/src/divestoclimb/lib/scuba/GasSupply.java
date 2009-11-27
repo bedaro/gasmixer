@@ -9,6 +9,7 @@ public class GasSupply {
 	private Mix mMix;
 	private Cylinder mCylinder;
 	private double mPressure;
+	private float mTemperature;
 	private boolean mUseIdealGasLaws;
 	
 	public GasSupply(Cylinder c) {
@@ -28,10 +29,15 @@ public class GasSupply {
 	}
 	
 	public GasSupply(Cylinder c, Mix m, int pressure, boolean ideal_gas_laws) {
+		this(c, m, pressure, ideal_gas_laws, c.getUnits().absTempAmbient());
+	}
+	
+	public GasSupply(Cylinder c, Mix m, int pressure, boolean ideal_gas_laws, float temperature) {
 		mMix = m;
 		mCylinder = c;
 		mPressure = pressure;
 		mUseIdealGasLaws = ideal_gas_laws;
+		mTemperature = temperature;
 	}
 	
 	public void useIdealGasLaws() {
@@ -66,6 +72,14 @@ public class GasSupply {
 		mPressure = p;
 	}
 	
+	public double getTemperature() {
+		return mTemperature;
+	}
+	
+	public void setTemperature(int t) {
+		mTemperature = t;
+	}
+	
 	/**
 	 * Get the total amount of gas in capacity units at sea level pressure
 	 * @return The amount of gas in the supply
@@ -74,7 +88,7 @@ public class GasSupply {
 		if(mUseIdealGasLaws) {
 			return mCylinder.getIdealCapacityAtPressure(mPressure);
 		} else {
-			return mCylinder.getVdwCapacityAtPressure(mPressure, mMix);
+			return mCylinder.getVdwCapacityAtPressure(mPressure, mMix, mTemperature);
 		}
 	}
 	
@@ -100,7 +114,7 @@ public class GasSupply {
 		if(mUseIdealGasLaws) {
 			mPressure = mCylinder.getIdealPressureAtCapacity(amt);
 		} else {
-			mPressure = mCylinder.getVdwPressureAtCapacity(amt, mMix);
+			mPressure = mCylinder.getVdwPressureAtCapacity(amt, mMix, mTemperature);
 		}
 		return this;
 	}
@@ -159,7 +173,7 @@ public class GasSupply {
 		if(mUseIdealGasLaws) {
 			mPressure = mCylinder.getIdealPressureAtCapacity(new_total_amt);
 		} else {
-			mPressure = mCylinder.getVdwPressureAtCapacity(new_total_amt, mMix);
+			mPressure = mCylinder.getVdwPressureAtCapacity(new_total_amt, mMix, mTemperature);
 		}
 		return this;
 	}
@@ -196,10 +210,10 @@ public class GasSupply {
 		// Start with two guesses for Secant Method
 		// The first guess assumes ideal behavior as the gas is added, and assumes
 		// the topup mix is close enough to determine capacity.
-		double vt_n = (1 - pressure / (float)final_pressure) * c.getVdwCapacityAtPressure(final_pressure, m);
+		double vt_n = (1 - pressure / (float)final_pressure) * c.getVdwCapacityAtPressure(final_pressure, m, mTemperature);
 		// The second guess assumes ideal behavior as the gas is added, and assumes
 		// the starting mix is close enough to determine capacity.
-		double vt_n_1 = (1 - pressure / (float)final_pressure) * c.getVdwCapacityAtPressure(final_pressure, mix);
+		double vt_n_1 = (1 - pressure / (float)final_pressure) * c.getVdwCapacityAtPressure(final_pressure, mix, mTemperature);
 
 		double d;
 		do {
