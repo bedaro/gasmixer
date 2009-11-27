@@ -4,7 +4,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 import android.content.Context;
-import android.content.res.Resources;
 
 import divestoclimb.lib.scuba.Mix;
 import divestoclimb.lib.scuba.Units;
@@ -42,15 +41,14 @@ public class Params {
 	 */
 	public static String mixFriendlyName(Mix m, Context c) {
 		String fn = m.friendlyName();
-		Resources r = c.getResources();
 		if(fn == Mix.OXYGEN) {
-			return r.getString(R.string.oxygen);
+			return c.getString(R.string.oxygen);
 		} else if(fn == Mix.NITROGEN) {
-			return r.getString(R.string.nitrogen);
+			return c.getString(R.string.nitrogen);
 		} else if(fn == Mix.HELIUM) {
-			return r.getString(R.string.helium);
+			return c.getString(R.string.helium);
 		} else if(fn == Mix.AIR) {
-			return r.getString(R.string.air);
+			return c.getString(R.string.air);
 		} else {
 			return fn;
 		}
@@ -58,12 +56,16 @@ public class Params {
 	
 	// Get the string value for the current unit of pressure
 	public static String pressure(Context c, Units u) {
-		return c.getResources().getString(u.pressureUnit() == Units.IMPERIAL? R.string.pres_imperial: R.string.pres_metric);
+		return c.getString(u.pressureUnit() == Units.IMPERIAL? R.string.pres_imperial: R.string.pres_metric);
 	}
 	
 	// Get the string value for the current unit of depth
 	public static String depth(Context c, Units u) {
-		return c.getResources().getString(u.depthUnit() == Units.DEPTH_FOOT? R.string.depth_imperial: R.string.depth_metric);
+		return c.getString(u.depthUnit() == Units.IMPERIAL? R.string.depth_imperial: R.string.depth_metric);
+	}
+	
+	public static String temperature(Context c, Units u) {
+		return c.getString(u.relTempUnit() == Units.IMPERIAL? R.string.reltemp_imperial: R.string.reltemp_metric);
 	}
 	
 }

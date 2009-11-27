@@ -12,7 +12,6 @@ import divestoclimb.scuba.equipment.CylinderSizeClient;
 import Jama.Matrix;
 import android.app.Activity;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -65,7 +64,7 @@ import android.widget.TextView;
 public class BlendResult extends Activity {
 
 	// Our known parameters
-	private float pi, pf;
+	private float pi, pf, t;
 	private Mix mStart, mDesired, mTopup;
 	// The parameters we are solving for
 	private float po2, phe, pt, pdrain;
@@ -90,6 +89,7 @@ public class BlendResult extends Activity {
 
 		pi = state.getFloat("start_pres", 0);
 		pf = state.getFloat("desired_pres", 0);
+		t = units.convertAbsTemp(settings.getFloat("temperature", 294), Units.METRIC);
 
 		// Make Mixes of our gases
 		mStart=new Mix(state.getFloat("start_o2", 0.21f), state.getFloat("start_he", 0));
@@ -100,48 +100,67 @@ public class BlendResult extends Activity {
 		// variables
 		boolean solved = solve(settings, state, units);
 
-		Resources r = getResources();
 		String presUnit = Params.pressure(this, units);
 		if(! solved) {
-			mResultText=r.getString(R.string.result_impossible);
+			mResultText=getString(R.string.result_impossible);
 		} else {
-			mResultText=String.format(r.getString(R.string.start_with),
-					(pi == 0)? r.getString(R.string.empty_tank)
-					: String.format(r.getString(R.string.gas_amount),
+			mResultText=String.format(getString(R.string.start_with),
+					(pi == 0)? getString(R.string.empty_tank)
+					: String.format(getString(R.string.gas_amount),
 							nf.format(pi),
 							presUnit,
 							Params.mixFriendlyName(mStart, this))
 			)+"\n";
 			if(pi - pdrain >= Math.pow(10, units.pressurePrecision() * -1) * 0.5) {
 				// Drain
-				mResultText+="- "+String.format(r.getString(R.string.result_drain),
+				mResultText+="- "+String.format(getString(R.string.result_drain),
 						nf.format(pdrain),
 						presUnit
 				)+"\n";
 			}
-			if(Math.round(po2) > Math.round(pdrain)) {
-				mResultText+="- "+String.format(r.getString(R.string.result_fillto),
-						nf.format(po2),
-						presUnit,
-						r.getString(R.string.oxygen)
-				)+"\n";
+			float pretop;
+			if(settings.getBoolean("he_first", false)) {
+				if(Math.round(phe) > Math.round(pdrain)) {
+					mResultText+="- "+String.format(getString(R.string.result_fillto),
+							nf.format(phe),
+							presUnit,
+							getString(R.string.helium)
+					)+"\n";
+				}
+				if(Math.round(po2) > Math.round(phe)) {
+					mResultText+="- "+String.format(getString(R.string.result_fillto),
+							nf.format(po2),
+							presUnit,
+							getString(R.string.oxygen)
+					)+"\n";
+				}
+				pretop = po2;
+			} else {
+				if(Math.round(po2) > Math.round(pdrain)) {
+					mResultText+="- "+String.format(getString(R.string.result_fillto),
+							nf.format(po2),
+							presUnit,
+							getString(R.string.oxygen)
+					)+"\n";
+				}
+				if(Math.round(phe) > Math.round(po2)) {
+					mResultText+="- "+String.format(getString(R.string.result_fillto),
+							nf.format(phe),
+							presUnit,
+							getString(R.string.helium)
+					)+"\n";
+				}
+				pretop = phe;
 			}
-			if(Math.round(phe) > Math.round(po2)) {
-				mResultText+="- "+String.format(r.getString(R.string.result_fillto),
-						nf.format(phe),
-						presUnit,
-						r.getString(R.string.helium)
-				)+"\n";
-			}
-			if(Math.round(pt) > Math.round(phe)) {
-				mResultText+="- "+String.format(r.getString(R.string.result_fillto),
+			if(Math.round(pt) > Math.round(pretop)) {
+				mResultText+="- "+String.format(getString(R.string.result_fillto),
 						nf.format(pt),
 						presUnit,
 						Params.mixFriendlyName(mTopup, this)
 				)+"\n";
 			}
-			mResultText+=String.format(r.getString(R.string.result_end),
-					String.format(r.getString(R.string.gas_amount),
+			mResultText+=String.format(getString(R.string.result_end),
+					String.format(getString(R.string.gas_amount),
 							nf.format(pf),
 							presUnit,
 							Params.mixFriendlyName(mDesired, this)
@@ -153,7 +172,7 @@ public class BlendResult extends Activity {
 		resultView.setText(mResultText);
 		if(solved) {
 			TextView reminderView = (TextView) findViewById(R.id.reminder1);
-			reminderView.setText(r.getString(R.string.analyze_warning));
+			reminderView.setText(getString(R.string.analyze_warning));
 		}
 	
 		// set button listeners
@@ -190,13 +209,8 @@ public class BlendResult extends Activity {
 			c = new Cylinder(units, units.volumeNormalTank(), (int)units.pressureTankFull());
 		}
 
-		GasSupply have = new GasSupply(c, mStart, (int)pi),
-		want = new GasSupply(c, mDesired, (int)pf);
-		
-		if(! real) {
-			have.useIdealGasLaws();
-			want.useIdealGasLaws();
-		}
+		GasSupply have = new GasSupply(c, mStart, (int)pi, ! real, t),
+		want = new GasSupply(c, mDesired, (int)pf, ! real, t);
 
 		// Object property caching for performance 
 		double fo2i = mStart.getfO2(), fhei = mStart.getfHe(),
@@ -282,9 +296,17 @@ public class BlendResult extends Activity {
 		// If we get here, it means we found a solution. Convert the volumes back to
 		// pressures by doing the blending operation on have.
 		pdrain = (float)have.drainToGasAmount(start_vol).getPressure();
-		po2 = o2_added > 0? (float)have.addO2(o2_added).getPressure(): pdrain;
-		phe = he_added > 0? (float)have.addHe(he_added).getPressure(): po2;
-		pt = topup_added > 0? (float)have.addGas(mTopup, topup_added).getPressure(): phe;
+		float pretop;
+		if(settings.getBoolean("he_first", false)) {
+			phe = he_added > 0? (float)have.addHe(he_added).getPressure(): pdrain;
+			po2 = o2_added > 0? (float)have.addO2(o2_added).getPressure(): phe;
+			pretop = po2;
+		} else {
+			po2 = o2_added > 0? (float)have.addO2(o2_added).getPressure(): pdrain;
+			phe = he_added > 0? (float)have.addHe(he_added).getPressure(): po2;
+			pretop = phe;
+		}
+		pt = topup_added > 0? (float)have.addGas(mTopup, topup_added).getPressure(): pretop;
 		return true;
 	}
 

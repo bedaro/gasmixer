@@ -2,51 +2,71 @@
 <PreferenceScreen
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		xmlns:app="http://schemas.android.com/apk/res/divestoclimb.gasmixer">
-	<divestoclimb.gasmixer.TrimixPreference
-		android:key="topup_gas"
-		android:title="@string/topup_gas"
-		android:defaultValue="0.21 0"
-		android:dialogIcon="@drawable/topup_pick" />
+	<PreferenceCategory
+		android:title="@string/blend_opts">
+		<divestoclimb.gasmixer.TrimixPreference
+			android:key="topup_gas"
+			android:title="@string/topup_gas"
+			android:defaultValue="0.21 0"
+			android:dialogIcon="@drawable/topup_pick" />
+
+		<!-- Temperature preference is always stored in Kelvin -->
+		<divestoclimb.gasmixer.TemperaturePreference
+			android:key="temperature"
+			android:title="@string/temperature"
+			android:defaultValue="294"
+			app:textboxwidth="50sp" />
 		
-	<CheckBoxPreference
-		android:key="vdw"
-		android:title="@string/real_gas"
-		android:summary="@string/real_gas_summary"
-		android:defaultValue="true" />
+		<CheckBoxPreference
+			android:key="vdw"
+			android:title="@string/real_gas"
+			android:summary="@string/real_gas_summary"
+			android:defaultValue="true" />
+		
+		<CheckBoxPreference
+			android:key="he_first"
+			android:title="@string/add_he_first"
+			android:summary="@string/add_he_first_summary"
+			android:defaultValue="false" />
+	</PreferenceCategory>
 
-	<divestoclimb.gasmixer.NumberPreference
-		android:key="max_norm_po2"
-		android:title="@string/max_norm_po2"
-		android:defaultValue="1.4"
-		app:unitLabel="ata:"
-		app:textboxwidth="50sp"
-		app:decimalplaces="2"
-		app:increment="0.1"
-		app:lowerlimit="0.4"
-		app:upperlimit="1.4" />
+	<PreferenceCategory
+		android:title="@string/gas_units_opts">
+		
+		<ListPreference
+			android:key="units"
+			android:title="@string/units" 
+			android:entries="@array/units"
+			android:entryValues="@array/unitvalues"
+			android:dialogIcon="@drawable/units_imperial"
+			android:defaultValue="0" />
 
-	<divestoclimb.gasmixer.NumberPreference
-		android:key="max_hi_po2"
-		android:title="@string/max_hi_po2"
-		android:defaultValue="1.6"
-		app:unitLabel="ata:"
-		app:textboxwidth="50sp"
-		app:decimalplaces="2"
-		app:increment="0.1"
-		app:lowerlimit="0.4"
-		app:upperlimit="1.6" />
+		<divestoclimb.gasmixer.NumberPreference
+			android:key="max_norm_po2"
+			android:title="@string/max_norm_po2"
+			android:defaultValue="1.4"
+			app:unitLabel="ata:"
+			app:textboxwidth="60sp"
+			app:decimalplaces="2"
+			app:increment="0.1"
+			app:lowerlimit="0.4"
+			app:upperlimit="1.4" />
 
-	<CheckBoxPreference
-		android:key="o2_is_narcotic"
-		android:title="@string/o2_is_narcotic"
-		android:summary="@string/o2_narcotic_summary"
-		android:defaultValue="true" />
+		<divestoclimb.gasmixer.NumberPreference
+			android:key="max_hi_po2"
+			android:title="@string/max_hi_po2"
+			android:defaultValue="1.6"
+			app:unitLabel="ata:"
+			app:textboxwidth="60sp"
+			app:decimalplaces="2"
+			app:increment="0.1"
+			app:lowerlimit="0.4"
+			app:upperlimit="1.6" />
 
-	<ListPreference
-		android:key="units"
-		android:title="@string/units" 
-		android:entries="@array/units"
-		android:entryValues="@array/unitvalues"
-		android:dialogIcon="@drawable/units_imperial"
-		android:defaultValue="0" />
+		<CheckBoxPreference
+			android:key="o2_is_narcotic"
+			android:title="@string/o2_is_narcotic"
+			android:summary="@string/o2_narcotic_summary"
+			android:defaultValue="true" />
+	</PreferenceCategory>
 </PreferenceScreen>

@@ -11,7 +11,6 @@ import divestoclimb.scuba.equipment.CylinderSizeClient;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -75,15 +74,13 @@ public class TopupResult extends Activity {
 		}
 		GasSupply fill = new GasSupply(c,
 				new Mix(state.getFloat("topup_start_o2", 0.21f), state.getFloat("topup_start_he", 0)),
-				(int)state.getFloat("topup_start_pres", 0)
+				(int)state.getFloat("topup_start_pres", 0),
+				! real,
+				mUnits.convertAbsTemp(settings.getFloat("temperature", 294), Units.METRIC)
 		);
-		if(! real) {
-			fill.useIdealGasLaws();
-		}
 		mResult = fill.topup(topup, (int)state.getFloat("topup_final_pres", 0)).getMix();
 
-		Resources r = getResources();
-		String resultText = String.format(r.getString(R.string.topup_result),
+		String resultText = String.format(getString(R.string.topup_result),
 				Params.mixFriendlyName(mResult, this)
 		);
 
@@ -91,12 +88,12 @@ public class TopupResult extends Activity {
 		resultView.setText(resultText);
 		TextView reminder1View = (TextView) findViewById(R.id.reminder1);
 		reminder1View.setText(
-				String.format(r.getString(R.string.topup_reminder),
+				String.format(getString(R.string.topup_reminder),
 						Params.mixFriendlyName(topup, this)
 				)
 		);
 		TextView reminder2View = (TextView) findViewById(R.id.reminder2);
-		reminder2View.setText(r.getString(R.string.analyze_warning));
+		reminder2View.setText(getString(R.string.analyze_warning));
 		
 		mFinalMOD = (TextView)findViewById(R.id.mod);
 		mFinalEADENDLabel = (TextView)findViewById(R.id.ead_end_label);

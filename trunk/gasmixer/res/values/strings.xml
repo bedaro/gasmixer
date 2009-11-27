@@ -52,6 +52,11 @@
 	<string name="change">Change</string>
 	<string name="close">Close</string>
 	<string name="units">Units</string>
+	<string name="temperature">Temperature</string>
+	<string name="blend_opts">Blending options</string>
+	<string name="gas_units_opts">Units and gas settings</string>
+	<string name="reltemp_imperial">˚F</string>
+	<string name="reltemp_metric">˚C</string>
 	<string name="o2_is_narcotic">O2 Is Narcotic</string>
 	<string name="o2_narcotic_summary">"Account for Oxygen when computing END's?"</string>
 	<string name="max_norm_po2">Max Normal pO2</string>
@@ -59,6 +64,8 @@
 	<string name="topup_gas">Top-Up Gas</string>
 	<string name="real_gas">Use Real Gas Equations</string>
 	<string name="real_gas_summary">Improves accuracy of blend and topup calculations</string>
+	<string name="add_he_first">Add Helium First</string>
+	<string name="add_he_first_summary">When blending, add helium first instead of oxygen</string>
 	<string name="scubatanks_needed">ScubaTanks Needed</string>
 	<string name="scubatanks_message">"To get support for real gas (Van der Waals) mixing, you must install the free ScubaTanks application and choose the size of cylinder you will be filling.
 If you don't want this, you can continue using the app with the less accurate ideal gas laws."</string>
@@ -86,5 +93,8 @@ If you don't want this, you can continue using the app with the less accurate id
 		responsibility whatsoever for its use by other parties, and
 		makes no guarantees, expressed or implied, about its quality,
 		reliability, or any other characteristic.
+
+		\n\nThanks to Marcus Sundberg for providing common cylinder capacities
+		in metric.
 	</string>
 </resources>

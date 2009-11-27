@@ -24,6 +24,7 @@ public class TrimixPreference extends DialogPreference {
 	
 	private Mix mMix;
 	private String mMixString;
+	private static final NumberFormat nf = new DecimalFormat(".###");
 	
 	public TrimixPreference(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
@@ -39,14 +40,12 @@ public class TrimixPreference extends DialogPreference {
 		this(context, null);
 	}
 	
-	private String mixToString(Mix mix) {
-		NumberFormat nf = new DecimalFormat(".###");
+	private static String mixToString(Mix mix) {
 		return nf.format(mix.getfO2())+" "+nf.format(mix.getfHe());
 	}
 	
 	public static Mix stringToMix(String s) {
 		String ss[] = s.split("\\s");
-		NumberFormat nf = new DecimalFormat(".###");
 		try {
 			return new Mix(nf.parse(ss[0]).floatValue(), nf.parse(ss[1]).floatValue());
 		} catch(ParseException e) { return null; }
@@ -74,7 +73,7 @@ public class TrimixPreference extends DialogPreference {
 	protected void onBindDialogView(View view) {
 		super.onBindDialogView(view);
 
-		mTrimixSelector.setMix(getMix());
+		mTrimixSelector.setMix(mMix);
 
 	}
 	
@@ -114,7 +113,7 @@ public class TrimixPreference extends DialogPreference {
 		}
 
 		final SavedState myState = new SavedState(superState);
-		myState.mixString = mixToString(getMix());
+		myState.mixString = mixToString(mMix);
 		return myState;
 	}
 
