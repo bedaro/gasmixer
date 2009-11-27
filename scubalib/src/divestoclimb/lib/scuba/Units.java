@@ -120,8 +120,12 @@ public class Units {
 	// measurements. These are used as default values throughout
 	// the application.
 	private static final int pressure_tank_low[] = { 700, 50 };
-	private static final int pressure_tank_full[] = { 3000, 200 };
+	private static final int pressure_tank_full[] = { 3000, 207 };
 	private static final int pressure_tank_max[] = { 4500, 300 };
+	
+	// Common cylinder service pressures that are outside of the default
+	// increment
+	private static final float pressure_nonstandard[][] = { { 2250, 2640, 3442 }, { 207, 232 } };
 	
 	// This method defines which unit of pressure is defined for each
 	// unit system. Use this method when determining what the unit is
@@ -144,6 +148,7 @@ public class Units {
 	public float pressureTankFull() { return pressure_tank_full[pressureUnit()]; }
 	public float pressureTankMax() { return pressure_tank_max[pressureUnit()]; }
 	
+	public float[] pressureNonstandard() { return pressure_nonstandard[pressureUnit()]; }
 	public static final int DEPTH_FOOT = 0;
 	public static final int DEPTH_METER = 1;
 	
@@ -184,9 +189,28 @@ public class Units {
 		return unitSystem == IMPERIAL? ABSTEMP_RANKINE: ABSTEMP_KELVIN;
 	}
 	
-	private static final int abs_temp_ambient[] = { 535, 297 };
+	// Approx 70 degrees F, which is about the temperature cylinder
+	// manufacturers use to specify rated capacity
+	private static final int abs_temp_ambient[] = { 530, 294 };
 	
 	public int absTempAmbient() { return abs_temp_ambient[absTempUnit()]; }
+	
+	public static final int RELTEMP_FAHRENHEIT = 0;
+	public static final int RELTEMP_CELSIUS = 1;
+	
+	public int relTempUnit() {
+		return unitSystem == IMPERIAL? RELTEMP_FAHRENHEIT: RELTEMP_CELSIUS;
+	}
+	
+	private static final float rel_to_abs_convert[] = { 459.67f, 273.15f };
+	
+	public float tempRelToAbs(float rel_temp) {
+		return rel_temp + rel_to_abs_convert[relTempUnit()];
+	}
+	
+	public float tempAbsToRel(float abs_temp) {
+		return abs_temp - rel_to_abs_convert[relTempUnit()];
+	}
 	
 	// Gas constants in imperial (ft^3 psi R^-1 lb-mol^-1), metric (L bar K^-1 mol^-1)
 	// Source: http://en.wikipedia.org/wiki/Ideal_gas_constant
@@ -250,5 +274,13 @@ public class Units {
 	
 	public static float convertCapacity(float capacity, int from_unit, int to_unit) {
 		return convert(capacity, 3.531E-2f, from_unit, to_unit);
+	}
+	
+	public float convertAbsTemp(float temperature, int from_unit) {
+		return convertAbsTemp(temperature, from_unit, unitSystem);
+	}
+	
+	public static float convertAbsTemp(float temperature, int from_unit, int to_unit) {
+		return convert(temperature, 1.8f, from_unit, to_unit);
 	}
 }
