@@ -76,7 +76,9 @@ public class Cylinder {
 		// polynomial is the same, it's just that the
 		// uncertainty is calculated differently.
 		Mix m = new Mix(0.21f, 0);
-		double a = VanDerWaals.computeA(m), b = VanDerWaals.computeB(m);
+		double a = m.getA(), b = m.getB();
+		// TODO: at what temperature do the cylinder manufacturers determine
+		// tank capacity?
 		double RT = mUnits.absTempAmbient() * mUnits.gasConstant();
 		// A bit of optimization to reduce number of calculations per iteration
 		double PbRT = mServicePressure*b + RT, PbRT2 = 2 * PbRT, ab = a * b, P3 = 3 * mServicePressure;
@@ -138,6 +140,10 @@ public class Cylinder {
 	 * @return The amount of gas in the cylinder to one decimal place
 	 */
 	public double getVdwCapacityAtPressure(double P, Mix m) {
+		return getVdwCapacityAtPressure(P, m, mUnits.absTempAmbient());
+	}
+	
+	public double getVdwCapacityAtPressure(double P, Mix m, float T) {
 		// First, the trivial solution. This will cause a divide by 0 if we try to
 		// solve.
 		if(P == 0) {
@@ -149,8 +155,8 @@ public class Cylinder {
 		//   P * v^3 - (P*b + R*T) * v^2 + a * v - a * b = 0
 		//   n = V/v
 		// Then we can use ideal gas laws to convert n to V @ 1 ata
-		double a = VanDerWaals.computeA(m), b = VanDerWaals.computeB(m);
-		double RT = mUnits.absTempAmbient() * mUnits.gasConstant();
+		double a = m.getA(), b = m.getB();
+		double RT = T * mUnits.gasConstant();
 		// A bit of optimization to reduce number of calculations per iteration
 		double PbRT = P*b + RT, PbRT2 = 2 * PbRT, ab = a * b, P3 = 3 * P;
 		// Come up with a guess to seed Newton-Raphson. The equation is easily
@@ -181,14 +187,18 @@ public class Cylinder {
 	}
 	
 	public double getVdwPressureAtCapacity(double capacity, Mix m) {
+		return getVdwPressureAtCapacity(capacity, m, mUnits.absTempAmbient());
+	}
+	
+	public double getVdwPressureAtCapacity(double capacity, Mix m, float T) {
 		// This is given by the following:
 		// choose a reasonable value for T
 		// n = Patm*V/(R*T) (since volume is at atmospheric pressure, it's close enough to ideal)
 		// v = V/n
 		// P = R * T / (v - b) - a / v^2
-		double RT = mUnits.absTempAmbient() * mUnits.gasConstant();
+		double RT = T * mUnits.gasConstant();
 		double v = mInternalVolume * RT / (mUnits.pressureAtm() * capacity),
-				a = VanDerWaals.computeA(m), b = VanDerWaals.computeB(m);
-		return RT / (v - b) - a / Math.pow(v, 2);
+				a = m.getA(), b = m.getB();
+		return RT / (v - b) - a / (v * v);
 	}
 }
