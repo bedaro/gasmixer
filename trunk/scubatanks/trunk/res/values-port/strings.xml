@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="internal_volume_prompt">Internal Vol.</string>
+	<string name="serv_pressure_prompt">Serv. Pressure</string>
+</resources>
