@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:layout_below="@id/button_po2_hi"
+	android:orientation="horizontal">
+
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:orientation="vertical">
+
+		<TextView
+			android:id="@+id/start_label"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/starting"/>
+		<TextView
+			android:id="@+id/start_mix"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textSize="20sp" />
+
+	</LinearLayout>
+	
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:orientation="horizontal">
+	
+		<Button
+			android:id="@+id/start_change"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/change" />
+
+		<Button
+			android:id="@+id/button_blend"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:layout_marginRight="5dp"
+			android:text="@string/button_blend" />
+
+	</LinearLayout>
+</LinearLayout>

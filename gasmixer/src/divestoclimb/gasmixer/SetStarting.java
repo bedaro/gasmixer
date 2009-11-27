@@ -80,14 +80,12 @@ public class SetStarting extends Activity implements Button.OnClickListener {
 	public void onClick(View v) {
 		switch(v.getId()) {
 		case R.id.button:
-			SharedPreferences.Editor editor = mState.edit();
-
-			editor.putFloat("start_pres", mPressureSelector.getValue());
 			Mix m = mGasSelector.getMix();
-			editor.putFloat("start_o2", (float)m.getfO2());
-			editor.putFloat("start_he", (float)m.getfHe());
-			editor.commit();
-
+			mState.edit()
+				.putFloat("start_pres", mPressureSelector.getValue())
+				.putFloat("start_o2", (float)m.getfO2())
+				.putFloat("start_he", (float)m.getfHe())
+				.commit();
 			setResult(RESULT_OK);
 			finish();
 			break;
@@ -103,9 +101,7 @@ public class SetStarting extends Activity implements Button.OnClickListener {
 		if(resultCode == RESULT_OK) {
 			Bundle b = intent.getExtras();
 			long id = b.getLong("selected");
-			SharedPreferences.Editor editor = mState.edit();
-			editor.putLong("cylinderid", id);
-			editor.commit();
+			mState.edit().putLong("cylinderid", id).commit();
 			updateCylinder();
 		}
 	}

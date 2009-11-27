@@ -17,9 +17,9 @@ import android.widget.TextView;
  * @author Ben Roberts (divestoclimb@gmail.com)
  */
 public class NumberPreference extends DialogPreference {
-	private NumberSelector mNumberSelector;
+	protected NumberSelector mNumberSelector;
 	private LinearLayout mLayout;
-	private TextView mUnitLabel;
+	protected TextView mUnitLabel;
 	private boolean mLayoutInit;
 
 	private float mValue;
@@ -38,7 +38,10 @@ public class NumberPreference extends DialogPreference {
 		TypedArray a = context.obtainStyledAttributes(attrs,
                 R.styleable.NumberPreference);
 		mUnitLabel = new TextView(context);
-		mUnitLabel.setText(a.getString(R.styleable.NumberPreference_unitLabel));
+		String label = a.getString(R.styleable.NumberPreference_unitLabel);
+		if(label != null) {
+			mUnitLabel.setText(label);
+		}
 		a.recycle();
 		
 		// mLayoutInit lets us know if we've build mLayout yet. This occurs
@@ -90,8 +93,8 @@ public class NumberPreference extends DialogPreference {
 		super.onDialogClosed(positiveResult);
 
 		if(positiveResult) {
-			float value = mNumberSelector.getValue();
-			if(callChangeListener(value)) {
+			Float value = mNumberSelector.getValue();
+			if(value != null && callChangeListener(value)) {
 				setValue(value);
 			}
 		}
@@ -107,7 +110,7 @@ public class NumberPreference extends DialogPreference {
 	
 	@Override
 	protected void onSetInitialValue(boolean restoreValue, Object defaultValue) {
-		setValue(restoreValue? getPersistedFloat(mValue): (Float)defaultValue);
+		mValue = restoreValue? getPersistedFloat(mValue): (Float)defaultValue;
 	}
 	
 	public NumberSelector getNumberSelector() {
@@ -117,14 +120,15 @@ public class NumberPreference extends DialogPreference {
 	@Override
 	protected Parcelable onSaveInstanceState() {
 		final Parcelable superState = super.onSaveInstanceState();
-		if (isPersistent()) {
-			// No need to save instance state since it's persistent
+		Float val = mNumberSelector.getValue();
+		if(val != null) {
+			final SavedState myState = new SavedState(superState);
+			myState.value = val;
+			return myState;
+		} else {
 			return superState;
 		}
 
-		final SavedState myState = new SavedState(superState);
-		myState.value = getValue();
-		return myState;
 	}
 
 	@Override
@@ -137,7 +141,7 @@ public class NumberPreference extends DialogPreference {
 
 		SavedState myState = (SavedState) state;
 		super.onRestoreInstanceState(myState.getSuperState());
-		setValue(myState.value);
+		mNumberSelector.setValue(myState.value);
 	}
 	
 	private static class SavedState extends BaseSavedState {

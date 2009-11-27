@@ -71,25 +71,7 @@
 					android:textSize="20sp"/>
 			</TableRow>
 		</TableLayout>
-		<LinearLayout
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:orientation="vertical"
-			android:layout_weight="1"
-			android:gravity="right">
-			<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:gravity="left"
-				android:text="@string/starting" />
-			<TextView
-				android:id="@+id/start_mix"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:gravity="right"
-				android:textSize="20sp" />
-		</LinearLayout>
+		<include layout="@layout/blend_start" />
 		<Button
 			android:id="@+id/start_change"
 			android:layout_width="wrap_content"

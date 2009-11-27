@@ -48,6 +48,7 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 	protected final int SELECTOR_LAYOUT=R.layout.num_selector;
 	
 	private Float mIncrement, mLowerLimit, mUpperLimit, mCachedValue;
+	private float[] mNonIncrementValues = new float[] { };
 	private int mDecimalPlaces;
 	private boolean mChangeFromUser = true;
 	private ValueChangedListener mValueChangedListener;
@@ -96,11 +97,13 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 	 * current constraints
 	 */
 	public Float getValue() {
+		Float val;
 		try {
-			return mNumberFormat.parse(mEditText.getText().toString()).floatValue();
+			val = mNumberFormat.parse(mEditText.getText().toString()).floatValue();
 		} catch(ParseException e) {
-			return null;
+			val = null;
 		}
+		return val;
 	}
 
 	public void setValueChangedListener(ValueChangedListener l) {
@@ -140,6 +143,10 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 	public void setLimits(Float lower_limit, Float upper_limit) {
 		mLowerLimit = lower_limit;
 		mUpperLimit = upper_limit;
+	}
+	
+	public void setNonIncrementValues(float[] vals) {
+		mNonIncrementValues = vals;
 	}
 
 	protected void initNumberSelector(Context context) {
@@ -270,6 +277,23 @@ public class NumberSelector extends LinearLayout implements Button.OnClickListen
 			// rounding by itself did not change current_val in the
 			// direction the user wanted it to change.
 			new_val += increment;
+		}
+		// Check if there's an intermediate non-increment value between
+		// current_val and new_val
+		for(int i = 0; i < mNonIncrementValues.length; i++) {
+			float val = mNonIncrementValues[i];
+			// The check we need to do here is see if val is in between
+			// current_val and new_val. To do this, we can take the difference
+			// of current_val and val, then take the difference of new_val and
+			// val. If the signs are different, then it's in between.
+			if((current_val - val) * (new_val - val) < 0) {
+				// This one is in between, but it doesn't guarantee that it's
+				// the closest to current_val. For this reason, we don't break
+				// the loop and continue searching to see if there's a better
+				// candidate than the one we found. If there is, it will be
+				// between current_val and new_val just like this one was.
+				new_val = val;
+			}
 		}
 		if(mUpperLimit != null) {
 			new_val = Math.min(new_val, mUpperLimit);
