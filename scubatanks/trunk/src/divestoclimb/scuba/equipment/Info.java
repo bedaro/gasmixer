@@ -13,18 +13,31 @@ public class Info extends Activity {
 	// Specify the string resource to use for the body text
 	public static final String KEY_TEXT = "text";
 	
+	private int mTextResId, mTitleResId;
+	
+	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 		Bundle params = icicle != null? icicle: getIntent().getExtras();
-		setTitle(params.getInt(KEY_TITLE));
+		mTitleResId = params.getInt(KEY_TITLE);
+		setTitle(mTitleResId);
 		setContentView(R.layout.text_dialog);
 
 		TextView text = (TextView)findViewById(R.id.text);
 
-		text.setText(getText(params.getInt(KEY_TEXT)));
+		mTextResId = params.getInt(KEY_TEXT);
 		
+		text.setText(getText(mTextResId));
+
 		// Make links
 		Linkify.addLinks(text, Linkify.EMAIL_ADDRESSES | Linkify.WEB_URLS);
+	}
+	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putInt(KEY_TITLE, mTitleResId);
+		outState.putInt(KEY_TEXT, mTextResId);
 	}
 
 }
