@@ -73,7 +73,7 @@ If you don't want this, you can continue using the app with the less accurate id
 	<string name="use_ideal">Ideal Gas Only</string>
 	<string name="analyze_warning">"(Don't forget to analyze!)"</string>
 	<string name="about_text">%1$s v%2$s
-		\n\nCopyright 2009 Ben Roberts. divestoclimb@gmail.com.
+		\n\nCopyright 2009-2010 Ben Roberts. divestoclimb@gmail.com.
 
 		\n\nLicensed under the Apache License, Version 2.0 (the "License");
 		you may not use any part of this distribution except in
