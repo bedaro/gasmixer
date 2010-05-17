@@ -8,4 +8,9 @@
 		<item>0</item>
 		<item>1</item>
 	</string-array>
+	<string-array name="blendmodes">
+		<item>Partial Pressure</item>
+		<item>Continuous Nitrox</item>
+		<item>Continuous Trimix</item>
+	</string-array>
 </resources>

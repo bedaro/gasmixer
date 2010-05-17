@@ -57,7 +57,11 @@ public class TemperaturePreference extends NumberPreference {
 	@Override
 	protected void onBindDialogView(View view) {
 		setUnits();
-		mUnitLabel.setText(Params.temperature(getContext(), mUnits)+":");
+		mUnitLabel.setText(
+				getContext().getString(mUnits.relTempUnit() == Units.IMPERIAL?
+						R.string.reltemp_imperial:
+							R.string.reltemp_metric)
+		+ ":");
 		super.onBindDialogView(view);
 	}
 }

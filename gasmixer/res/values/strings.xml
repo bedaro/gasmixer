@@ -57,6 +57,7 @@
 	<string name="gas_units_opts">Units and gas settings</string>
 	<string name="reltemp_imperial">˚F</string>
 	<string name="reltemp_metric">˚C</string>
+	<string name="abs_pres">ata</string>
 	<string name="o2_is_narcotic">O2 Is Narcotic</string>
 	<string name="o2_narcotic_summary">"Account for Oxygen when computing END's?"</string>
 	<string name="max_norm_po2">Max Normal pO2</string>
@@ -73,7 +74,9 @@ If you don't want this, you can continue using the app with the less accurate id
 	<string name="use_ideal">Ideal Gas Only</string>
 	<string name="analyze_warning">"(Don't forget to analyze!)"</string>
 	<string name="about_text">%1$s v%2$s
-		\n\nCopyright 2009-2010 Ben Roberts. divestoclimb@gmail.com.
+		\n\nCopyright 2009 - 2010 Ben Roberts. divestoclimb@gmail.com.
+		
+		\n\nProject website: http://code.google.com/p/gasmixer
 
 		\n\nLicensed under the Apache License, Version 2.0 (the "License");
 		you may not use any part of this distribution except in

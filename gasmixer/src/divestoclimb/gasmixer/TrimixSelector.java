@@ -1,5 +1,7 @@
 package divestoclimb.gasmixer;
 
+import divestoclimb.android.util.ViewId;
+import divestoclimb.android.widget.BaseNumberSelector;
 import divestoclimb.lib.scuba.Mix;
 import android.content.Context;
 import android.os.Parcel;
@@ -15,18 +17,18 @@ import android.widget.SeekBar;
  * @author Ben Roberts (divestoclimb@gmail.com)
  */
 public class TrimixSelector extends RelativeLayout
-		implements SeekBar.OnSeekBarChangeListener, NumberSelector.ValueChangedListener {
-	
+		implements SeekBar.OnSeekBarChangeListener, BaseNumberSelector.ValueChangedListener {
+
 	public static interface MixChangeListener {
 		abstract void onChange(TrimixSelector ts, Mix m);
 	}
-	
+
 	private LayoutInflater mInflater;
 	private SeekBar mO2Bar, mHeBar;
-	private NumberSelector mO2Field, mHeField;
-	
+	private BaseNumberSelector mO2Field, mHeField;
+
 	protected final int SELECTOR_LAYOUT = R.layout.trimix_selector;
-	
+
 	private MixChangeListener mMixChangeListener;
 
 	public TrimixSelector(Context context) {
@@ -45,12 +47,12 @@ public class TrimixSelector extends RelativeLayout
 		}
 		return new Mix((float)(o2val / 100.0), (float)(heval / 100.0));
 	}
-	
+
 	public void setMix(Mix m) {
 		mO2Field.setValue(m.getO2());
 		mHeField.setValue(m.getHe());
 	}
-	
+
 	public void setOnMixChangeListener(MixChangeListener l) {
 		mMixChangeListener = l;
 	}
@@ -85,7 +87,7 @@ public class TrimixSelector extends RelativeLayout
 	 * SeekBarChangeListener implementation
 	 */
 	public void onProgressChanged(SeekBar slider, int newPosition, boolean from_user) {
-		NumberSelector field;
+		BaseNumberSelector field;
 		if(slider == mO2Bar) {
 			field = mO2Field;
 		} else {
@@ -103,7 +105,7 @@ public class TrimixSelector extends RelativeLayout
 	/**
 	 * NumberSelector ValueChangeListener implementation
 	 */
-	public void onChange(NumberSelector ns, Float new_val, boolean from_user) {
+	public void onChange(BaseNumberSelector ns, Float new_val, boolean from_user) {
 		SeekBar sb;
 		if(ns == mO2Field) {
 			sb = mO2Bar;
@@ -122,8 +124,8 @@ public class TrimixSelector extends RelativeLayout
 		}
 	}
 
-	private void handlePercentUpdate(NumberSelector field) {
-		NumberSelector other_field;
+	private void handlePercentUpdate(BaseNumberSelector field) {
+		BaseNumberSelector other_field;
 		if(field == mO2Field) {
 			other_field = mHeField;
 		} else {
@@ -171,7 +173,7 @@ public class TrimixSelector extends RelativeLayout
 		@Override
 		public void writeToParcel(Parcel out, int flags) {
 			super.writeToParcel(out, flags);
-			
+
 			out.writeInt(o2SliderId);
 			out.writeInt(heSliderId);
 			out.writeInt(o2FieldId);

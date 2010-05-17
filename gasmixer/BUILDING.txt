@@ -1,0 +1,8 @@
+Building this app in eclipse will require checking out the following projects
+from SVN in my andDive project: http://code.google.com/p/anddive:
+- Core
+- android_common
+- scubalib
+
+There is one class from Scuba Tanks that's needed; it's already included in
+the CylinderORMapper .jar.

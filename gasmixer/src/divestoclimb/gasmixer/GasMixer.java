@@ -3,9 +3,12 @@ package divestoclimb.gasmixer;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
+import divestoclimb.android.widget.BaseNumberSelector;
+import divestoclimb.lib.scuba.Cylinder;
+import divestoclimb.lib.scuba.Localizer;
 import divestoclimb.lib.scuba.Mix;
 import divestoclimb.lib.scuba.Units;
-import divestoclimb.scuba.equipment.CylinderSizeClient;
+import divestoclimb.scuba.equipment.storage.CylinderORMapper;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -45,7 +48,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 	private Mix mBlendStartMix;
 
 	private TrimixSelector mDesiredGas, mTopupGas;
-	private NumberSelector mMaxDepth, mMaxEnd, mMaxPo2, mBlendDesiredPressure,
+	private BaseNumberSelector mMaxDepth, mMaxEnd, mMaxPo2, mBlendDesiredPressure,
 			mTopupStartPressure, mTopupFinalPressure;
 	private TextView mMaxDepthUnit, mMaxEndUnit, mBlendDesiredPressureUnit,
 			mTopupStartPressureUnit, mDesiredMOD, mDesiredEADENDLabel,
@@ -53,7 +56,8 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 	private ToggleButton mTogglePo2;
 	private Mix mBestMix;
 	private Units mUnits;
-	
+	private CylinderORMapper mCylORMapper;
+
 	private static final int DIALOG_INSTALL_SCUBATANKS = 1;
 
 	@Override
@@ -78,6 +82,8 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		} catch(ParseException e) { unit = 0; }
 		mUnits = new Units(unit);
 
+		mCylORMapper = new CylinderORMapper(this, mUnits);
+
 		final TabHost tabhost = getTabHost();
 
 		final Resources r = getResources();
@@ -91,13 +97,16 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 				.setIndicator(getString(R.string.bestmix), r.getDrawable(android.R.drawable.btn_star))
 				.setContent(R.id.tab_bestmix));
 
+		// Set the Localizer Engine for displaying GasSources
+		Localizer.setEngine(new AndroidLocalizer(this));
+
 		final Bundle extras = getIntent().getExtras();
 
 		final View tabcontent = tabhost.getTabContentView(),
 			blendTab = tabcontent.findViewById(R.id.tab_blend),
 			topupTab = tabcontent.findViewById(R.id.tab_topup),
 			bestmixTab = tabcontent.findViewById(R.id.tab_bestmix);
-		mBlendDesiredPressure = (NumberSelector)blendTab.findViewById(R.id.desired_pres);
+		mBlendDesiredPressure = (BaseNumberSelector)blendTab.findViewById(R.id.desired_pres);
 		mBlendDesiredPressureUnit = (TextView)blendTab.findViewById(R.id.desired_pres_unit);
 		mDesiredGas = (TrimixSelector)blendTab.findViewById(R.id.desired);
 		mDesiredMOD = (TextView)blendTab.findViewById(R.id.desired_mod);
@@ -114,29 +123,29 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 
 		mStartingMix = (TextView)blendTab.findViewById(R.id.start_mix);
 
-		NumberSelector.ValueChangedListener updateBestMix = new NumberSelector.ValueChangedListener() {
-			public void onChange(NumberSelector ns, Float new_val, boolean from_user) {
+		BaseNumberSelector.ValueChangedListener updateBestMix = new BaseNumberSelector.ValueChangedListener() {
+			public void onChange(BaseNumberSelector ns, Float new_val, boolean from_user) {
 				updateBestMix();
 			}
 		};
-		mMaxDepth = (NumberSelector)bestmixTab.findViewById(R.id.maxdepth);
+		mMaxDepth = (BaseNumberSelector)bestmixTab.findViewById(R.id.maxdepth);
 		mMaxDepth.setValueChangedListener(updateBestMix);
-		mMaxEnd = (NumberSelector)bestmixTab.findViewById(R.id.maxend);
+		mMaxEnd = (BaseNumberSelector)bestmixTab.findViewById(R.id.maxend);
 		mMaxEnd.setValueChangedListener(updateBestMix);
 		mMaxDepthUnit = (TextView)bestmixTab.findViewById(R.id.maxdepth_unit);
 		mMaxEndUnit = (TextView)bestmixTab.findViewById(R.id.maxend_unit);
-		mMaxPo2 = (NumberSelector)bestmixTab.findViewById(R.id.maxpo2);
+		mMaxPo2 = (BaseNumberSelector)bestmixTab.findViewById(R.id.maxpo2);
 		mMaxPo2.setValueChangedListener(updateBestMix);
 		mBestMixResult = (TextView)bestmixTab.findViewById(R.id.bestmix_result);
 
 		mCylinderDescription = (TextView)topupTab.findViewById(R.id.cylinder);
-		mTopupStartPressure = (NumberSelector)topupTab.findViewById(R.id.topup_start_pres);
+		mTopupStartPressure = (BaseNumberSelector)topupTab.findViewById(R.id.topup_start_pres);
 		mTopupStartPressureUnit = (TextView)topupTab.findViewById(R.id.topup_start_pres_unit);
 		mTopupGas = (TrimixSelector)topupTab.findViewById(R.id.topup);
-		mTopupFinalPressure = (NumberSelector)topupTab.findViewById(R.id.topup_final_pres);
-		
+		mTopupFinalPressure = (BaseNumberSelector)topupTab.findViewById(R.id.topup_final_pres);
+
 		mTogglePo2 = (ToggleButton)blendTab.findViewById(R.id.button_po2_hi);
-		
+
 		initFields(extras);
 
 		mTogglePo2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -144,20 +153,20 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 				updateModEnd(mDesiredGas.getMix());
 			}
 		});
-		
+
 		// Prepare the action buttons
 		final Button edit_start = (Button) blendTab.findViewById(R.id.start_change);
 		edit_start.setOnClickListener(this);
 		final Button blend = (Button) blendTab.findViewById(R.id.button_blend);
 		blend.setOnClickListener(this);
-		
+
 		final Button topup = (Button) topupTab.findViewById(R.id.button_topup);
 		topup.setOnClickListener(this);
 		final Button cylinderChangeButton = (Button)topupTab.findViewById(R.id.cylinder_change);
 		if(cylinderChangeButton != null) {
 			cylinderChangeButton.setOnClickListener(this);
 		}
-		
+
 		final Button bestmix_blend = (Button) bestmixTab.findViewById(R.id.bestmix_blend);
 		bestmix_blend.setOnClickListener(this);
 	}
@@ -181,7 +190,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		mPo2Low = settings.getFloat("max_norm_po2", 1.4f);
 		mPo2High = settings.getFloat("max_hi_po2", 1.6f);
 		mO2IsNarcotic = settings.getBoolean("o2_is_narcotic", true);
-		
+
 		// Also retrieve any state preferences that other activities change
 		mBlendStartPressure = state.getFloat("start_pres", units.pressureTankLow());
 		mBlendStartMix = new Mix(
@@ -199,7 +208,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 			last_unit = units.getCurrentSystem();
 			units.change(unit);
 		}
-		
+
 		final Thread t = new Thread() {
 			public void run() {
 				// Check to make sure a Content Provider for cylinders is available if
@@ -218,17 +227,16 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 								// No ID in the state
 								throw new Exception();
 							}
-							if(managedQuery(Uri.withAppendedPath(CylinderSizeClient.CONTENT_URI,
-									String.valueOf(id)), null, null, null, null) == null) {
+							if(mCylORMapper.fetchCylinder(id) == null) {
 								// The ID is invalid
 								throw new Exception();
 							}
 						} catch(Exception e) {
 							// Pick the first available cylinder from the list of cylinder
 							// sizes
-							final Cursor c = getContentResolver().query(CylinderSizeClient.CONTENT_URI, new String[] { CylinderSizeClient._ID }, null, null, null);
+							final Cursor c = mCylORMapper.fetchCylinders();
 							c.moveToFirst();
-							messageHandler.sendMessage(Message.obtain(messageHandler, MESSAGE_SAVE_CYLINDERID, new Long(c.getLong(c.getColumnIndexOrThrow(CylinderSizeClient._ID)))));
+							messageHandler.sendMessage(Message.obtain(messageHandler, MESSAGE_SAVE_CYLINDER, mCylORMapper.fetchCylinder(c)));
 							
 							c.close();
 						}
@@ -266,7 +274,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
-	
+
 	@Override
 	protected Dialog onCreateDialog(int id) {
 		switch(id) {
@@ -291,7 +299,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Our various button handlers
 	 * @param v The Button that was pressed
@@ -323,7 +331,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 			}
 		}
 	}
-	
+
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		// Currently the only activity we start that returns a result is CylinderSizes
@@ -333,11 +341,11 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 			updateCylinder();
 		}
 	}
-	
+
 	private static final int MESSAGE_SHOW_SCUBATANKS = 1;
-	private static final int MESSAGE_SAVE_CYLINDERID = 2;
+	private static final int MESSAGE_SAVE_CYLINDER = 2;
 	private static final int MESSAGE_SAVE_VDW = 3;
-	
+
 	private Handler messageHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
@@ -345,8 +353,8 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 			case MESSAGE_SHOW_SCUBATANKS:
 				showDialog(DIALOG_INSTALL_SCUBATANKS);
 				break;
-			case MESSAGE_SAVE_CYLINDERID:
-				mState.edit().putLong("cylinderid", (Long)msg.obj).commit();
+			case MESSAGE_SAVE_CYLINDER:
+				mState.edit().putLong("cylinderid", ((Cylinder)msg.obj).getId()).commit();
 				break;
 			case MESSAGE_SAVE_VDW:
 				mState.edit().putBoolean("vdw", true).commit();
@@ -354,7 +362,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 			}
 		}
 	};
-	
+
 	/**
 	 * Test for the ability to fetch cylinder ID's on this system
 	 * @return true if the cylinder size activity was found, false otherwise
@@ -375,10 +383,6 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		final Units u = mUnits;
 		final SharedPreferences state = mState;
 		mBlendDesiredPressure.setValue(state.getFloat("desired_pres", u.pressureTankFull()));
-		/*mDesiredGas.setMix(new Mix(
-				extras != null? extras.getFloat("O2_DESIRED"): state.getFloat("desired_o2", 0.32f),
-				extras != null? extras.getFloat("HE_DESIRED"): state.getFloat("desired_he", 0)
-		));*/
 		mDesiredGas.setMix(new Mix(state.getFloat("desired_o2", 0.32f), state.getFloat("desired_he", 0)));
 		mTogglePo2.setChecked(state.getBoolean("po2_high", false));
 		mMaxDepth.setValue(state.getFloat("max_depth", new Float(u.depthToxic())));
@@ -390,7 +394,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		));
 		mTopupStartPressure.setValue(state.getFloat("topup_start_pres", u.pressureTankLow()));
 		mTopupFinalPressure.setValue(state.getFloat("topup_final_pres", u.pressureTankFull()));
-		
+
 		if(mCylinderDescription != null) {
 			updateCylinder();
 		}
@@ -424,22 +428,24 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 	 * also converts all values in the state to the new system of units.
 	 */
 	public void updateUnits(Integer last_unit) {
-		final NumberSelector blend_desired_pressure = mBlendDesiredPressure,
+		final BaseNumberSelector blend_desired_pressure = mBlendDesiredPressure,
 				topup_start_pressure = mTopupStartPressure,
 				topup_final_pressure = mTopupFinalPressure,
 				max_depth = mMaxDepth,
 				max_end = mMaxEnd;
 		final Units u = mUnits;
+		final String depthUnit = getString(u.depthUnit() == Units.IMPERIAL? R.string.depth_imperial: R.string.depth_metric);
+		String pressureUnit = getString(u.pressureUnit() == Units.IMPERIAL? R.string.pres_imperial: R.string.pres_metric);
 		blend_desired_pressure.setDecimalPlaces(0);
 		blend_desired_pressure.setLimits(0f, new Float(u.pressureTankMax()));
 		blend_desired_pressure.setIncrement(new Float(u.pressureIncrement()));
 		blend_desired_pressure.setNonIncrementValues(u.pressureNonstandard());
-		mBlendDesiredPressureUnit.setText(Params.pressure(this, u)+":");
+		mBlendDesiredPressureUnit.setText(pressureUnit + ":");
 
 		topup_start_pressure.setDecimalPlaces(0);
 		topup_start_pressure.setLimits(0f, new Float(u.pressureTankMax()));
 		topup_start_pressure.setIncrement(new Float(u.pressureIncrement()));
-		mTopupStartPressureUnit.setText(Params.pressure(this, u)+":");
+		mTopupStartPressureUnit.setText(pressureUnit + ":");
 
 		topup_final_pressure.setDecimalPlaces(0);
 		topup_final_pressure.setLimits(0f, new Float(u.pressureTankMax()));
@@ -449,12 +455,12 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		max_depth.setDecimalPlaces(0);
 		max_depth.setLimits(0f, new Float(u.depthMax()));
 		max_depth.setIncrement(new Float(u.depthIncrement()));
-		mMaxDepthUnit.setText(Params.depth(this, u)+":");
+		mMaxDepthUnit.setText(depthUnit + ":");
 
 		max_end.setDecimalPlaces(0);
 		max_end.setLimits(0f, new Float(u.depthMaxNarcotic()));
 		max_end.setIncrement(new Float(u.depthIncrement()));
-		mMaxEndUnit.setText(Params.depth(this, u)+":");
+		mMaxEndUnit.setText(depthUnit + ":");
 
 		if(last_unit != null) {
 			// Convert existing values to new units
@@ -476,15 +482,16 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 	 */
 	private void updateModEnd(Mix m) {
 		final Units u = mUnits;
+		final String depthUnit = getString(u.depthUnit() == Units.IMPERIAL? R.string.depth_imperial: R.string.depth_metric);
 		final NumberFormat nf = NumberFormat.getIntegerInstance();
 		final float mod = m.MOD(u, mTogglePo2.isChecked()? mPo2High: mPo2Low);
-		mDesiredMOD.setText(nf.format(mod)+" "+Params.depth(this, u));
+		mDesiredMOD.setText(nf.format(mod) + " " + depthUnit);
 		if(m.getHe() > 0) {
 			mDesiredEADENDLabel.setText(getResources().getString(R.string.end));
-			mDesiredEADEND.setText(nf.format(m.END(Math.round(mod), u, mO2IsNarcotic))+" "+Params.depth(this, u));
+			mDesiredEADEND.setText(nf.format(m.END(Math.round(mod), u, mO2IsNarcotic)) + " " + depthUnit);
 		} else {
 			mDesiredEADENDLabel.setText(getResources().getString(R.string.ead));
-			mDesiredEADEND.setText(nf.format(m.EAD(Math.round(mod), u))+" "+Params.depth(this, u));
+			mDesiredEADEND.setText(nf.format(m.EAD(Math.round(mod), u)) + " " + depthUnit);
 		}
 	}
 
@@ -493,15 +500,16 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		if(mBlendStartPressure == 0) {
 			mStartingMix.setText(getResources().getString(R.string.empty_tank));
 		} else {
+			final String pressureUnit = getString(mUnits.pressureUnit() == Units.IMPERIAL? R.string.pres_imperial: R.string.pres_metric);
 			mStartingMix.setText(String.format(
 					getResources().getString(R.string.gas_amount),
 					nf.format(mBlendStartPressure),
-					Params.pressure(this, mUnits),
-					Params.mixFriendlyName(mBlendStartMix, this)
+					pressureUnit,
+					mBlendStartMix.toString()
 			));
 		}
 	}
-	
+
 	private void updateBestMix() {
 		final Float maxdepth = mMaxDepth.getValue(),
 			maxend = mMaxEnd.getValue(),
@@ -517,20 +525,15 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 			if(mBestMix == null) {
 				mBestMixResult.setText(getResources().getString(R.string.no_mix));
 			} else {
-				mBestMixResult.setText(Params.mixFriendlyName(mBestMix, GasMixer.this));
+				mBestMixResult.setText(mBestMix.toString());
 			}
 		}
 	}
-	
+
 	private void updateCylinder() {
-		final long id = mState.getLong("cylinderid", -1);
-		if(id != -1) {
-			Cursor c = getContentResolver().query(Uri.withAppendedPath(CylinderSizeClient.CONTENT_URI,
-					String.valueOf(id)), new String[] { CylinderSizeClient.NAME }, null, null, null);
-			c.moveToFirst();
-			mCylinderDescription.setText(c.getString(c.getColumnIndexOrThrow(CylinderSizeClient.NAME)));
-			c.close();
+		final Cylinder c = mCylORMapper.fetchCylinder(mState.getLong("cylinderid", -1));
+		if(c != null) {
+			mCylinderDescription.setText(c.getName());
 		}
 	}
-
 }

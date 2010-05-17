@@ -5,19 +5,16 @@ import java.text.ParseException;
 
 import divestoclimb.lib.scuba.Cylinder;
 import divestoclimb.lib.scuba.GasSupply;
+import divestoclimb.lib.scuba.Localizer;
 import divestoclimb.lib.scuba.Mix;
 import divestoclimb.lib.scuba.Units;
-import divestoclimb.scuba.equipment.CylinderSizeClient;
+import divestoclimb.scuba.equipment.storage.CylinderORMapper;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -53,6 +50,9 @@ public class TopupResult extends Activity {
 		} catch(ParseException e) { unit = 0; }
 		mUnits = new Units(unit);
 
+		// Set the Localizer Engine for displaying GasSources
+		Localizer.setEngine(new AndroidLocalizer(this));
+
 		// Gas computation options
 		mPo2Low = settings.getFloat("max_norm_po2", 1.4f);
 		mPo2High = settings.getFloat("max_hi_po2", 1.6f);
@@ -62,13 +62,10 @@ public class TopupResult extends Activity {
 
 		boolean real = settings.getBoolean("vdw", false);
 		Cylinder c;
+		CylinderORMapper com = null;
 		if(real) {
-			Cursor cu = getContentResolver().query(Uri.withAppendedPath(CylinderSizeClient.CONTENT_URI,
-							String.valueOf(state.getLong("cylinderid", -1))
-					), null, null, null, null);
-			cu.moveToFirst();
-			c = CylinderSizeClient.cursorToCylinder(cu, mUnits);
-			cu.close();
+			com = new CylinderORMapper(this, mUnits);
+			c = com.fetchCylinder(state.getLong("cylinderid", -1)); 
 		} else {
 			c = new Cylinder(mUnits, mUnits.volumeNormalTank(), (int)mUnits.pressureTankFull());
 		}
@@ -80,26 +77,22 @@ public class TopupResult extends Activity {
 		);
 		mResult = fill.topup(topup, (int)state.getFloat("topup_final_pres", 0)).getMix();
 
-		String resultText = String.format(getString(R.string.topup_result),
-				Params.mixFriendlyName(mResult, this)
-		);
+		String resultText = String.format(getString(R.string.topup_result), mResult.toString());
 
 		TextView resultView = (TextView) findViewById(R.id.result);
 		resultView.setText(resultText);
 		TextView reminder1View = (TextView) findViewById(R.id.reminder1);
-		reminder1View.setText(
-				String.format(getString(R.string.topup_reminder),
-						Params.mixFriendlyName(topup, this)
-				)
-		);
+		reminder1View.setText(String.format(getString(R.string.topup_reminder),
+				topup.toString()
+		));
 		TextView reminder2View = (TextView) findViewById(R.id.reminder2);
 		reminder2View.setText(getString(R.string.analyze_warning));
-		
+
 		mFinalMOD = (TextView)findViewById(R.id.mod);
 		mFinalEADENDLabel = (TextView)findViewById(R.id.ead_end_label);
 		mFinalEADEND = (TextView)findViewById(R.id.ead_end);
 		mTogglePo2 = (ToggleButton)findViewById(R.id.button_po2_hi);
-		
+
 		updateModEnd();
 
 		mTogglePo2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -108,30 +101,25 @@ public class TopupResult extends Activity {
 			}
 		});
 
-		Button close = (Button) findViewById(R.id.button_close);
-		close.setOnClickListener(new OnClickListener() {
+		findViewById(R.id.button_close).setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
 				finish();
 			}
 		});
 	}
 
-	/*private void solve() {
-		fo2f = (pi*fo2i+(pf-pi)*fo2t)/pf;
-		fhef = (pi*fhei+(pf-pi)*fhet)/pf;
-	}*/
-	
 	private void updateModEnd() {
-		Units u = mUnits;
-		NumberFormat nf = NumberFormat.getIntegerInstance();
+		final Units u = mUnits;
+		final NumberFormat nf = NumberFormat.getIntegerInstance();
 		float mod = mResult.MOD(u, mTogglePo2.isChecked()? mPo2High: mPo2Low);
-		mFinalMOD.setText(nf.format(mod)+" "+Params.depth(this, u));
+		final String depthUnit = getString(u.depthUnit() == Units.IMPERIAL? R.string.depth_imperial: R.string.depth_metric);
+		mFinalMOD.setText(nf.format(mod) + " " + depthUnit);
 		if(mResult.getHe() > 0) {
 			mFinalEADENDLabel.setText(getResources().getString(R.string.end));
-			mFinalEADEND.setText(nf.format(mResult.END(Math.round(mod), u, mO2IsNarcotic))+" "+Params.depth(this, u));
+			mFinalEADEND.setText(nf.format(mResult.END(Math.round(mod), u, mO2IsNarcotic)) + " " + depthUnit);
 		} else {
 			mFinalEADENDLabel.setText(getResources().getString(R.string.ead));
-			mFinalEADEND.setText(nf.format(mResult.EAD(Math.round(mod), u))+" "+Params.depth(this, u));
+			mFinalEADEND.setText(nf.format(mResult.EAD(Math.round(mod), u)) + " " + depthUnit);
 		}
 	}
 }
