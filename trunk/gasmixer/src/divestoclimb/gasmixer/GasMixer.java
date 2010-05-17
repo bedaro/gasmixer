@@ -38,7 +38,9 @@ import android.widget.ToggleButton;
  * @author Ben Roberts (divestoclimb@gmail.com)
  *
  */
-public class GasMixer extends TabActivity implements Button.OnClickListener {
+public class GasMixer extends TabActivity implements Button.OnClickListener,
+		TrimixSelector.MixChangeListener, BaseNumberSelector.ValueChangedListener,
+		CompoundButton.OnCheckedChangeListener {
 
 	protected SharedPreferences mSettings, mState;
 
@@ -69,6 +71,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 
 		if(mSettings.getBoolean("vdw", true) && testCylinders()) {
 			setContentView(R.layout.main_cylinder);
+			mSettings.edit().putBoolean("vdw", true).commit();
 		} else {
 			setContentView(R.layout.main);
 		}
@@ -113,29 +116,18 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		mDesiredEADENDLabel = (TextView)blendTab.findViewById(R.id.desired_ead_end_label);
 		mDesiredEADEND = (TextView)blendTab.findViewById(R.id.desired_ead_end);
 
-		mDesiredGas.setOnMixChangeListener(new TrimixSelector.MixChangeListener() {
-			public void onChange(TrimixSelector ts, Mix m) {
-				if(m != null) {
-					updateModEnd(m);
-				}
-			}
-		});
+		mDesiredGas.setOnMixChangeListener(this);
 
 		mStartingMix = (TextView)blendTab.findViewById(R.id.start_mix);
 
-		BaseNumberSelector.ValueChangedListener updateBestMix = new BaseNumberSelector.ValueChangedListener() {
-			public void onChange(BaseNumberSelector ns, Float new_val, boolean from_user) {
-				updateBestMix();
-			}
-		};
 		mMaxDepth = (BaseNumberSelector)bestmixTab.findViewById(R.id.maxdepth);
-		mMaxDepth.setValueChangedListener(updateBestMix);
+		mMaxDepth.setValueChangedListener(this);
 		mMaxEnd = (BaseNumberSelector)bestmixTab.findViewById(R.id.maxend);
-		mMaxEnd.setValueChangedListener(updateBestMix);
+		mMaxEnd.setValueChangedListener(this);
 		mMaxDepthUnit = (TextView)bestmixTab.findViewById(R.id.maxdepth_unit);
 		mMaxEndUnit = (TextView)bestmixTab.findViewById(R.id.maxend_unit);
 		mMaxPo2 = (BaseNumberSelector)bestmixTab.findViewById(R.id.maxpo2);
-		mMaxPo2.setValueChangedListener(updateBestMix);
+		mMaxPo2.setValueChangedListener(this);
 		mBestMixResult = (TextView)bestmixTab.findViewById(R.id.bestmix_result);
 
 		mCylinderDescription = (TextView)topupTab.findViewById(R.id.cylinder);
@@ -148,27 +140,19 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 
 		initFields(extras);
 
-		mTogglePo2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				updateModEnd(mDesiredGas.getMix());
-			}
-		});
+		mTogglePo2.setOnCheckedChangeListener(this);
 
 		// Prepare the action buttons
-		final Button edit_start = (Button) blendTab.findViewById(R.id.start_change);
-		edit_start.setOnClickListener(this);
-		final Button blend = (Button) blendTab.findViewById(R.id.button_blend);
-		blend.setOnClickListener(this);
+		blendTab.findViewById(R.id.start_change).setOnClickListener(this);
+		blendTab.findViewById(R.id.button_blend).setOnClickListener(this);
 
-		final Button topup = (Button) topupTab.findViewById(R.id.button_topup);
-		topup.setOnClickListener(this);
+		topupTab.findViewById(R.id.button_topup).setOnClickListener(this);
 		final Button cylinderChangeButton = (Button)topupTab.findViewById(R.id.cylinder_change);
 		if(cylinderChangeButton != null) {
 			cylinderChangeButton.setOnClickListener(this);
 		}
 
-		final Button bestmix_blend = (Button) bestmixTab.findViewById(R.id.bestmix_blend);
-		bestmix_blend.setOnClickListener(this);
+		bestmixTab.findViewById(R.id.bestmix_blend).setOnClickListener(this);
 	}
 
 	@Override
@@ -209,7 +193,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 			units.change(unit);
 		}
 
-		final Thread t = new Thread() {
+		Thread t = new Thread() {
 			public void run() {
 				// Check to make sure a Content Provider for cylinders is available if
 				// Van der Waals support is on
@@ -284,21 +268,28 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 				.setTitle(R.string.scubatanks_needed)
 				.setMessage(R.string.scubatanks_message)
 				.setCancelable(false)
-				.setPositiveButton(R.string.download_now, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int which) {
-						Intent findScubaTanks = new Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=pname:divestoclimb.scuba.equipment"));
-						startActivity(findScubaTanks);
-					}
-				})
-				.setNegativeButton(R.string.use_ideal, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int which) {
-						mSettings.edit().putBoolean("vdw", false).commit();
-					}
-				})
+				.setPositiveButton(R.string.download_now, scubatanksDialogHandler)
+				.setNegativeButton(R.string.use_ideal, scubatanksDialogHandler)
 				.create();
 		}
 		return null;
 	}
+	
+	private final DialogInterface.OnClickListener scubatanksDialogHandler = new DialogInterface.OnClickListener() {
+		public void onClick(DialogInterface dialog, int which) {
+			switch(which) {
+			case DialogInterface.BUTTON_POSITIVE:
+				startActivity(
+						new Intent(Intent.ACTION_VIEW,
+								Uri.parse("market://search?q=pname:divestoclimb.scuba.equipment")
+						)
+				);
+				break;
+			case DialogInterface.BUTTON_NEGATIVE:
+				mSettings.edit().putBoolean("vdw", false).commit();
+			}
+		}
+	};
 
 	/**
 	 * Our various button handlers
@@ -307,13 +298,10 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 	public void onClick(View v) {
 		switch(v.getId()) {
 		case R.id.start_change:
-			GasMixer.this.startActivity(
-					new Intent(this, SetStarting.class)
-			);
+			startActivity(new Intent(this, SetStarting.class));
 			break;
 		case R.id.button_blend:
-			GasMixer.this.startActivity(
-					new Intent(this, BlendResult.class));
+			startActivity(new Intent(this, BlendResult.class));
 			break;
 		case R.id.cylinder_change:
 			Intent cylinders = new Intent(Intent.ACTION_GET_CONTENT);
@@ -321,8 +309,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 			startActivityForResult(cylinders, 0);
 			break;
 		case R.id.button_topup:
-			GasMixer.this.startActivity(
-					new Intent(this, TopupResult.class));
+			startActivity(new Intent(this, TopupResult.class));
 			break;
 		case R.id.bestmix_blend:
 			if(mBestMix != null) {
@@ -535,5 +522,22 @@ public class GasMixer extends TabActivity implements Button.OnClickListener {
 		if(c != null) {
 			mCylinderDescription.setText(c.getName());
 		}
+	}
+
+	// TrimixSelector.onMixChangeListener implementation
+	public void onChange(TrimixSelector ts, Mix m) {
+		if(m != null) {
+			updateModEnd(m);
+		}
+	}
+	
+	// Implementation of BaseNumberSelector.valueChangedListener
+	public void onChange(BaseNumberSelector ns, Float new_val, boolean from_user) {
+		updateBestMix();
+	}
+	
+	// Implementation of OnCheckedChangedListener
+	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+		updateModEnd(mDesiredGas.getMix());
 	}
 }

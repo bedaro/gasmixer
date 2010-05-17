@@ -22,9 +22,9 @@ import android.widget.ToggleButton;
 /**
  * Frontend for GasSupply's topup capabilities.
  * @author Ben Roberts (divestoclimb@gmail.com)
- *
  */
-public class TopupResult extends Activity {
+public class TopupResult extends Activity implements CompoundButton.OnCheckedChangeListener,
+		View.OnClickListener {
 
 	private Mix mResult;
 	private TextView mFinalMOD, mFinalEADENDLabel, mFinalEADEND;
@@ -95,17 +95,8 @@ public class TopupResult extends Activity {
 
 		updateModEnd();
 
-		mTogglePo2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				updateModEnd();
-			}
-		});
-
-		findViewById(R.id.button_close).setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				finish();
-			}
-		});
+		mTogglePo2.setOnCheckedChangeListener(this);
+		findViewById(R.id.button_close).setOnClickListener(this);
 	}
 
 	private void updateModEnd() {
@@ -121,5 +112,13 @@ public class TopupResult extends Activity {
 			mFinalEADENDLabel.setText(getResources().getString(R.string.ead));
 			mFinalEADEND.setText(nf.format(mResult.EAD(Math.round(mod), u)) + " " + depthUnit);
 		}
+	}
+	
+	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+		updateModEnd();
+	}
+	
+	public void onClick(View v) {
+		finish();
 	}
 }
