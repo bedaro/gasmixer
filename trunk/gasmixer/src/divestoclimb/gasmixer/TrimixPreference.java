@@ -21,49 +21,47 @@ import android.view.ViewGroup;
  */
 public class TrimixPreference extends DialogPreference {
 	private TrimixSelector mTrimixSelector;
-	
+
 	private Mix mMix;
 	private String mMixString;
 	private static final NumberFormat nf = new DecimalFormat(".###");
-	
+
 	public TrimixPreference(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 
 		mTrimixSelector = new TrimixSelector(context, attrs);
 	}
-	
+
 	public TrimixPreference(Context context, AttributeSet attrs) {
 		this(context, attrs, android.R.attr.dialogPreferenceStyle);
 	}
-	
+
 	public TrimixPreference(Context context) {
 		this(context, null);
 	}
-	
+
 	private static String mixToString(Mix mix) {
 		return nf.format(mix.getfO2())+" "+nf.format(mix.getfHe());
 	}
-	
+
 	public static Mix stringToMix(String s) {
 		String ss[] = s.split("\\s");
 		try {
 			return new Mix(nf.parse(ss[0]).floatValue(), nf.parse(ss[1]).floatValue());
 		} catch(ParseException e) { return null; }
 	}
-	
-	public void setMix(String mixString) {
 
+	public void setMix(String mixString) {
 		mMix = stringToMix(mixString);
 		mMixString = mixString;
-		
-		persistString(mixString);
 
+		persistString(mixString);
 	}
 
 	public Mix getMix() {
 		return mMix;
 	}
-	
+
 	@Override
 	protected View onCreateDialogView() {
 		return mTrimixSelector;
@@ -76,11 +74,11 @@ public class TrimixPreference extends DialogPreference {
 		mTrimixSelector.setMix(mMix);
 
 	}
-	
+
 	@Override
 	protected void onDialogClosed(boolean positiveResult) {
 		super.onDialogClosed(positiveResult);
-		
+
 		if(positiveResult) {
 			String mixString = mixToString(mTrimixSelector.getMix());
 			if(callChangeListener(mixString)) {
@@ -89,21 +87,21 @@ public class TrimixPreference extends DialogPreference {
 		}
 		((ViewGroup)mTrimixSelector.getParent()).removeView(mTrimixSelector);
 	}
-	
+
 	@Override
 	protected Object onGetDefaultValue(TypedArray a, int index) {
 		return a.getString(index);
 	}
-	
+
 	@Override
 	protected void onSetInitialValue(boolean restoreValue, Object defaultValue) {
 		setMix(restoreValue? getPersistedString(mMixString): (String)defaultValue);
 	}
-	
+
 	public TrimixSelector getTrimixSelector() {
 		return mTrimixSelector;
 	}
-	
+
 	@Override
 	protected Parcelable onSaveInstanceState() {
 		final Parcelable superState = super.onSaveInstanceState();
@@ -129,7 +127,7 @@ public class TrimixPreference extends DialogPreference {
 		super.onRestoreInstanceState(myState.getSuperState());
 		setMix(myState.mixString);
 	}
-	
+
 	private static class SavedState extends BaseSavedState {
 		String mixString;
 
@@ -148,6 +146,7 @@ public class TrimixPreference extends DialogPreference {
 			super(superState);
 		}
 
+		@SuppressWarnings("unused")
 		public static final Parcelable.Creator<SavedState> CREATOR =
 			new Parcelable.Creator<SavedState>() {
 			public SavedState createFromParcel(Parcel in) {

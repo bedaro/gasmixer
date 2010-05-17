@@ -9,6 +9,7 @@ package divestoclimb.gasmixer;
 
 public final class R {
     public static final class array {
+        public static final int blendmodes=0x7f050002;
         public static final int units=0x7f050000;
         public static final int unitvalues=0x7f050001;
     }
@@ -93,19 +94,19 @@ containing a value of this type.
         public static final int units_imperial=0x7f020009;
     }
     public static final class id {
-        public static final int about=0x7f080039;
+        public static final int about=0x7f08003a;
         public static final int bestmix_blend=0x7f080008;
         public static final int bestmix_label=0x7f080006;
         public static final int bestmix_result=0x7f080007;
         public static final int blend_result=0x7f080016;
-        public static final int button=0x7f080023;
+        public static final int button=0x7f080024;
         public static final int button_blend=0x7f080013;
-        public static final int button_close=0x7f080019;
-        public static final int button_copy=0x7f080018;
+        public static final int button_close=0x7f08001a;
+        public static final int button_copy=0x7f080019;
         public static final int button_po2_hi=0x7f08000d;
-        public static final int button_topup=0x7f08002d;
-        public static final int cylinder=0x7f080025;
-        public static final int cylinder_change=0x7f080024;
+        public static final int button_topup=0x7f08002e;
+        public static final int cylinder=0x7f080026;
+        public static final int cylinder_change=0x7f080025;
         public static final int desired=0x7f08000c;
         public static final int desired_ead_end=0x7f080010;
         public static final int desired_ead_end_label=0x7f080011;
@@ -114,43 +115,44 @@ containing a value of this type.
         public static final int desired_mod_label=0x7f08000e;
         public static final int desired_pres=0x7f08000a;
         public static final int desired_pres_unit=0x7f08000b;
-        public static final int ead_end=0x7f080031;
-        public static final int ead_end_label=0x7f080030;
-        public static final int label_o2=0x7f080037;
+        public static final int ead_end=0x7f080032;
+        public static final int ead_end_label=0x7f080031;
+        public static final int label_o2=0x7f080038;
         public static final int maxdepth=0x7f080000;
         public static final int maxdepth_unit=0x7f080001;
         public static final int maxend=0x7f080004;
         public static final int maxend_unit=0x7f080005;
         public static final int maxpo2=0x7f080002;
         public static final int maxpo2_unit=0x7f080003;
-        public static final int minus=0x7f08001d;
-        public static final int mix=0x7f080022;
-        public static final int mod=0x7f08002f;
-        public static final int number_he=0x7f080035;
-        public static final int number_o2=0x7f080033;
-        public static final int plus=0x7f08001f;
-        public static final int pressure=0x7f080020;
-        public static final int pressure_unit=0x7f080021;
+        public static final int minus=0x7f08001e;
+        public static final int mix=0x7f080023;
+        public static final int mod=0x7f080030;
+        public static final int mode=0x7f080018;
+        public static final int number_he=0x7f080036;
+        public static final int number_o2=0x7f080034;
+        public static final int plus=0x7f080020;
+        public static final int pressure=0x7f080021;
+        public static final int pressure_unit=0x7f080022;
         public static final int reminder1=0x7f080017;
-        public static final int reminder2=0x7f080032;
-        public static final int result=0x7f08002e;
-        public static final int settings=0x7f080038;
-        public static final int slider_he=0x7f080036;
-        public static final int slider_o2=0x7f080034;
+        public static final int reminder2=0x7f080033;
+        public static final int result=0x7f08002f;
+        public static final int settings=0x7f080039;
+        public static final int slider_he=0x7f080037;
+        public static final int slider_o2=0x7f080035;
         public static final int start_change=0x7f080012;
         public static final int start_label=0x7f080014;
         public static final int start_mix=0x7f080015;
-        public static final int tab_bestmix=0x7f08001c;
-        public static final int tab_blend=0x7f08001a;
-        public static final int tab_topup=0x7f08001b;
-        public static final int text=0x7f080026;
-        public static final int text1=0x7f08001e;
-        public static final int topup=0x7f08002a;
-        public static final int topup_final_pres=0x7f08002c;
-        public static final int topup_label=0x7f080027;
-        public static final int topup_pres_label=0x7f08002b;
-        public static final int topup_start_pres=0x7f080028;
-        public static final int topup_start_pres_unit=0x7f080029;
+        public static final int tab_bestmix=0x7f08001d;
+        public static final int tab_blend=0x7f08001b;
+        public static final int tab_topup=0x7f08001c;
+        public static final int text=0x7f080027;
+        public static final int text1=0x7f08001f;
+        public static final int topup=0x7f08002b;
+        public static final int topup_final_pres=0x7f08002d;
+        public static final int topup_label=0x7f080028;
+        public static final int topup_pres_label=0x7f08002c;
+        public static final int topup_start_pres=0x7f080029;
+        public static final int topup_start_pres_unit=0x7f08002a;
     }
     public static final class layout {
         public static final int bestmix=0x7f030000;
@@ -158,30 +160,32 @@ containing a value of this type.
         public static final int blend=0x7f030002;
         public static final int blend_foot=0x7f030003;
         public static final int blend_result=0x7f030004;
-        public static final int blend_start=0x7f030005;
-        public static final int main=0x7f030006;
-        public static final int main_cylinder=0x7f030007;
-        public static final int num_selector=0x7f030008;
-        public static final int set_start=0x7f030009;
-        public static final int set_start_common=0x7f03000a;
-        public static final int set_start_cylinder=0x7f03000b;
-        public static final int text_dialog=0x7f03000c;
-        public static final int topup=0x7f03000d;
-        public static final int topup_common=0x7f03000e;
-        public static final int topup_cylinder=0x7f03000f;
-        public static final int topup_result=0x7f030010;
-        public static final int trimix_selector=0x7f030011;
+        public static final int blend_result_footer=0x7f030005;
+        public static final int blend_start=0x7f030006;
+        public static final int main=0x7f030007;
+        public static final int main_cylinder=0x7f030008;
+        public static final int num_selector=0x7f030009;
+        public static final int set_start=0x7f03000a;
+        public static final int set_start_common=0x7f03000b;
+        public static final int set_start_cylinder=0x7f03000c;
+        public static final int text_dialog=0x7f03000d;
+        public static final int topup=0x7f03000e;
+        public static final int topup_common=0x7f03000f;
+        public static final int topup_cylinder=0x7f030010;
+        public static final int topup_result=0x7f030011;
+        public static final int trimix_selector=0x7f030012;
     }
     public static final class menu {
         public static final int main=0x7f070000;
     }
     public static final class string {
         public static final int about=0x7f060030;
-        public static final int about_text=0x7f060047;
-        public static final int add_he_first=0x7f060040;
-        public static final int add_he_first_summary=0x7f060041;
+        public static final int about_text=0x7f060048;
+        public static final int abs_pres=0x7f060039;
+        public static final int add_he_first=0x7f060041;
+        public static final int add_he_first_summary=0x7f060042;
         public static final int air=0x7f060013;
-        public static final int analyze_warning=0x7f060046;
+        public static final int analyze_warning=0x7f060047;
         public static final int app_name=0x7f060000;
         public static final int bestis=0x7f06002a;
         public static final int bestmix=0x7f060002;
@@ -196,7 +200,7 @@ containing a value of this type.
         public static final int depth_imperial=0x7f060007;
         public static final int depth_metric=0x7f060008;
         public static final int desired=0x7f06000b;
-        public static final int download_now=0x7f060044;
+        public static final int download_now=0x7f060045;
         public static final int ead=0x7f06001b;
         public static final int empty_tank=0x7f060022;
         public static final int end=0x7f06001c;
@@ -205,8 +209,8 @@ containing a value of this type.
         public static final int gas_units_opts=0x7f060036;
         public static final int he=0x7f060003;
         public static final int helium=0x7f060012;
-        public static final int max_hi_po2=0x7f06003c;
-        public static final int max_norm_po2=0x7f06003b;
+        public static final int max_hi_po2=0x7f06003d;
+        public static final int max_norm_po2=0x7f06003c;
         public static final int maxdepth=0x7f060016;
         public static final int maxend=0x7f060018;
         public static final int maxpo2=0x7f060017;
@@ -214,14 +218,14 @@ containing a value of this type.
         public static final int nitrogen=0x7f060015;
         public static final int no_mix=0x7f060014;
         public static final int o2=0x7f060004;
-        public static final int o2_is_narcotic=0x7f060039;
-        public static final int o2_narcotic_summary=0x7f06003a;
+        public static final int o2_is_narcotic=0x7f06003a;
+        public static final int o2_narcotic_summary=0x7f06003b;
         public static final int oxygen=0x7f060011;
         public static final int po2_hi=0x7f060019;
         public static final int pres_imperial=0x7f060005;
         public static final int pres_metric=0x7f060006;
-        public static final int real_gas=0x7f06003e;
-        public static final int real_gas_summary=0x7f06003f;
+        public static final int real_gas=0x7f06003f;
+        public static final int real_gas_summary=0x7f060040;
         public static final int reltemp_imperial=0x7f060037;
         public static final int reltemp_metric=0x7f060038;
         public static final int result_add=0x7f060026;
@@ -231,8 +235,8 @@ containing a value of this type.
         public static final int result_impossible=0x7f06001f;
         public static final int result_start_empty=0x7f060020;
         public static final int result_topup=0x7f060027;
-        public static final int scubatanks_message=0x7f060043;
-        public static final int scubatanks_needed=0x7f060042;
+        public static final int scubatanks_message=0x7f060044;
+        public static final int scubatanks_needed=0x7f060043;
         public static final int set_topup=0x7f06002e;
         public static final int settings=0x7f06002f;
         public static final int start_with=0x7f060021;
@@ -241,13 +245,13 @@ containing a value of this type.
         public static final int switch_to_metric=0x7f060009;
         public static final int temperature=0x7f060034;
         public static final int topup=0x7f06002d;
-        public static final int topup_gas=0x7f06003d;
+        public static final int topup_gas=0x7f06003e;
         public static final int topup_mix=0x7f06000d;
         public static final int topup_pres=0x7f06002c;
         public static final int topup_reminder=0x7f06002b;
         public static final int topup_result=0x7f060029;
         public static final int units=0x7f060033;
-        public static final int use_ideal=0x7f060045;
+        public static final int use_ideal=0x7f060046;
     }
     public static final class xml {
         public static final int preferences=0x7f040000;

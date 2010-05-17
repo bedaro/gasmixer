@@ -3,14 +3,15 @@ package divestoclimb.gasmixer;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
+import divestoclimb.android.widget.BaseNumberSelector;
+import divestoclimb.lib.scuba.Cylinder;
 import divestoclimb.lib.scuba.Mix;
 import divestoclimb.lib.scuba.Units;
-import divestoclimb.scuba.equipment.CylinderSizeClient;
+import divestoclimb.scuba.equipment.storage.CylinderORMapper;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -22,12 +23,13 @@ import android.widget.TextView;
  * @author Ben Roberts (divestoclimb@gmail.com)
  */
 public class SetStarting extends Activity implements Button.OnClickListener {
-	
-	private NumberSelector mPressureSelector;
+
+	private BaseNumberSelector mPressureSelector;
 	private TextView mPressureUnit, mCylinderDescription;
 	private TrimixSelector mGasSelector;
 	private SharedPreferences mSettings, mState;
 	private Units mUnits;
+	private CylinderORMapper mCylORMapper;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -48,7 +50,9 @@ public class SetStarting extends Activity implements Button.OnClickListener {
 		} catch(ParseException e) { unit = 0; }
 		mUnits = new Units(unit);
 
-		mPressureSelector = (NumberSelector)findViewById(R.id.pressure);
+		mCylORMapper = new CylinderORMapper(this, mUnits);
+
+		mPressureSelector = (BaseNumberSelector)findViewById(R.id.pressure);
 		mPressureUnit = (TextView)findViewById(R.id.pressure_unit);
 		mGasSelector = (TrimixSelector)findViewById(R.id.mix);
 		mCylinderDescription = (TextView)findViewById(R.id.cylinder);
@@ -65,18 +69,20 @@ public class SetStarting extends Activity implements Button.OnClickListener {
 	@Override
 	public void onResume() {
 		super.onResume();
+		final Units u = mUnits;
+		final String pressureUnit = getString(u.pressureUnit() == Units.IMPERIAL? R.string.pres_imperial: R.string.pres_metric);
 		mPressureSelector.setDecimalPlaces(0);
-		mPressureSelector.setLimits(0f, new Float(mUnits.pressureTankMax()));
-		mPressureSelector.setIncrement(new Float(mUnits.pressureIncrement()));
+		mPressureSelector.setLimits(0f, new Float(u.pressureTankMax()));
+		mPressureSelector.setIncrement(new Float(u.pressureIncrement()));
 		mPressureSelector.setValue(mState.getFloat("start_pres", 0));
-		mPressureUnit.setText(Params.pressure(this, mUnits)+":");
+		mPressureUnit.setText(pressureUnit + ":");
 		mGasSelector.setMix(new Mix(mState.getFloat("start_o2", 0.21f), mState.getFloat("start_he", 0)));
 
 		if(mCylinderDescription != null) {
 			updateCylinder();
 		}
 	}
-	
+
 	public void onClick(View v) {
 		switch(v.getId()) {
 		case R.id.button:
@@ -95,7 +101,7 @@ public class SetStarting extends Activity implements Button.OnClickListener {
 			startActivityForResult(cylinders, 0);
 		}
 	}
-	
+
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		if(resultCode == RESULT_OK) {
@@ -105,15 +111,11 @@ public class SetStarting extends Activity implements Button.OnClickListener {
 			updateCylinder();
 		}
 	}
-	
+
 	private void updateCylinder() {
-		long id = mState.getLong("cylinderid", -1);
-		if(id != -1) {
-			Cursor c = getContentResolver().query(Uri.withAppendedPath(CylinderSizeClient.CONTENT_URI,
-					String.valueOf(id)), new String[] { CylinderSizeClient.NAME }, null, null, null);
-			c.moveToFirst();
-			mCylinderDescription.setText(c.getString(c.getColumnIndexOrThrow(CylinderSizeClient.NAME)));
-			c.close();
+		final Cylinder c = mCylORMapper.fetchCylinder(mState.getLong("cylinderid", -1));
+		if(c != null) {
+			mCylinderDescription.setText(c.getName());
 		}
 	}
 }

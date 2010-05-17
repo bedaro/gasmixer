@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="wrap_content"
 	android:layout_height="wrap_content" android:gravity="center">
@@ -18,25 +17,6 @@
 			android:layout_height="wrap_content"
 			android:layout_marginLeft="10dip"
 			android:layout_marginRight="10dip" />
-	<!-- <Button android:id="@+id/button_enough"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:text="@string/enough"/> -->
-	<LinearLayout android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:orientation="horizontal"
-			android:gravity="center">
-
-		<Button android:id="@+id/button_copy"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="@string/copy"/>
-				
-		<Button android:id="@+id/button_close"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="@string/close"/>
-				
-	</LinearLayout>
+	<include layout="@layout/blend_result_footer" />
 
 </LinearLayout>
