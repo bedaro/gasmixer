@@ -59,7 +59,8 @@ import android.widget.TextView;
 // [ fo2,i	0	fo2,t ] [ vi    ]   [ vf*fo2,f ]
 // [ fhe,i	1	fhe,t ] [ vhe,a ] = [ vf*fhe,f ]
 // [ fn2,i	0	fn2,t ] [ vt,a  ]   [ vf*fn2,f ]
-public class BlendResult extends Activity implements AdapterView.OnItemSelectedListener {
+public class BlendResult extends Activity implements AdapterView.OnItemSelectedListener,
+		View.OnClickListener {
 
 	// Our known parameters
 	private float pi, pf, t;
@@ -105,18 +106,8 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 		mode.setOnItemSelectedListener(this);
 
 		// set button listeners
-		findViewById(R.id.button_copy).setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				ClipboardManager c = (ClipboardManager)BlendResult.this.getSystemService(CLIPBOARD_SERVICE);
-				c.setText(mResultText);
-			}
-		});
-
-		findViewById(R.id.button_close).setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				finish();
-			}
-		});
+		findViewById(R.id.button_copy).setOnClickListener(this);
+		findViewById(R.id.button_close).setOnClickListener(this);
 
 		recalculate();
 
@@ -458,4 +449,16 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 	}
 
 	public void onNothingSelected(AdapterView<?> parent) { }
+
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch(v.getId()) {
+		case R.id.button_copy:
+			ClipboardManager c = (ClipboardManager)BlendResult.this.getSystemService(CLIPBOARD_SERVICE);
+			c.setText(mResultText);
+			break;
+		case R.id.button_close:
+			finish();
+		}
+	}
 }
