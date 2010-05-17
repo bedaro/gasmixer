@@ -17,9 +17,18 @@ You can see the MOD (maximum operating depth) for the desired mix here at the cu
 
 The first tab of the application is for blending a specific gas. You select what gas you want and how much, then you enter what gas and how much is already present in the tank (if any). Then hit blend and you're given the pressures of oxygen, helium, and your top up gas (air) to add.
 
-http://lh4.ggpht.com/_uJWsXw_tI_o/StJGC--ep4I/AAAAAAAAADo/Zyp1YjwK5Iw/Picture%208.png
+http://lh6.ggpht.com/_uJWsXw_tI_o/S_C34YEIXhI/AAAAAAAAAGo/t24QAhtWO2g/Picture%202.png
 
 The app will also tell you if you need to drain off some gas from your cylinder before beginning.
+
+The default "blend mode" is partial pressure blending; this means it's assumed you're going to add oxygen, helium, and top-up gas separately. If you instead have a constant flow blending setup, you can change this in the drop-down beneath the results. The other two options are:
+
+  * Continuous Nitrox: shows the amounts of helium and the best nitrox mix to add individually. Helium is always added first.
+  * Continuous Trimix: shows the best trimix to top off with.
+
+Your selection is automatically saved for later blending calculations.
+
+The app does not currently do any checks for maximum O2 percentage when doing continuous blending. In some cases you can get results that would be unwise to attempt to mix depending on the particulars of your blending station.
 
 = Top Up =
 
