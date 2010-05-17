@@ -38,8 +38,10 @@ By pressing the menu button, you can enter the preferences section:
 http://lh3.ggpht.com/_uJWsXw_tI_o/StJGCs76-5I/AAAAAAAAADg/qCnVyBtcciw/Picture%206.png
 
 Here you can adjust the following:
-  * What top-up gas you are using. Although many of us top up our tanks with air, sometimes it's more convenient to top up with a banked nitrox mix like 32%. Here you can set the top-up gas as any nitrox or helium mix. When you blend or top up, you'll be reminded what your top-up gas is set to. This setting is saved as a preference so it does NOT reset back to air.
+  * What top-up gas you are using. Although many of us top up our tanks with air, sometimes it's more convenient to top up with a banked nitrox mix like 32%. Here you can set the top-up gas as any nitrox or helium mix. When you blend or top up, you'll be reminded what your top-up gas is set to. This setting is saved as a preference so it does NOT reset back to air. When doing continuous blending, it's assumed this mix is added into the flow with oxygen and/or helium. In practical terms, if it's set to 32% it will be impossible to add a mix with less oxygen into a cylinder whether using partial pressure or continuous blending.
+  * Temperature. Temperature affects the outcome of mixing slightly when using real gas equations.
   * Switching between ideal and real gas equations. Enabling real gas equations requires my Scuba Tanks application to specify cylinder size.
+  * Add Helium first instead of oxygen when partial pressure blending.
   * Normal and high pO2's. These are used for calculating MOD's in blend and topup modes.
   * Whether or not to consider oxygen a narcotic gas like nitrogen when computing END's.
   * Switch between metric and imperial units for pressures and depths. When you switch units, all entered values are converted for you.
