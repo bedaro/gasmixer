@@ -16,6 +16,7 @@ import android.app.TabActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ProviderInfo;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
@@ -357,7 +358,9 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 	private boolean testCylinders() {
 		final Intent cylinderTest = new Intent(Intent.ACTION_GET_CONTENT);
 		cylinderTest.setType("vnd.android.cursor.item/vnd.divestoclimb.scuba.equipment.cylinders.size");
-		return (cylinderTest.resolveActivity(getPackageManager()) != null);
+		String auth = CylinderORMapper.CONTENT_URI.getAuthority();
+		ProviderInfo info = getPackageManager().resolveContentProvider(auth, 0);
+		return cylinderTest.resolveActivity(getPackageManager()) != null && info != null;
 	}
 
 	/**
