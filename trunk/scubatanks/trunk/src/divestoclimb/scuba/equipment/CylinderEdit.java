@@ -1,35 +1,33 @@
 package divestoclimb.scuba.equipment;
 
-import java.text.NumberFormat;
-import java.text.ParseException;
-
+import divestoclimb.android.widget.BaseNumberSelector;
 import divestoclimb.lib.scuba.Cylinder;
 import divestoclimb.lib.scuba.Units;
-import divestoclimb.scuba.equipment.NumberSelector.ValueChangedListener;
+import divestoclimb.scuba.equipment.prefs.SyncedPrefsHelper;
+import divestoclimb.scuba.equipment.storage.CylinderORMapper;
+
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 
-public class CylinderEdit extends Activity implements OnClickListener, ValueChangedListener, OnCheckedChangeListener {
+public class CylinderEdit extends Activity implements View.OnClickListener,
+		BaseNumberSelector.ValueChangedListener, CompoundButton.OnCheckedChangeListener {
 
 	public static final String KEY_ACTION="action";
 	public static final int ACTION_NEW=1;
 	public static final int ACTION_EDIT=2;
 
 	private Cylinder mCylinder;
+	private SharedPreferences mSettings;
 	private boolean mInitialized = false;
 
 	private int mAction;
@@ -37,7 +35,9 @@ public class CylinderEdit extends Activity implements OnClickListener, ValueChan
 	private EditText mName;
 	private NumberSelector mInternalVolume, mCapacity, mServPressure;
 	private TextView mInternalVolumeUnit, mCapacityUnit, mServPressureUnit;
+	private ToggleButton mToggleUnit;
 	
+	private CylinderORMapper mORMapper;
 	private Units mUnits;
 	
 	// Coupling parameters. See comments in onChange
@@ -51,27 +51,33 @@ public class CylinderEdit extends Activity implements OnClickListener, ValueChan
 		Bundle params = icicle != null? icicle: getIntent().getExtras();
 		mAction = params.getInt(KEY_ACTION);
 		if(mAction == ACTION_EDIT) {
-			mId = params.getLong(CylinderSizeClient._ID);
+			mId = params.getLong(CylinderORMapper._ID);
 			setTitle(R.string.edit_cylinder);
 		} else {
 			mId = null;
 			setTitle(R.string.create_cylinder);
 		}
 		
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+		mSettings = PreferenceManager.getDefaultSharedPreferences(this);
 
 		int unit;
 		if(icicle == null) {
-			// Android issue 2096 - ListPreference won't work with an integer
-			// array for values. Unit values are being stored as Strings then
-			// we convert them here for use.
-			try {
-				unit = NumberFormat.getIntegerInstance().parse(settings.getString("units", "0")).intValue();
-			} catch(ParseException e) { unit = 0; }
+			if(mSettings.contains("units")) {
+				// Android issue 2096 - ListPreference won't work with an integer
+				// array for values. Unit values are being stored as Strings then
+				// we convert them here for use.
+				unit = Integer.valueOf(mSettings.getString("units", "0"));
+			} else {
+				Cursor c = new SyncedPrefsHelper(this).findSetValue("units");
+				unit = c == null? 0: Integer.valueOf(c.getString(c.getColumnIndexOrThrow("units")));
+				mSettings.edit().putString("units", Integer.toString(unit)).commit();
+			}
 		} else {
 			unit = icicle.getBoolean("unit_metric")? Units.METRIC: Units.IMPERIAL;
 		}
 		mUnits = new Units(unit);
+		
+		mORMapper = new CylinderORMapper(this, mUnits);
 
 		setContentView(R.layout.edit_cylinder);
 
@@ -86,20 +92,28 @@ public class CylinderEdit extends Activity implements OnClickListener, ValueChan
 		mServPressure.setValueChangedListener(this);
 		mServPressureUnit = (TextView)findViewById(R.id.serv_pressure_unit);
 
-		ToggleButton toggleUnit = (ToggleButton)findViewById(R.id.metric_toggle);
-		toggleUnit.setChecked(unit == Units.METRIC);
-		toggleUnit.setOnCheckedChangeListener(this);
+		mToggleUnit = (ToggleButton)findViewById(R.id.metric_toggle);
+		mToggleUnit.setOnCheckedChangeListener(this);
 
 		// Restore from saved state if there was one
 		if(icicle != null) {
-			float vol = icicle.getFloat("volume"),
+			final float vol = icicle.getFloat("volume"),
 					pressure = icicle.getFloat("pressure");
-			mName.setText(icicle.getString("name"));
-			mInternalVolume.setValue(vol);
-			mCapacity.setValue(icicle.getFloat("capacity"));
-			mServPressure.setValue(pressure);
-			mCylinder = new Cylinder(mUnits, vol, (int)pressure);
-			mInitialized = true;
+			final String name = icicle.getString("name");
+			if(icicle.containsKey(CylinderORMapper._ID)) {
+				long id = icicle.getLong(CylinderORMapper._ID);
+				mCylinder = mORMapper.fetchCylinder(id);
+				mCylinder.setName(name)
+						.setInternalVolume(vol)
+						.setServicePressure((int)pressure);
+			} else {
+				mCylinder = new Cylinder(mUnits, vol, (int)pressure);
+				mCylinder.setName(name);
+			}
+		} else if(mAction == ACTION_EDIT) {
+			mCylinder = mORMapper.fetchCylinder(mId);
+		} else {
+			mCylinder = new Cylinder(mUnits, mUnits.volumeToCapacity(mUnits.volumeNormalTank()), (int)Math.round(mUnits.pressureTankFull()));
 		}
 
 		Button ok = (Button)findViewById(R.id.button_ok),
@@ -115,9 +129,21 @@ public class CylinderEdit extends Activity implements OnClickListener, ValueChan
 	@Override
 	protected void onResume() {
 		super.onResume();
-		updateUnits(null);
+		Integer unit = Integer.valueOf(mSettings.getString("units", "0")),
+			last_unit = mUnits.getCurrentSystem();
+		if(unit != last_unit) {
+			mUnits.change(unit);
+		} else {
+			last_unit = null;
+		}
+		updateUnits(last_unit);
+		mToggleUnit.setChecked(unit == Units.METRIC);
 		if(! mInitialized) {
-			initFields();
+			mInternalVolume.setValue(mUnits.capacityToVolume(mCylinder.getInternalVolume()));
+			mName.setText(mCylinder.getName());
+			mCapacity.setValue(mCylinder.getVdwCapacity());
+			mServPressure.setValue(mCylinder.getServicePressure());
+			mInitialized = true;
 		}
 	}
 	
@@ -126,33 +152,12 @@ public class CylinderEdit extends Activity implements OnClickListener, ValueChan
 		super.onSaveInstanceState(outState);
 		outState.putInt(KEY_ACTION, mAction);
 		if(mAction == ACTION_EDIT) {
-			outState.putLong(CylinderSizeClient._ID, mId);
+			outState.putLong(CylinderORMapper._ID, mId);
 		}
 		outState.putString("name", mName.getText().toString());
 		outState.putFloat("volume", mInternalVolume.getValue());
-		outState.putFloat("capacity", mCapacity.getValue());
 		outState.putFloat("pressure", mServPressure.getValue());
 		outState.putBoolean("unit_metric", mUnits.getCurrentSystem() == Units.METRIC);
-	}
-
-	private void initFields() {
-		Units u = mUnits;
-		if(mAction == ACTION_EDIT) {
-			Cursor c = getContentResolver().query(
-					Uri.withAppendedPath(CylinderSizeClient.CONTENT_URI,
-							String.valueOf(mId)
-					), null, null, null, null);
-			c.moveToFirst();
-			mName.setText(c.getString(c.getColumnIndexOrThrow(CylinderSizeClient.NAME)));
-			mCylinder = CylinderSizeClient.cursorToCylinder(c, u);
-			c.close();
-		} else {
-			mCylinder = new Cylinder(u, u.volumeToCapacity(u.volumeNormalTank()), (int)Math.round(u.pressureTankFull()));
-		}
-		mInternalVolume.setValue(u.capacityToVolume(mCylinder.getInternalVolume()));
-		mCapacity.setValue(mCylinder.getVdwCapacity());
-		mServPressure.setValue(mCylinder.getServicePressure());
-		mInitialized = true;
 	}
 
 	private void updateUnits(Integer last_unit) {
@@ -161,17 +166,17 @@ public class CylinderEdit extends Activity implements OnClickListener, ValueChan
 		mServPressure.setLimits(0f, new Float(u.pressureTankMax()));
 		mServPressure.setIncrement(new Float(u.pressureIncrement()));
 		mServPressure.setNonIncrementValues(u.pressureNonstandard());
-		mServPressureUnit.setText(Params.pressure(this, u));
+		mServPressureUnit.setText(getText(u.pressureUnit() == Units.IMPERIAL? R.string.pres_imperial: R.string.pres_metric));
 
 		mInternalVolume.setDecimalPlaces(u.volumePrecision());
 		mInternalVolume.setLimits(0f, null);
 		mInternalVolume.setIncrement(u.volumeIncrement());
-		mInternalVolumeUnit.setText(Params.volume(this, u));
+		mInternalVolumeUnit.setText(getText(u.volumeUnit() == Units.IMPERIAL? R.string.volume_imperial: R.string.volume_metric));
 
 		mCapacity.setDecimalPlaces(u.capacityPresision());
 		mCapacity.setLimits(0f, null);
 		mCapacity.setIncrement(u.capacityIncrement());
-		mCapacityUnit.setText(Params.capacity(this, u));
+		mCapacityUnit.setText(getText(u.capacityUnit() == Units.IMPERIAL? R.string.capacity_imperial: R.string.capacity_metric));
 
 		if(last_unit != null) {
 			// Convert existing values to new units
@@ -187,10 +192,7 @@ public class CylinderEdit extends Activity implements OnClickListener, ValueChan
 		switch(v.getId()) {
 		case R.id.button_delete:
 			if(mAction == ACTION_EDIT) {
-				getContentResolver().delete(
-						Uri.withAppendedPath(CylinderSizeClient.CONTENT_URI,
-								String.valueOf(mId)
-						), null, null);
+				mCylinder.delete();
 			}
 			finish();
 			break;
@@ -204,24 +206,13 @@ public class CylinderEdit extends Activity implements OnClickListener, ValueChan
 			startActivity(i);
 			break;
 		case R.id.button_ok:
-			ContentValues values =
-				CylinderSizeClient.cylinderToContentValues(
-						mCylinder, mName.getText().toString()
-				);
-			if(mId == null) {
-				// Insert as a new cylinder size
-				getContentResolver().insert(CylinderSizeClient.CONTENT_URI, values);
-			} else {
-				getContentResolver().update(Uri.withAppendedPath(
-						CylinderSizeClient.CONTENT_URI,
-						String.valueOf(mId)
-					), values, null, null);
-			}
+			mCylinder.setName(mName.getText().toString());
+			mCylinder.commit();
 			finish();
 		}
 	}
 
-	public void onChange(NumberSelector ns, Float new_val, boolean from_user) {
+	public void onChange(BaseNumberSelector ns, Float new_val, boolean from_user) {
 		if(! from_user) {
 			return;
 		}
@@ -289,7 +280,9 @@ public class CylinderEdit extends Activity implements OnClickListener, ValueChan
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 		int last_unit = mUnits.getCurrentSystem(),
 				unit = isChecked? Units.METRIC: Units.IMPERIAL;
-		mUnits.change(unit);
-		updateUnits(last_unit);
+		if(unit != last_unit) {
+			mUnits.change(unit);
+			updateUnits(last_unit);
+		}
 	}
 }

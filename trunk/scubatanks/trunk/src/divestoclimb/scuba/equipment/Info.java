@@ -2,7 +2,6 @@ package divestoclimb.scuba.equipment;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.text.util.Linkify;
 import android.widget.TextView;
 
 public class Info extends Activity {
@@ -28,9 +27,6 @@ public class Info extends Activity {
 		mTextResId = params.getInt(KEY_TEXT);
 		
 		text.setText(getText(mTextResId));
-
-		// Make links
-		Linkify.addLinks(text, Linkify.EMAIL_ADDRESSES | Linkify.WEB_URLS);
 	}
 	
 	@Override

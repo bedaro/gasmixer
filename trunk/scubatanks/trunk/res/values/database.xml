@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<!-- All statements needed to create the current version of the database -->
+	<string-array name="db_create">
+		<item>drop table if exists cylindersizes</item>
+		<item>create table cylindersizes (
+			_id integer primary key autoincrement,
+			name text unique not null,
+			internalVolume real,
+			servicePressure real
+		)</item>
+	</string-array>
+		<!-- All statements to populate the database with default data. This array could be
+	     overridden for other languages -->
+	<string-array name="db_load">
+		<item>"insert into cylindersizes (name, internalVolume, servicePressure) values ('Aluminum 80 (Luxfer)', 11.11, 206.896551)"</item>
+		<item>"insert into cylindersizes (name, internalVolume, servicePressure) values ('Double LP 95''s', 30, 182.0689965)"</item>
+	</string-array>
+</resources>

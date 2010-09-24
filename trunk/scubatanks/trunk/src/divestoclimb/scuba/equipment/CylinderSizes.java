@@ -1,16 +1,13 @@
 package divestoclimb.scuba.equipment;
 
-import java.text.NumberFormat;
-import java.text.ParseException;
-
+import divestoclimb.scuba.equipment.prefs.SyncedPrefsHelper;
 import divestoclimb.lib.scuba.Units;
+import divestoclimb.scuba.equipment.storage.CylinderORMapper;
 
 import android.app.ListActivity;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.ContextMenu;
@@ -18,8 +15,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.CursorAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -27,15 +24,15 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 
 /**
  * A ListActivity to show a listing of all cylinder sizes.
- * @author BenR
+ * @author Ben Roberts (divestoclimb@gmail.com)
  */
-public class CylinderSizes extends ListActivity implements OnClickListener {
-
-	protected Button mButtonNew;
+public class CylinderSizes extends ListActivity implements View.OnClickListener {
 	
 	private Units mUnits;
 
-	private ContentResolver mContentResolver;
+	private CylinderORMapper mORMapper;
+	private boolean mInitialized = false;
+	private SyncedPrefsHelper mSyncedPrefsHelper;
 	protected SharedPreferences mSettings;
 	private boolean mReturnSelected = false;
 
@@ -45,21 +42,26 @@ public class CylinderSizes extends ListActivity implements OnClickListener {
 		setContentView(R.layout.list_cylinders);
 		setTitle(R.string.cylinder_size_list);
 		
-		mContentResolver = getContentResolver();
-		
 		mSettings = PreferenceManager.getDefaultSharedPreferences(this);
+		mSyncedPrefsHelper = new SyncedPrefsHelper(this);
 
 		int unit;
-		// Android issue 2096 - ListPreference won't work with an integer
-		// array for values. Unit values are being stored as Strings then
-		// we convert them here for use.
-		try {
-			unit = NumberFormat.getIntegerInstance().parse(mSettings.getString("units", "0")).intValue();
-		} catch(ParseException e) { unit = 0; }
+		if(mSettings.contains("units")) {
+			// Android issue 2096 - ListPreference won't work with an integer
+			// array for values. Unit values are being stored as Strings then
+			// we convert them here for use.
+			unit = Integer.valueOf(mSettings.getString("units", "0"));
+		} else {
+			Cursor c = mSyncedPrefsHelper.findSetValue("units");
+			unit = c == null? 0: Integer.valueOf(c.getString(c.getColumnIndexOrThrow("units")));
+			mSettings.edit().putString("units", Integer.toString(unit)).commit();
+		}
 		mUnits = new Units(unit);
+		
+		mORMapper = new CylinderORMapper(this, mUnits);
 
 		String action = getIntent().getAction();
-		if(action != null && action.compareTo(Intent.ACTION_GET_CONTENT) == 0) {
+		if(action != null && action.equals(Intent.ACTION_GET_CONTENT)) {
 			mReturnSelected = true;
 			setTitle(R.string.select_cylinder);
 		}
@@ -67,14 +69,35 @@ public class CylinderSizes extends ListActivity implements OnClickListener {
 		registerForContextMenu(getListView());
 
 		// Set up our button listeners
-		mButtonNew = (Button)findViewById(R.id.create_new);
-		mButtonNew.setOnClickListener(this);
+		Button createNew = (Button)findViewById(R.id.create_new);
+		createNew.setOnClickListener(this);
 	}
 	
 	@Override
 	protected void onResume() {
 		super.onResume();
-		fillData();
+		if(! mInitialized) {
+			Cursor c = mORMapper.fetchCylinders();
+			startManagingCursor(c);
+			ListAdapter adapter = new SimpleCursorAdapter(this,
+					android.R.layout.simple_list_item_1,
+					c,
+					new String[] { CylinderORMapper.NAME },
+					new int [] { android.R.id.text1 }
+			);
+			setListAdapter(adapter);
+			mInitialized = true;
+		} else {
+			((CursorAdapter)getListView().getAdapter()).getCursor().requery();
+		}
+		mUnits.change(Integer.valueOf(mSettings.getString("units", "0")));
+		mSettings.registerOnSharedPreferenceChangeListener(mSyncedPrefsHelper);
+	}
+	
+	@Override
+	public void onPause() {
+		super.onPause();
+		mSettings.unregisterOnSharedPreferenceChangeListener(mSyncedPrefsHelper);
 	}
 	
 	// Override the onPrepareOptionsMenu class to remove the menu
@@ -134,29 +157,15 @@ public class CylinderSizes extends ListActivity implements OnClickListener {
 			edit(info.id);
 			break;
 		case R.id.delete:
-			mContentResolver.delete(
-					Uri.withAppendedPath(CylinderSizeClient.CONTENT_URI,
-							String.valueOf(info.id)
-					), null, null);
+			mORMapper.deleteCylinder(info.id);
 		}
 		return super.onContextItemSelected(item);
-	}
-	
-	private void fillData() {
-		Cursor c = managedQuery(CylinderSizeClient.CONTENT_URI, null, null, null, null);
-		ListAdapter adapter = new SimpleCursorAdapter(this,
-				android.R.layout.simple_list_item_1,
-				c,
-				new String[] { CylinderSizeClient.NAME },
-				new int [] { android.R.id.text1 }
-		);
-		setListAdapter(adapter);
 	}
 	
 	private void edit(long id) {
 		Intent i = new Intent(this, CylinderEdit.class);
 		i.putExtra(CylinderEdit.KEY_ACTION, CylinderEdit.ACTION_EDIT);
-		i.putExtra(CylinderSizeClient._ID, id);
+		i.putExtra(CylinderORMapper._ID, id);
 		startActivity(i);
 	}
 
@@ -167,10 +176,6 @@ public class CylinderSizes extends ListActivity implements OnClickListener {
 		startActivity(i);
 	}
 
-	/**
-	 * onListItemClick is called whenever the user taps on an item or clicks the
-	 * trackball while the item is selected.
-	 */
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		if(mReturnSelected) {
