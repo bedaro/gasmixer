@@ -4,11 +4,15 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.pm.PackageInfo;
 import android.os.Bundle;
-import android.text.util.Linkify;
 import android.widget.TextView;
 
+/**
+ * A generic activity for displaying information about the application. Looks up
+ * the app name and version.
+ * @author Ben Roberts (divestoclimb@gmail.com)
+ */
 public class About extends Activity {
-	
+	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.text_dialog);
@@ -25,9 +29,5 @@ public class About extends Activity {
 		}
 		about_text.setText(String.format(getResources().getString(R.string.about_text),
 				getResources().getString(R.string.app_name), version));
-		
-		// Make links
-		Linkify.addLinks(about_text, Linkify.EMAIL_ADDRESSES | Linkify.WEB_URLS);
 	}
-
 }
