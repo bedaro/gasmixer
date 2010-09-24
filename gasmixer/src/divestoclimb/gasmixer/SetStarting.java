@@ -1,9 +1,7 @@
 package divestoclimb.gasmixer;
 
-import java.text.NumberFormat;
-import java.text.ParseException;
-
 import divestoclimb.android.widget.BaseNumberSelector;
+import divestoclimb.gasmixer.prefs.SyncedPrefsHelper;
 import divestoclimb.lib.scuba.Cylinder;
 import divestoclimb.lib.scuba.Mix;
 import divestoclimb.lib.scuba.Units;
@@ -12,6 +10,7 @@ import divestoclimb.scuba.equipment.storage.CylinderORMapper;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -45,9 +44,16 @@ public class SetStarting extends Activity implements Button.OnClickListener {
 		}
 
 		int unit;
-		try {
-			unit = NumberFormat.getIntegerInstance().parse(mSettings.getString("units", "0")).intValue();
-		} catch(ParseException e) { unit = 0; }
+		if(mSettings.contains("units")) {
+			// Android issue 2096 - ListPreference won't work with an integer
+			// array for values. Unit values are being stored as Strings then
+			// we convert them here for use.
+			unit = Integer.valueOf(mSettings.getString("units", "0"));
+		} else {
+			Cursor c = new SyncedPrefsHelper(this).findSetValue("units");
+			unit = c == null? 0: Integer.valueOf(c.getString(c.getColumnIndexOrThrow("units")));
+			mSettings.edit().putString("units", Integer.toString(unit)).commit();
+		}
 		mUnits = new Units(unit);
 
 		mCylORMapper = new CylinderORMapper(this, mUnits);

@@ -1,8 +1,8 @@
 package divestoclimb.gasmixer;
 
 import java.text.NumberFormat;
-import java.text.ParseException;
 
+import divestoclimb.gasmixer.prefs.SyncedPrefsHelper;
 import divestoclimb.lib.scuba.Cylinder;
 import divestoclimb.lib.scuba.GasSupply;
 import divestoclimb.lib.scuba.Localizer;
@@ -13,6 +13,7 @@ import divestoclimb.scuba.equipment.storage.CylinderORMapper;
 import Jama.Matrix;
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
@@ -89,9 +90,16 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 		mSettings = PreferenceManager.getDefaultSharedPreferences(this);
 		mState = getSharedPreferences(Params.STATE_NAME, 0);
 		int unit;
-		try {
-			unit = NumberFormat.getIntegerInstance().parse(mSettings.getString("units", "0")).intValue();
-		} catch(ParseException e) { unit = 0; }
+		if(mSettings.contains("units")) {
+			// Android issue 2096 - ListPreference won't work with an integer
+			// array for values. Unit values are being stored as Strings then
+			// we convert them here for use.
+			unit = Integer.valueOf(mSettings.getString("units", "0"));
+		} else {
+			Cursor c = new SyncedPrefsHelper(this).findSetValue("units");
+			unit = c == null? 0: Integer.valueOf(c.getString(c.getColumnIndexOrThrow("units")));
+			mSettings.edit().putString("units", Integer.toString(unit)).commit();
+		}
 		mUnits = new Units(unit);
 
 		mBlendMode = mSettings.getInt("blend_mode", 0);
