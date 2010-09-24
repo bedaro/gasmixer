@@ -259,11 +259,11 @@ containing a value of this type.
     public static final class styleable {
         /** Attributes that can be used with a NumberPreference.
            <p>Includes the following attributes:</p>
-           <table border="2" width="85%" align="center" frame="hsides" rules="all" cellpadding="5">
+           <table>
            <colgroup align="left" />
            <colgroup align="left" />
-           <tr><th>Attribute<th>Summary</tr>
-           <tr><th><code>{@link #NumberPreference_unitLabel divestoclimb.gasmixer:unitLabel}</code><td></tr>
+           <tr><th>Attribute</th><th>Description</th></tr>
+           <tr><td><code>{@link #NumberPreference_unitLabel divestoclimb.gasmixer:unitLabel}</code></td><td></td></tr>
            </table>
            @see #NumberPreference_unitLabel
          */
@@ -286,15 +286,15 @@ containing a value of this type.
         public static final int NumberPreference_unitLabel = 0;
         /** Attributes that can be used with a NumberSelector.
            <p>Includes the following attributes:</p>
-           <table border="2" width="85%" align="center" frame="hsides" rules="all" cellpadding="5">
+           <table>
            <colgroup align="left" />
            <colgroup align="left" />
-           <tr><th>Attribute<th>Summary</tr>
-           <tr><th><code>{@link #NumberSelector_decimalplaces divestoclimb.gasmixer:decimalplaces}</code><td></tr>
-           <tr><th><code>{@link #NumberSelector_increment divestoclimb.gasmixer:increment}</code><td></tr>
-           <tr><th><code>{@link #NumberSelector_lowerlimit divestoclimb.gasmixer:lowerlimit}</code><td></tr>
-           <tr><th><code>{@link #NumberSelector_textboxwidth divestoclimb.gasmixer:textboxwidth}</code><td></tr>
-           <tr><th><code>{@link #NumberSelector_upperlimit divestoclimb.gasmixer:upperlimit}</code><td></tr>
+           <tr><th>Attribute</th><th>Description</th></tr>
+           <tr><td><code>{@link #NumberSelector_decimalplaces divestoclimb.gasmixer:decimalplaces}</code></td><td></td></tr>
+           <tr><td><code>{@link #NumberSelector_increment divestoclimb.gasmixer:increment}</code></td><td></td></tr>
+           <tr><td><code>{@link #NumberSelector_lowerlimit divestoclimb.gasmixer:lowerlimit}</code></td><td></td></tr>
+           <tr><td><code>{@link #NumberSelector_textboxwidth divestoclimb.gasmixer:textboxwidth}</code></td><td></td></tr>
+           <tr><td><code>{@link #NumberSelector_upperlimit divestoclimb.gasmixer:upperlimit}</code></td><td></td></tr>
            </table>
            @see #NumberSelector_decimalplaces
            @see #NumberSelector_increment
@@ -380,12 +380,12 @@ containing a value of this type.
         public static final int NumberSelector_upperlimit = 4;
         /** Attributes that can be used with a TrimixPreference.
            <p>Includes the following attributes:</p>
-           <table border="2" width="85%" align="center" frame="hsides" rules="all" cellpadding="5">
+           <table>
            <colgroup align="left" />
            <colgroup align="left" />
-           <tr><th>Attribute<th>Summary</tr>
-           <tr><th><code>{@link #TrimixPreference_defaultHe divestoclimb.gasmixer:defaultHe}</code><td></tr>
-           <tr><th><code>{@link #TrimixPreference_defaultO2 divestoclimb.gasmixer:defaultO2}</code><td></tr>
+           <tr><th>Attribute</th><th>Description</th></tr>
+           <tr><td><code>{@link #TrimixPreference_defaultHe divestoclimb.gasmixer:defaultHe}</code></td><td></td></tr>
+           <tr><td><code>{@link #TrimixPreference_defaultO2 divestoclimb.gasmixer:defaultO2}</code></td><td></td></tr>
            </table>
            @see #TrimixPreference_defaultHe
            @see #TrimixPreference_defaultO2

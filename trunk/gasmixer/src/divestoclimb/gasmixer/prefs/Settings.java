@@ -1,9 +1,14 @@
-package divestoclimb.gasmixer;
+package divestoclimb.gasmixer.prefs;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
 
 import divestoclimb.android.widget.BaseNumberPreference;
+import divestoclimb.gasmixer.AndroidLocalizer;
+import divestoclimb.gasmixer.Params;
+import divestoclimb.gasmixer.R;
+import divestoclimb.gasmixer.TemperaturePreference;
+import divestoclimb.gasmixer.TrimixPreference;
 import divestoclimb.lib.scuba.Localizer;
 import divestoclimb.lib.scuba.Mix;
 import divestoclimb.lib.scuba.Units;
@@ -24,12 +29,15 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
 	private TemperaturePreference mTemperaturePreference;
 	private BaseNumberPreference mMaxPo2Preference, mMaxHighPo2Preference;
 	private ListPreference mUnitsPreference;
+	private SyncedPrefsHelper mSyncedPrefsHelper;
 
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 
 		addPreferencesFromResource(R.xml.preferences);
+		
+		mSyncedPrefsHelper = new SyncedPrefsHelper(this);
 
 		// Set the Localizer Engine for displaying GasSources
 		Localizer.setEngine(new AndroidLocalizer(this));
@@ -47,6 +55,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
 		super.onResume();
 		SharedPreferences settings = getPreferenceScreen().getSharedPreferences();
 		settings.registerOnSharedPreferenceChangeListener(this);
+		settings.registerOnSharedPreferenceChangeListener(mSyncedPrefsHelper);
 		onSharedPreferenceChanged(settings, "topup_gas");
 		onSharedPreferenceChanged(settings, "units");
 		// Temperature is automatically set when units is updated, so we don't
@@ -58,7 +67,9 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
 	@Override
 	public void onPause() {
 		super.onPause();
-		getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+		SharedPreferences settings = getPreferenceScreen().getSharedPreferences();
+		settings.unregisterOnSharedPreferenceChangeListener(this);
+		settings.unregisterOnSharedPreferenceChangeListener(mSyncedPrefsHelper);
 	}
 
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {

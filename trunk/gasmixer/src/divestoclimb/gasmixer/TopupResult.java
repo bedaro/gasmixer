@@ -1,8 +1,8 @@
 package divestoclimb.gasmixer;
 
 import java.text.NumberFormat;
-import java.text.ParseException;
 
+import divestoclimb.gasmixer.prefs.SyncedPrefsHelper;
 import divestoclimb.lib.scuba.Cylinder;
 import divestoclimb.lib.scuba.GasSupply;
 import divestoclimb.lib.scuba.Localizer;
@@ -12,6 +12,7 @@ import divestoclimb.scuba.equipment.storage.CylinderORMapper;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -45,9 +46,16 @@ public class TopupResult extends Activity implements CompoundButton.OnCheckedCha
 				state = getSharedPreferences(Params.STATE_NAME, 0);
 
 		int unit;
-		try {
-			unit = NumberFormat.getIntegerInstance().parse(settings.getString("units", "0")).intValue();
-		} catch(ParseException e) { unit = 0; }
+		if(settings.contains("units")) {
+			// Android issue 2096 - ListPreference won't work with an integer
+			// array for values. Unit values are being stored as Strings then
+			// we convert them here for use.
+			unit = Integer.valueOf(settings.getString("units", "0"));
+		} else {
+			Cursor c = new SyncedPrefsHelper(this).findSetValue("units");
+			unit = c == null? 0: Integer.valueOf(c.getString(c.getColumnIndexOrThrow("units")));
+			settings.edit().putString("units", Integer.toString(unit)).commit();
+		}
 		mUnits = new Units(unit);
 
 		// Set the Localizer Engine for displaying GasSources

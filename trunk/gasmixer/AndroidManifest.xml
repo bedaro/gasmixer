@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 		package="divestoclimb.gasmixer"
-		android:versionCode="10"
-		android:versionName="2.8.1">
-	<uses-sdk android:minSdkVersion="3" android:targetSdkVersion="4" />
+		android:versionCode="11"
+		android:versionName="2.8.2"
+		android:installLocation="auto">
+	<uses-sdk android:minSdkVersion="3" android:targetSdkVersion="8" />
 	<supports-screens android:smallScreens="true" />
 	<application android:icon="@drawable/blend" android:label="@string/app_name">
 		<activity android:name=".GasMixer" android:label="@string/app_name" android:launchMode="singleTask">
@@ -15,7 +16,15 @@
 		<activity android:name=".SetStarting" android:theme="@android:style/Theme.Dialog"></activity>
 		<activity android:name=".BlendResult" android:theme="@android:style/Theme.Dialog"></activity>
 		<activity android:name=".TopupResult" android:theme="@android:style/Theme.Dialog"></activity>
-		<activity android:name=".Settings" android:label="@string/app_name"></activity>
+		<activity android:name=".prefs.Settings" android:label="@string/app_name"></activity>
 		<activity android:name=".About" android:theme="@android:style/Theme.Dialog"></activity>
+		<receiver android:name=".prefs.UpdatePrefs">
+			<intent-filter>
+				<action android:name="divestoclimb.scuba.UNIT_CHANGE" />
+			</intent-filter>
+		</receiver>
+		<provider android:name=".prefs.PrefsContentProvider"
+			android:authorities="divestoclimb.gasmixer.preferences">
+		</provider>
 </application>
 </manifest>
