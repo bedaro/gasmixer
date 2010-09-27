@@ -1,0 +1,92 @@
+#summary For diver/programmers, more information on real-gas blending math and algorithms.
+
+= What is a Mix? =
+
+Let's start with the big picture: what do we really want to be able to do? Suppose we want to produce a cylinder filled with a mixture of 32% nitrox. As divers, we would check if we succeeded by holding an O2 analyzer up to the valve. The analyzer contains an oxygen sensor which is chemically measuring the partial pressure of oxygen in the gas, and our bodies will react to that gas physiologically in the same manner. The gas flowing out of the valve is being measured at _ambient pressure_, so if we're at sea level we'd expect the analyzer to measure 0.32 ata for this cylinder.
+
+So with this in mind, here's a more precise way to describe our wish for a cylinder containing 32% oxygen: *we want a cylinder containing gas which, when expanded to about 1 ata volume, has an oxygen partial pressure equal to 32 percent of the total pressure*. By restating our needs this way, it's clear that we need a way to hypothetically expand compressed mixes to 1-ata volumes to do our contents calculations, then compress them back into cylinders to measure the pressures that result.
+
+Of course the ambient pressure won't always be 1 ata, especially when you take the cylinder underwater to breathe from it and the pressure goes up to 5-10 ata (about 75-150 psi). Luckily, the gases in our mixes still behave close enough to ideally at such low pressures so as divers we don't have to worry about this.
+
+There's an alternative way to think about all this in terms of moles of each gas; it's more abstract but basically equivalent to this approach.
+
+= The Ideal Gas Law =
+
+If you've taken a Gas Blender class you were probably taught how to do gas blending using basic principles like Boyle's Law and its generalization, the ideal gas law. You probably also know that these equations aren't quite accurate; the biggest deviations occur when trying to blend multiple gases with quite different properties.
+
+Oxygen and nitrogen, the two major constituents of air, are definitely not ideal gases. The ideal gas law is a simple model which, among other things, assumes all gas particles take up no volume and are not attracted to one another. Both oxygen and nitrogen, though, are large diatomic molecules which do not follow these properties closely when under pressure. If all you're doing is Nitrox blending, you probably won't notice because all you're concerned with is getting the right _ratio_ of the two gases. Even though these two gases are not that ideal, their deviations from ideal behavior are themselves quite similar which helps you get decent results.
+
+Problems start when you try to make gas blends including helium. Helium is one of the closest to ideal gases out there because its nucleus is small and monoatomic. If you fail to account for the non-ideal nature of nitrogen and oxygen when using helium as well, the results you get will be off. Some argue that you can compensate for this by using the ideal gas law, then apply fudge factors based on past experience. The alternative to this is to use a more accurate model for the interaction of these gases.
+
+= The Van der Waals Equation =
+
+The Van der Waals equation is a thermodynamic _equation of state_ just like the ideal gas law: it describes how a gas's temperature, pressure, volume, and particle count relate to each other. The form I use in Gas Mixer looks like this:
+
+{{{
+P = R*T / (v - b) - a / v^2
+}}}
+
+where P is pressure, R is the gas constant, T is absolute temperature, v is the molar volume (V/n), a is the "particle attraction factor" for the gas, and b is the molar volume of the particles themselves. If a were 1 and b were 0, this would simplify to the ideal gas law you're already familiar with.
+
+This equation is already written in a way that makes it easy to calculate pressure, but to blend gases together we also need to be able to determine the amount of gas present when the other values are known. With an alternative form of the Van der Waals equation you could solve directly for number of moles, but as I mentioned above I prefer to think in terms of the volume of the gas at 1 ata pressure. If you knew the molar volume, you could calculate this using the ideal gas law (and these gases behave ideally at 1 ata). So how do we solve for v?
+
+With some algebra you can rearrange the above equation to a cubic polynomial of v:
+
+{{{
+P * v^3 - (P*b + R*T) * v^2 + a * v - a * b = 0
+}}}
+
+This would be difficult, though not impossible, to solve analytically. In my opinion, the best way to solve an equation like this is numerically with the [http://en.wikipedia.org/wiki/Newton's_method Newton-Raphson method]. To do this, you just need to:
+
+  * take the derivative with respect to v,
+  * compute an estimate of the result (using the ideal gas law), and
+  * determine how good of an estimate of v you need, so you know when to stop.
+
+Since the final result we want is volume at one ata but we're solving for molar volume, we have to use [http://en.wikipedia.org/wiki/Propagation_of_uncertainty error propagation] on the ideal gas law to see how the error between these two values is related. To see how all this works, see [http://code.google.com/p/anddive/source/browse/scubalib/trunk/src/divestoclimb/lib/scuba/Cylinder.java Cylinder.java] in my [http://code.google.com/p/anddive/source/browse/scubalib Scuba Lib].
+
+== Values of a and b ==
+
+The a and b constants in the Van der Waals equation can be looked up for different gases. However, what we're doing is building mixes of gases, and each constituent gas in the mix will behave differently. To account for this, you have to compute the "average" values of a and b for the mix using a series. See [http://code.google.com/p/anddive/source/browse/scubalib/trunk/src/divestoclimb/lib/scuba/Mix.java Mix.java] for details.
+
+= Blending =
+
+So now we know how to solve the Van der Waals equation for pressure or for volume; how do we use this to blend?
+
+One mistake we can't make is to just start applying Boyle's Law or Henry's Law. We have to do something more subtle to determine how much gas is present.
+
+== The simple case: Heliox ==
+
+Suppose we knew what mix we wanted and we didn't care exactly what the final pressure was that we got. For instance, imagine a cylinder containing 500 psi of oxygen, and we wanted to fill it with helium until we achieved a 33/67 heliox mix. What would the final pressure be? Solving problems like this will be critical to performing accurate blending later on.
+
+You may be tempted to try using the ideal gas laws. You could quickly work through Boyle's Law and determine that you would have to add 1000 psi of Helium (you want double the amount of helium in the tank so you would have to add double its current pressure) and you'd end up with 1500 psi. None of that logic is valid, through, because we're using real gases.
+
+To solve this problem, imagine doing the following:
+
+  * Uncompress the amount of oxygen in the cylinder so it's at 1 ata. Measure its volume.
+  * Determine what volume of helium is needed to reduce the amount of oxygen to 1/3 of the total (easy: twice the amount of oxygen)
+  * Mix the oxygen and helium together, still at 1 ata pressure
+  * Compress the 1-ata mixture back into the cylinder. Measure the cylinder's new pressure.
+
+This is the basic process we have to go through to blend gases, using the Van der Waals equation whenever we need to uncompress or compress the gas from/to the cylinder (solving P for a given v or v for a given P, as above).
+
+== General case: Trimix ==
+
+Gas Mixer uses a nice conceptual approach to calculating how to blend a certain desired mix. See [http://code.google.com/p/gasmixer/source/browse/trunk/gasmixer/src/divestoclimb/gasmixer/BlendResult.java BlendResult.java] in Gas Mixer for the code, but here's a basic run-through:
+
+  * Given: desired pressure, desired mix, starting pressure, starting mix, topup gas.
+  * Uncompress the desired gas to 1 ata. Measure the volume taken up by each of oxygen, nitrogen, and helium.
+  * Uncompress the starting gas, make the same measurements for desired oxygen, nitrogen, helium.
+  * Express the amounts of oxygen, helium, and topup gas to add to the starting mix to get the resulting mix as a set of 3 linear equations with three unknowns.
+  * Use [http://en.wikipedia.org/wiki/LU_decomposition LU decomposition] to solve the system of equations (special cases will result in invalid solutions, requiring solving alternate systems of equations. These represent draining the cylinder to reduce the starting pressure).
+  * If a drain is needed, drain the starting mixture to the necessary minimum pressure.
+  * Add the calculated amounts of helium, oxygen, and topup gas in the desired order/premixes, calculating the pressure the cylinder should have after each operation.
+
+This is the general idea. Remember, Van der Waals only becomes an issue when dealing with uncompressing and compressing the gas at high pressures.
+
+= Top-ups =
+
+To do gas blending all we have to be able to do is compute how much gas we want to add in terms of _volume_, then add it to what we have and find out what the pressure is. To perform a top-up, though, we're given a final _pressure_ and need to figure out what the resulting mix is. This is much more difficult because, without knowing what the final mix is beforehand, we can't use Van der Waals to compute the final volumes of gases: a and b are unknown.
+
+I implemented topups in [http://code.google.com/p/anddive/source/browse/scubalib/trunk/src/divestoclimb/lib/scuba/GasSupply.java GasSupply.java] in Scuba Lib numerically for this reason. The top-up method comes up with guesses for the volume of mix that needs to be added to produce the desired final pressure. Because of the high complexity of the equation that must be solved, I use the [http://en.wikipedia.org/wiki/Secant_method Secant Method] to find the solution without having to explicitly write out the entire thing or, worse, take its derivative.
+
+The Secant Method requires two guesses, one that's too large and one that's too small. The guesses are obtained using an ideal gas law computation on the initial volume in the cylinder. Because the volume depends on the exact mix and the result will be somewhere between the starting and topup mixes, each mix is used to calculate the volume for a guess, which results in high and low guesses.
