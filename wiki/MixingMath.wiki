@@ -1,4 +1,5 @@
 #summary For diver/programmers, more information on real-gas blending math and algorithms.
+#labels Featured
 
 = What is a Mix? =
 
