@@ -3,7 +3,7 @@ package divestoclimb.gasmixer.prefs;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import divestoclimb.android.content.SharedPreferencesContentProvider;
+import divestoclimb.android.prefs.SharedPreferencesContentProvider;
 
 public class PrefsContentProvider extends SharedPreferencesContentProvider {
 
