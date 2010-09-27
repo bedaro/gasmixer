@@ -11,7 +11,7 @@ The oxygen and helium sliders are coupled so the two percentages added together 
 
 Pressures can be changed with the same plus and minus buttons. Each tap of a button changes the value by 100 psi in imperial, 10.0 bar in metric.
 
-You can see the MOD (maximum operating depth) for the desired mix here at the currently set pO2's (see Preferences below). If the mix is a Nitrox mix, you'll also see the EAD (equivalent air depth) at the MOD; otherwise you'll see the END (equivalend narcotic depth) at the MOD. The "pO2 HI" button lets you switch between seeing these values computed at the configured normal and high pO2.
+You can see the MOD (maximum operating depth) for the desired mix here at the currently set pO2's (see Preferences below). If the mix is a Nitrox mix, you'll also see the EAD (equivalent air depth) at the MOD; otherwise you'll see the END (equivalent narcotic depth) at the MOD. The "pO2 HI" button lets you switch between seeing these values computed at the configured normal and high pO2.
 
 = Blending =
 
@@ -28,7 +28,7 @@ The default "blend mode" is partial pressure blending; this means it's assumed y
 
 Your selection is automatically saved for later blending calculations.
 
-The app does not currently do any checks for maximum O2 percentage when doing continuous blending. In some cases you can get results that would be unwise to attempt to mix depending on the particulars of your blending station.
+The app does not currently do any checks for maximum O2 percentage when doing continuous blending. In some cases you can get results that would be unwise to attempt to mix depending on the particulars of your blending station, such as running more than 40% through a compressor.
 
 = Top Up =
 
