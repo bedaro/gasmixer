@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="app_name">Scuba Tanks</string>
-	<string name="cylinder_size_list">Scuba Tank Sizes</string>
-	<string name="edit_cylinder">Edit Cylinder Size</string>
-	<string name="create_cylinder">New Cyinder Size</string>
+	<string name="cylinder_list">Scuba Tanks</string>
+	<string name="generic">Generic Sizes</string>
+	<string name="specific">Owned</string>
+	<string name="edit_cylinder_size">Edit Cylinder Size</string>
+	<string name="edit_cylinder">Edit Cylinder</string>
+	<string name="create_cylinder_size">Create Cylinder Size</string>
+	<string name="create_cylinder">Create Cylinder</string>
 	<string name="select_cylinder">Select a Tank Size:</string>
 	<string name="create_new">New</string>
 	<string name="edit">Edit</string>
 	<string name="delete">Delete</string>
-	<string name="luxfer_aluminum_80">Aluminum 80 (Luxfer)</string>
-	<string name="double_steel_95s">"Double LP 95's"</string>
+	<string name="copy">Make Owned</string>
+	<string name="needs_hydro">Needs Hydro</string>
+	<string name="hydro_expired">Hydro Expired</string>
+	<string name="needs_visual">Needs Visual</string>
+	<string name="visual_expired">Visual Expired</string>
 	<string name="name_prompt">Name:</string>
+	<string name="serial_prompt">Serial #:</string>
 	<string name="internal_volume_prompt">Internal Volume</string>
 	<string name="capacity_prompt">Capacity</string>
 	<string name="serv_pressure_prompt">Service Pressure</string>
@@ -20,23 +28,56 @@
 	<string name="capacity_metric">L:</string>
 	<string name="pres_imperial">psi:</string>
 	<string name="pres_metric">bar:</string>
+	<string name="settings">Settings</string>
+	<string name="backup_now">Back Up Now</string>
+	<string name="restore">Restore</string>
+	<string name="backup_successful">Successfully backed up cylinders to %s</string>
+	<string name="backup_error">There was an error while backing up: %s</string>
+	<string name="restore_successful">Successfully restored cylinders from %s</string>
+	<string name="restore_error">There was an error while restoring: %s</string>
+	<string name="units">Units</string>
+	<string name="date_format">Date Format</string>
 	<string name="imperial">US</string>
 	<string name="metric">Metric</string>
+	<string name="years">Years</string>
+	<string name="months">Months</string>
+	<string name="hydro_interval">Hydro Interval</string>
+	<string name="visual_interval">Visual Interval</string>
+	<string name="notifications_enabled">Enable Notifications</string>
+	<string name="notifications_enabled_summary">Notifies when your cylinders are about to expire (skips already expired)</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
+	<string name="next">Next</string>
 	<string name="help">Help</string>
+	<string name="last_hydro">Last hydro: %s</string>
+	<string name="last_viz">Last visual: %s</string>
+	<string name="capacity_pressure">Capacity/Pressure</string>
+	<string name="test_intervals">Test Intervals</string>
+	<string name="date_time_set">Set</string>
 	<string name="switch_to_metric">Metric</string>
 	<string name="switch_to_imperial">Imperial</string>
+	<string name="notification_title">Cylinders need Inspection</string>
+	<string name="one_needs_hydro">\"%s\" needs hydro</string>
+	<string name="one_needs_visual">\"%s\" needs visual</string>
+	<string name="hydro_and_visual">%s, %s</string>
+	<string name="multiple_need_hydro">%d need hydro</string>
+	<string name="multiple_need_visual">%d need visual</string>
+	<string name="backup_restored">Automatically restored backed up cylinder data</string>
+	<string name="save_error">Sorry, an unexpected error occurred while saving.</string>
+	<string name="delete_error">Sorry, an unexpected error occurred while deleting.</string>
+	<string name="no_specific">You don\'t have any cylinders listed.
+		\n\nYou can track specific cylinders by serial number and test/inspection dates. Tap
+		\"New\" to add your cylinders. To learn more, hit the menu key and tap \"Help.\"</string>
 	<string name="about">About</string>
 	<string name="about_text">%1$s v%2$s
 		\n\nCopyright 2009 - 2010 Ben Roberts. divestoclimb@gmail.com.
 
-		\n\nLicensed under the Apache License, Version 2.0 (the "License");
+		\n\nLicensed under the Apache License, Version 2.0 (the \"License\");
 		you may not use any part of this distribution except in
 		compliance with the License. You may obtain a copy of the
 		License at http://www.apache.org/licenses/LICENSE-2.0 Unless
 		required by applicable law or agreed to in writing, software
-		distributed under the License is distributed on an "AS IS"
+		distributed under the License is distributed on an \"AS IS\"
 		BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
 		express or implied. See the License for the specific language
 		governing permissions and limitations under the License.

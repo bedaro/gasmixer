@@ -2,18 +2,44 @@
 <resources>
 	<!-- All statements needed to create the current version of the database -->
 	<string-array name="db_create">
-		<item>drop table if exists cylindersizes</item>
-		<item>create table cylindersizes (
+		<item>drop table if exists cylinders</item>
+		<item>"create table cylinders (
 			_id integer primary key autoincrement,
 			name text unique not null,
 			internalVolume real,
-			servicePressure real
-		)</item>
+			servicePressure real,
+			cylinderType int not null default 0,
+			serialNumber text unique,
+			lastHydro text check (lastHydro = NULL or lastHydro like '____-__'),
+			lastVisual text check (lastVisual = NULL or lastVisual like '____-__'),
+			hydroIntervalYears int,
+			visualIntervalMonths int
+		)"</item>
+		<item>create index if not exists cylinder_type_idx on cylinders (cylinderType)</item>
+		<item>create index if not exists cylinder_hydro_idx on cylinders (lastHydro)</item>
+		<item>create index if not exists cylinder_visual_idx on cylinders (lastVisual)</item>
+		<item>create index if not exists cylinder_hydro_interval_idx on cylinders (hydroIntervalYears)</item>
+		<item>create index if not exists cylinder_visual_interval_idx on cylinders (visualIntervalMonths)</item>
 	</string-array>
-		<!-- All statements to populate the database with default data. This array could be
+	<!-- All statements to populate the database with default data. This array could be
 	     overridden for other languages -->
 	<string-array name="db_load">
-		<item>"insert into cylindersizes (name, internalVolume, servicePressure) values ('Aluminum 80 (Luxfer)', 11.11, 206.896551)"</item>
-		<item>"insert into cylindersizes (name, internalVolume, servicePressure) values ('Double LP 95''s', 30, 182.0689965)"</item>
+		<item>"insert into cylinders (name, internalVolume, servicePressure) values ('Aluminum 80 (Luxfer)', 11.11, 206.896551)"</item>
+		<item>"insert into cylinders (name, internalVolume, servicePressure) values ('Double LP 95''s', 30, 182.0689965)"</item>
+	</string-array>
+	<!-- All statements needed to upgrade the database from version 1 to 2 -->
+	<string-array name="db_upgrade_1_2">
+		<item>alter table cylindersizes rename to cylinders</item>
+		<item>alter table cylinders add cylinderType int not null default 0</item>
+		<item>alter table cylinders add serialNumber text</item>
+		<item>"alter table cylinders add lastHydro text check (lastHydro = NULL or lastHydro like '____-__')"</item>
+		<item>"alter table cylinders add lastVisual text check (lastVisual = NULL or lastVisual like '____-__')"</item>
+		<item>alter table cylinders add hydroIntervalYears int</item>
+		<item>alter table cylinders add visualIntervalMonths int</item>
+		<item>create index if not exists cylinder_type_idx on cylinders (cylinderType)</item>
+		<item>create index if not exists cylinder_hydro_idx on cylinders (lastHydro)</item>
+		<item>create index if not exists cylinder_visual_idx on cylinders (lastVisual)</item>
+		<item>create index if not exists cylinder_hydro_interval_idx on cylinders (hydroIntervalYears)</item>
+		<item>create index if not exists cylinder_visual_interval_idx on cylinders (visualIntervalMonths)</item>
 	</string-array>
 </resources>

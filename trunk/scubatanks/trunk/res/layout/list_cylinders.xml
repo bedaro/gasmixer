@@ -1,16 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@android:id/tabhost"
 	android:layout_width="fill_parent"
-	android:layout_height="wrap_content"
-	android:orientation="vertical"
-	android:gravity="center">
-	<ListView android:id="@android:id/list"
+	android:layout_height="fill_parent">
+	<LinearLayout
+		android:orientation="vertical"
 		android:layout_width="fill_parent"
-		android:layout_height="fill_parent"
-		android:layout_weight="1"/>
-	<Button android:id="@+id/create_new"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:text="@string/create_new"
-		android:layout_margin="5dp" />
-</LinearLayout>
+		android:layout_height="fill_parent">
+		<TabWidget
+			android:id="@android:id/tabs"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"/>
+		<FrameLayout
+			android:id="@android:id/tabcontent"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent">
+			<LinearLayout android:id="@+id/tab_generic"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:orientation="vertical"
+				android:gravity="center">
+				<ListView android:id="@+id/list_generic"
+					android:layout_width="fill_parent"
+					android:layout_height="fill_parent"
+					android:layout_weight="1"/>
+				<Button android:id="@+id/create_new_generic"
+					android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:text="@string/create_new"
+					android:layout_margin="5dp"
+					android:textSize="16sp" />
+			</LinearLayout>
+			<LinearLayout android:id="@+id/tab_specific"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content"
+				android:orientation="vertical"
+				android:gravity="center">
+				<FrameLayout android:layout_width="match_parent"
+						android:layout_height="0dip"
+						android:layout_weight="1">
+					<ListView android:id="@+id/list_specific"
+							android:layout_width="fill_parent"
+							android:layout_height="wrap_content" />
+					<TextView android:id="@+id/no_specific"
+							android:layout_width="fill_parent"
+							android:layout_height="wrap_content"
+							android:text="@string/no_specific"
+							android:padding="5dp" />
+				</FrameLayout>
+				<Button android:id="@+id/create_new_specific"
+					android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:text="@string/create_new"
+					android:layout_margin="5dp"
+					android:textSize="16sp" />
+			</LinearLayout>
+		</FrameLayout>
+	</LinearLayout>
+</TabHost>

@@ -17,7 +17,7 @@
 		android:layout_alignParentLeft="true"
 		android:text="@string/internal_volume_prompt"
 		android:layout_marginTop="7dp" />
-	<divestoclimb.scuba.equipment.NumberSelector
+	<divestoclimb.scuba.equipment.widget.NumberSelector
 		android:id="@+id/internal_volume"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
@@ -39,7 +39,7 @@
 		android:layout_alignParentLeft="true"
 		android:text="@string/capacity_prompt"
 		android:layout_marginTop="7dp" />
-	<divestoclimb.scuba.equipment.NumberSelector
+	<divestoclimb.scuba.equipment.widget.NumberSelector
 		android:id="@+id/capacity"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
@@ -61,7 +61,7 @@
 		android:layout_alignParentLeft="true"
 		android:text="@string/serv_pressure_prompt"
 		android:layout_marginTop="7dp" />
-	<divestoclimb.scuba.equipment.NumberSelector
+	<divestoclimb.scuba.equipment.widget.NumberSelector
 		android:id="@+id/serv_pressure"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
