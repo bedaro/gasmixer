@@ -1,6 +1,10 @@
-package divestoclimb.scuba.equipment;
+package divestoclimb.scuba.equipment.widget;
 
 import divestoclimb.android.widget.BaseNumberSelector;
+import divestoclimb.scuba.equipment.R;
+import divestoclimb.scuba.equipment.R.id;
+import divestoclimb.scuba.equipment.R.layout;
+import divestoclimb.scuba.equipment.R.styleable;
 
 import android.content.Context;
 import android.content.res.TypedArray;

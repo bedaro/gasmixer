@@ -1,0 +1,41 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:minHeight="?android:attr/listPreferredItemHeight"
+		android:paddingLeft="6dip"
+		android:paddingRight="6dip">
+	<!-- This is copied from android.R.layout.simple_list_item_1 -->
+	<TextView android:textAppearance="?android:attr/textAppearanceLarge"
+			android:id="@android:id/text1"
+			android:layout_width="fill_parent"
+			android:layout_marginRight="88dp"
+			android:layout_height="wrap_content"
+			android:paddingTop="7dip"
+			android:singleLine="true"
+			android:text="Hello World" />
+	<TextView android:textAppearance="?android:attr/textAppearanceSmall"
+			android:id="@+id/serialNumber"
+			android:layout_width="fill_parent"
+			android:layout_marginRight="88dp"
+			android:layout_below="@android:id/text1"
+			android:layout_height="wrap_content"
+			android:textColor="#666"
+			android:singleLine="true"
+			android:text="12345" />
+	<ImageView android:id="@+id/statusIcon"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentRight="true"
+			android:layout_centerVertical="true"
+			android:src="@drawable/tank" />
+	<TextView android:id="@+id/statusText"
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"
+			android:layout_toLeftOf="@id/statusIcon"
+			android:layout_centerVertical="true"
+			android:maxWidth="48dp"
+			android:gravity="center|center_vertical"
+			android:textColor="#ff0"
+			android:text="Visual Expired" />
+</RelativeLayout>
+	

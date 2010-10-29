@@ -6,5 +6,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/android_common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/scubalib"/>
+	<classpathentry kind="lib" path="/home/benr/workspace/xml-writer-0.2/xml-writer.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

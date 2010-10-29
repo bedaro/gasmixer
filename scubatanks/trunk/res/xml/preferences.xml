@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		xmlns:app="http://schemas.android.com/apk/res/divestoclimb.scuba.equipment">
+	<divestoclimb.scuba.equipment.widget.NumberPreference
+			android:key="hydro_interval_years"
+			android:title="@string/hydro_interval"
+			android:defaultValue="5"
+			app:unitLabel="@string/years"
+			app:textboxwidth="60sp"
+			app:lowerlimit="1"
+			app:upperlimit="5" />
+
+	<divestoclimb.scuba.equipment.widget.NumberPreference
+			android:key="visual_interval_months"
+			android:title="@string/visual_interval"
+			android:defaultValue="12"
+			app:unitLabel="@string/months"
+			app:textboxwidth="60sp"
+			app:lowerlimit="6"
+			app:upperlimit="24" />
+	
+	<CheckBoxPreference
+			android:key="notifications"
+			android:title="@string/notifications_enabled"
+			android:summary="@string/notifications_enabled_summary"
+			android:defaultValue="true" />
+	
+	<ListPreference
+			android:key="units"
+			android:title="@string/units" 
+			android:entries="@array/units"
+			android:entryValues="@array/unitvalues"
+			android:dialogIcon="@drawable/units_imperial"
+			android:defaultValue="0" />
+	
+	<ListPreference
+			android:key="date_format"
+			android:title="@string/date_format"
+			android:entries="@array/date_formats"
+			android:entryValues="@array/date_format_values"
+			android:defaultValue="MM/yy" />
+</PreferenceScreen>
