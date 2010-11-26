@@ -21,6 +21,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Compute and display the results of a blending operation based on the current
@@ -135,14 +136,20 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 		mStart = new Mix(mState.getFloat("start_o2", 0.21f), mState.getFloat("start_he", 0));
 		mDesired = new Mix(mState.getFloat("desired_o2", 0.21f), mState.getFloat("desired_he", 0f));
 		mTopup = TrimixPreference.stringToMix(mSettings.getString("topup_gas", "0.21 0"));
+		if(mTopup == null) {
+			// Not sure how this happens, but to someone it did
+			mTopup = new Mix(0.21f, 0);
+			Toast.makeText(this, R.string.topup_read_error, Toast.LENGTH_LONG);
+		}
 
 		boolean real = mSettings.getBoolean("vdw", false);
-		Cylinder c;
+		Cylinder c = null;
 		CylinderORMapper com = null;
 		if(real) {
 			com = new CylinderORMapper(this, mUnits);
 			c = com.fetchCylinder(mState.getLong("cylinderid", -1)); 
-		} else {
+		}
+		if(! real || c == null) {
 			c = new Cylinder(mUnits, mUnits.volumeNormalTank(), (int)mUnits.pressureTankFull());
 		}
 
@@ -459,7 +466,6 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 	public void onNothingSelected(AdapterView<?> parent) { }
 
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
 		switch(v.getId()) {
 		case R.id.button_copy:
 			ClipboardManager c = (ClipboardManager)BlendResult.this.getSystemService(CLIPBOARD_SERVICE);
