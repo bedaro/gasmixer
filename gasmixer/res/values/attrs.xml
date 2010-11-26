@@ -8,9 +8,9 @@
 		<attr name="upperlimit" format="float" />
 	</declare-styleable>
 	
-	<declare-styleable name="TrimixPreference">
-		<attr name="defaultO2" format="float" />
-		<attr name="defaultHe" format="float" />
+	<declare-styleable name="TrimixSelector">
+		<attr name="minO2" format="integer" />
+		<attr name="heIncrement" format="integer" />
 	</declare-styleable>
 	
 	<declare-styleable name="NumberPreference">
