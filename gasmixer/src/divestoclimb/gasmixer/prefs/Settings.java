@@ -75,7 +75,9 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		if(key.equals("topup_gas")) {
 			Mix topup = TrimixPreference.stringToMix(sharedPreferences.getString("topup_gas", "0.21 0"));
-			mTopupGasPreference.setSummary(topup.toString());
+			if(topup != null) {
+				mTopupGasPreference.setSummary(topup.toString());
+			}
 			return;
 		} else if(key.equals("max_norm_po2") || key.equals("max_hi_po2")) {
 			BaseNumberPreference pref;
