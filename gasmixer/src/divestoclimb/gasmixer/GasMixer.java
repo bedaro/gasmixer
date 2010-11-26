@@ -141,6 +141,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 		mTopupStartPressure = (BaseNumberSelector)topupTab.findViewById(R.id.topup_start_pres);
 		mTopupStartPressureUnit = (TextView)topupTab.findViewById(R.id.topup_start_pres_unit);
 		mTopupGas = (TrimixSelector)topupTab.findViewById(R.id.topup);
+		mTopupGas.getHeField().setIncrement(1);
 		mTopupFinalPressure = (BaseNumberSelector)topupTab.findViewById(R.id.topup_final_pres);
 
 		mTogglePo2 = (ToggleButton)blendTab.findViewById(R.id.button_po2_hi);
@@ -227,7 +228,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 							// sizes
 							final Cursor c = mCylORMapper.fetchCylinders();
 							c.moveToFirst();
-							messageHandler.sendMessage(Message.obtain(messageHandler, MESSAGE_SAVE_CYLINDER, mCylORMapper.fetchCylinder(c)));
+							messageHandler.sendMessage(Message.obtain(messageHandler, MESSAGE_SAVE_CYLINDER, mCylORMapper.fetch(c)));
 							
 							c.close();
 						}
@@ -483,10 +484,10 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 		final float mod = m.MOD(u, mTogglePo2.isChecked()? mPo2High: mPo2Low);
 		mDesiredMOD.setText(nf.format(mod) + " " + depthUnit);
 		if(m.getHe() > 0) {
-			mDesiredEADENDLabel.setText(getResources().getString(R.string.end));
+			mDesiredEADENDLabel.setText(R.string.end);
 			mDesiredEADEND.setText(nf.format(m.END(Math.round(mod), u, mO2IsNarcotic)) + " " + depthUnit);
 		} else {
-			mDesiredEADENDLabel.setText(getResources().getString(R.string.ead));
+			mDesiredEADENDLabel.setText(R.string.ead);
 			mDesiredEADEND.setText(nf.format(m.EAD(Math.round(mod), u)) + " " + depthUnit);
 		}
 	}
@@ -494,11 +495,11 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 	private void updateStartMix() {
 		final NumberFormat nf = Params.getPressureFormat(mUnits);
 		if(mBlendStartPressure == 0) {
-			mStartingMix.setText(getResources().getString(R.string.empty_tank));
+			mStartingMix.setText(R.string.empty_tank);
 		} else {
 			final String pressureUnit = getString(mUnits.pressureUnit() == Units.IMPERIAL? R.string.pres_imperial: R.string.pres_metric);
 			mStartingMix.setText(String.format(
-					getResources().getString(R.string.gas_amount),
+					getString(R.string.gas_amount),
 					nf.format(mBlendStartPressure),
 					pressureUnit,
 					mBlendStartMix.toString()
@@ -519,7 +520,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 					mO2IsNarcotic
 			);
 			if(mBestMix == null) {
-				mBestMixResult.setText(getResources().getString(R.string.no_mix));
+				mBestMixResult.setText(R.string.no_mix);
 			} else {
 				mBestMixResult.setText(mBestMix.toString());
 			}
@@ -527,7 +528,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 	}
 
 	private void updateCylinder() {
-		final Cylinder c = mCylORMapper.fetchCylinder(mState.getLong("cylinderid", -1));
+		final Cylinder c = mCylORMapper.fetchCylinder(mState.getLong("cylinderid", 1));
 		if(c != null) {
 			mCylinderDescription.setText(c.getName());
 		}
