@@ -4,6 +4,7 @@ import divestoclimb.android.util.ViewId;
 import divestoclimb.android.widget.BaseNumberSelector;
 import divestoclimb.lib.scuba.Mix;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -38,6 +39,11 @@ public class TrimixSelector extends RelativeLayout
 	public TrimixSelector(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		initTrimixSelector(context);
+		
+		TypedArray a = context.obtainStyledAttributes(attrs,
+				R.styleable.TrimixSelector);
+		mHeField.setIncrement(a.getInt(R.styleable.TrimixSelector_heIncrement, 5));
+		mO2Field.setLimits(Float.valueOf(a.getInt(R.styleable.TrimixSelector_minO2, 5)), 100f);
 	}
 
 	public Mix getMix() {
@@ -71,8 +77,8 @@ public class TrimixSelector extends RelativeLayout
 		setViewId(mO2Bar, ViewId.generateUnique(getRootView()));
 		setViewId(mHeBar, ViewId.generateUnique(getRootView()));
 
-		mO2Field = (NumberSelector)findViewById(R.id.number_o2);
-		mHeField = (NumberSelector)findViewById(R.id.number_he);
+		mO2Field = (BaseNumberSelector)findViewById(R.id.number_o2);
+		mHeField = (BaseNumberSelector)findViewById(R.id.number_he);
 		// Because the NumberSelectors save state too, ditto for them
 		setViewId(mO2Field, ViewId.generateUnique(getRootView()));
 		setViewId(mHeField, ViewId.generateUnique(getRootView()));
@@ -81,6 +87,14 @@ public class TrimixSelector extends RelativeLayout
 		mHeBar.setOnSeekBarChangeListener(this);
 		mO2Field.setValueChangedListener(this);
 		mHeField.setValueChangedListener(this);
+	}
+	
+	public BaseNumberSelector getO2Field() {
+		return mO2Field;
+	}
+	
+	public BaseNumberSelector getHeField() {
+		return mHeField;
 	}
 
 	/**
