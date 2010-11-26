@@ -1,10 +1,10 @@
 package divestoclimb.gasmixer;
 
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
 import divestoclimb.lib.scuba.Mix;
+import divestoclimb.util.Formatting;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -24,7 +24,7 @@ public class TrimixPreference extends DialogPreference {
 
 	private Mix mMix;
 	private String mMixString;
-	private static final NumberFormat nf = new DecimalFormat(".###");
+	private static final NumberFormat nf = Formatting.buildNormalizedFormat(".###");
 
 	public TrimixPreference(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
@@ -53,6 +53,11 @@ public class TrimixPreference extends DialogPreference {
 
 	public void setMix(String mixString) {
 		mMix = stringToMix(mixString);
+		if(mMix == null) {
+			// Correct corrupted mix
+			mixString = "0.21 0";
+			mMix = new Mix(0.21f, 0);
+		}
 		mMixString = mixString;
 
 		persistString(mixString);
