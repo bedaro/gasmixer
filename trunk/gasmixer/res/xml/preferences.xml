@@ -8,7 +8,8 @@
 			android:key="topup_gas"
 			android:title="@string/topup_gas"
 			android:defaultValue="0.21 0"
-			android:dialogIcon="@drawable/topup_pick" />
+			android:dialogIcon="@drawable/topup_pick"
+			app:minO2="0" />
 
 		<!-- Temperature preference is always stored in Kelvin -->
 		<divestoclimb.gasmixer.TemperaturePreference
