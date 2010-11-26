@@ -18,6 +18,7 @@ import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 /**
@@ -67,14 +68,20 @@ public class TopupResult extends Activity implements CompoundButton.OnCheckedCha
 		mO2IsNarcotic = settings.getBoolean("o2_is_narcotic", true);
 
 		Mix topup = TrimixPreference.stringToMix(settings.getString("topup_gas", "0.21 0"));
+		if(topup == null) {
+			// Not sure how this happens, but to someone it did
+			topup = new Mix(0.21f, 0);
+			Toast.makeText(this, R.string.topup_read_error, Toast.LENGTH_LONG);
+		}
 
 		boolean real = settings.getBoolean("vdw", false);
-		Cylinder c;
+		Cylinder c = null;
 		CylinderORMapper com = null;
 		if(real) {
 			com = new CylinderORMapper(this, mUnits);
-			c = com.fetchCylinder(state.getLong("cylinderid", -1)); 
-		} else {
+			c = com.fetchCylinder(state.getLong("cylinderid", -1));
+		}
+		if(! real || c == null) {
 			c = new Cylinder(mUnits, mUnits.volumeNormalTank(), (int)mUnits.pressureTankFull());
 		}
 		GasSupply fill = new GasSupply(c,
