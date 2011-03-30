@@ -220,10 +220,16 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 		double a[][] = { {1, 0, fo2t}, {0, 1, fhet}, {0, 0, 1 - fo2t - fhet} };
 		double b[][] = { {vo2f - vo2i}, {vhef - vhei}, {vn2f - vn2i} };
 		Matrix aM = new Matrix(a), bM = new Matrix(b);
-		Matrix gases = aM.solve(bM);
-		vo2a = gases.get(0,0);
-		vhea = gases.get(1,0);
-		vta = gases.get(2,0);
+		try {
+			Matrix gases = aM.solve(bM);
+			vo2a = gases.get(0,0);
+			vhea = gases.get(1,0);
+			vta = gases.get(2,0);
+		} catch(RuntimeException e) {
+			// Can happen if the topup gas is heliox or helium and nitrogen
+			// needs to be added
+			return false;
+		}
 		// Now handle the conditions where a negative volume was found
 		if(vo2a < 0) {
 			vo2a = 0;
