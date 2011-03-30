@@ -228,7 +228,12 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 							// sizes
 							final Cursor c = mCylORMapper.fetchCylinders();
 							c.moveToFirst();
-							messageHandler.sendMessage(Message.obtain(messageHandler, MESSAGE_SAVE_CYLINDER, mCylORMapper.fetch(c)));
+							Cylinder cyl = mCylORMapper.fetch(c);
+							if(cyl != null) {
+								messageHandler.sendMessage(Message.obtain(messageHandler, MESSAGE_SAVE_CYLINDER, cyl));
+							}
+							// TODO if cyl is null there are no cylinders defined in Scuba
+							// Tanks. Deal with this.
 							
 							c.close();
 						}
