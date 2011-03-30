@@ -41,13 +41,12 @@ public class CheckCylinders extends BroadcastReceiver {
 		if(! settings.getBoolean("notifications", true)) {
 			return;
 		}
-		Intent i = new Intent();
-		i.setAction(BROADCAST_ACTION);
-		PendingIntent pi = PendingIntent.getBroadcast(context, MONTHLY_ALARM_CODE, i, 0);
+		Intent i = new Intent(BROADCAST_ACTION);
+		PendingIntent pi = PendingIntent.getBroadcast(context, MONTHLY_ALARM_CODE, i, PendingIntent.FLAG_UPDATE_CURRENT);
 
 		// Compute the time for the morning of the first day of next month
 		Calendar cal = Calendar.getInstance();
-		cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), 0, 8, 0, 0);
+		cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), 1, 8, 0, 0);
 		cal.add(Calendar.MONTH, 1);
 
 		AlarmManager am = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
@@ -65,8 +64,8 @@ public class CheckCylinders extends BroadcastReceiver {
 				// All we need to do is reschedule the alarm
 				return;
 			}
-			final int hydroIntervalYears = settings.getInt("hydro_interval_years", 5),
-				visualIntervalMonths = settings.getInt("visual_interval_months", 12);
+			final int hydroIntervalYears = (int)settings.getFloat("hydro_interval_years", 5),
+				visualIntervalMonths = (int)settings.getFloat("visual_interval_months", 12);
 			Cylinder.setDefHydroInterval(hydroIntervalYears);
 			Cylinder.setDefVisualInterval(visualIntervalMonths);
 			final CylinderORMapper orMapper = new CylinderORMapper(context);
@@ -94,6 +93,7 @@ public class CheckCylinders extends BroadcastReceiver {
 				lastHydroName = cyl.getName();
 				expiringHydros ++;
 			}
+			c.close();
 			// Second query: cylinders with overridden hydro expiration intervals. We have to
 			// load these cylinders into objects to test if they expire or not.
 			c = r.query(CylinderORMapper.CONTENT_URI, null,
@@ -105,6 +105,7 @@ public class CheckCylinders extends BroadcastReceiver {
 					expiringHydros ++;
 				}
 			}
+			c.close();
 
 			cal.setTime(new Date());
 			cal.add(Calendar.MONTH, -1 * visualIntervalMonths);
@@ -122,6 +123,7 @@ public class CheckCylinders extends BroadcastReceiver {
 					expiringVisuals ++;
 				}
 			}
+			c.close();
 			// Second visual query: cylinders which have overridden visual expiration intervals.
 			// Test each one individually
 			c = r.query(CylinderORMapper.CONTENT_URI, null,
@@ -133,6 +135,7 @@ public class CheckCylinders extends BroadcastReceiver {
 					expiringVisuals ++;
 				}
 			}
+			c.close();
 			
 			if(expiringHydros + expiringVisuals == 0) {
 				return;
