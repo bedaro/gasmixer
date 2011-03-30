@@ -21,12 +21,12 @@ public class Backup extends BroadcastReceiver {
 	public static void scheduleNext(Context context) {
 		Intent i = new Intent();
 		i.setAction(BROADCAST_ACTION);
-		PendingIntent pi = PendingIntent.getBroadcast(context, WEEKLY_ALARM_CODE, i, 0);
+		PendingIntent pi = PendingIntent.getBroadcast(context, WEEKLY_ALARM_CODE, i, PendingIntent.FLAG_UPDATE_CURRENT);
 
 		// Compute the time for midnight on the upcoming Sunday
 		Calendar cal = Calendar.getInstance();
 		cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
-		cal.set(Calendar.DAY_OF_WEEK, 0);
+		cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
 		cal.add(Calendar.WEEK_OF_YEAR, 1);
 
 		AlarmManager am = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
@@ -36,7 +36,7 @@ public class Backup extends BroadcastReceiver {
 	private static void scheduleRetry(Context context) {
 		Intent i = new Intent();
 		i.setAction(BROADCAST_ACTION);
-		PendingIntent pi = PendingIntent.getBroadcast(context, RETRY_ALARM_CODE, i, 0);
+		PendingIntent pi = PendingIntent.getBroadcast(context, RETRY_ALARM_CODE, i, PendingIntent.FLAG_UPDATE_CURRENT);
 
 		// Compute the time for midnight tomorrow
 		Calendar cal = Calendar.getInstance();
