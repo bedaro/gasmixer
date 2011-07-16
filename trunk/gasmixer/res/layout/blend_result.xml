@@ -1,22 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical" android:layout_width="wrap_content"
-	android:layout_height="wrap_content" android:gravity="center">
-	
-	<TextView android:id="@+id/blend_result"
+		android:layout_width="@dimen/dialog_width"
+		android:layout_height="wrap_content"
+		android:orientation="vertical"
+		android:gravity="center">
+
+	<Spinner android:id="@+id/mode"
 			android:layout_width="wrap_content"
-			android:minWidth="200sp"
 			android:layout_height="wrap_content"
+			android:entries="@array/blendmodes" />
+
+	<ListView android:id="@android:id/list"
+			android:layout_width="wrap_content"
+			android:minWidth="300sp"
+			android:layout_height="fill_parent"
 			android:layout_marginLeft="10dip"
 			android:layout_marginRight="10dip"
-			android:layout_marginBottom="10dip"
-			android:textSize="17sp"
-			android:lineSpacingMultiplier="1.2"/>
-	<TextView android:id="@+id/reminder1"
-			android:layout_width="wrap_content"
+			android:layout_marginBottom="10dip"/>
+
+	<LinearLayout
+			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			android:layout_marginLeft="10dip"
-			android:layout_marginRight="10dip" />
-	<include layout="@layout/blend_result_footer" />
+			android:orientation="horizontal">
+
+		<Button android:id="@+id/button_copy"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="@string/copy"/>
+
+		<Button android:id="@+id/button_close"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="@string/close"/>
+
+	</LinearLayout>
 
 </LinearLayout>
