@@ -1,0 +1,50 @@
+Building Scuba Tanks from source requires a basic working knowledge of
+compiling Java projects on your system and using a command line (DOS or Unix).
+
+Dependencies
+------------
+You will need the following software tools to build Gas Mixer:
+- A JDK compatible with Java 1.6 or later and the Android Tools (Oracle,
+  OpenJDK, Blackdown, etc.)
+- Google Android SDK (http://developer.android.com/sdk)
+- Apache Ant (http://ant.apache.org)
+
+Code Dependencies
+-----------------
+Scuba Tanks requires three external libraries to build:
+- scubalib
+- Core
+- android_common
+
+The source for all of these can be found in my andDive project's SVN
+repository:
+http://code.google.com/p/anddive
+
+For scubalib, see the build instructions to produce a .jar of each in the
+"build" directory. Then either copy or symlink that jar into the "libs"
+directory of Scuba Tanks.
+android_common is an Android library that gets included differently. You will
+need to check out the source, then create a file "build.properties" in Scuba
+Tanks containing an entry that points to your working copy of android_common.
+For instance, if you had checked out android_common to
+"/home/me/dev/android_common", you would use the following:
+
+	android.library.reference.1=/home/me/dev/android_common
+
+If you put android_common in the same directory as the Scuba Tanks project, you
+will not need to manually specify its location.
+
+android_common has its own build requirements; make sure to read its build
+instructions. You can test building android_common on its own before trying
+to build Scuba Tanks and a simpler test of your build environment.
+
+Building
+--------
+Once your environment is set up, you can use the standard Ant commands to
+compile the project. On a command line in the top-level Gas Mixer directory,
+type "ant" to see the details. For more information, see
+http://developer.android.com/guide/developing/building/building-cmdline.html
+
+There is one custom Ant task on this project: "ormapper-jar". This task
+creates a JAR file containing the CylinderORMapper class, which is needed to
+build third-party apps that use Scuba Tanks data.

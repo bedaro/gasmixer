@@ -201,7 +201,14 @@ public class CylinderEdit extends Activity implements View.OnClickListener,
 			break;
 		case R.id.button_ok:
 			mCylinder.setName(mName.getText().toString());
-			mCylinder.setSerialNumber(mSerial.getText().toString());
+			String serial = mSerial.getText().toString();
+			if(! serial.equals("")) {
+				mCylinder.setSerialNumber(serial);
+			} else {
+				// Necessary to allow data from before this fix to get
+				// corrected
+				mCylinder.setSerialNumber(null);
+			}
 			if(! mORMapper.save(mCylinder)) {
 				Toast.makeText(this, R.string.save_error, Toast.LENGTH_SHORT).show();
 			} else {

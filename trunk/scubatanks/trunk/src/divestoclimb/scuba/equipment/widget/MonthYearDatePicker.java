@@ -231,6 +231,7 @@ public class MonthYearDatePicker extends FrameLayout {
 			dest.writeInt(mMonth);
 		}
 
+		@SuppressWarnings("unused")
 		public static final Parcelable.Creator<SavedState> CREATOR =
 			new Creator<SavedState>() {
 

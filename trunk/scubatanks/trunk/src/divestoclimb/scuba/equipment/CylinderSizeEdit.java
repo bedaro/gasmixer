@@ -1,11 +1,10 @@
 package divestoclimb.scuba.equipment;
 
-import divestoclimb.android.widget.BaseNumberSelector;
+import divestoclimb.android.widget.NumberSelector;
 import divestoclimb.lib.scuba.Cylinder;
 import divestoclimb.lib.scuba.Units;
 import divestoclimb.scuba.equipment.prefs.SyncedPrefsHelper;
 import divestoclimb.scuba.equipment.storage.CylinderORMapper;
-import divestoclimb.scuba.equipment.widget.NumberSelector;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -22,7 +21,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class CylinderSizeEdit extends Activity implements View.OnClickListener,
-		BaseNumberSelector.ValueChangedListener, CompoundButton.OnCheckedChangeListener {
+		NumberSelector.ValueChangedListener, CompoundButton.OnCheckedChangeListener {
 
 	public static final String KEY_ACTION = "action";
 	public static final int ACTION_NEW = 1;
@@ -233,7 +232,7 @@ public class CylinderSizeEdit extends Activity implements View.OnClickListener,
 	}
 
 	@Override
-	public void onChange(BaseNumberSelector ns, Float new_val, boolean from_user) {
+	public void onChange(NumberSelector ns, Float new_val, boolean from_user) {
 		if(! from_user) {
 			return;
 		}
