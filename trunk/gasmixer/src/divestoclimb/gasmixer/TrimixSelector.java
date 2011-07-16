@@ -1,7 +1,7 @@
 package divestoclimb.gasmixer;
 
 import divestoclimb.android.util.ViewId;
-import divestoclimb.android.widget.BaseNumberSelector;
+import divestoclimb.android.widget.NumberSelector;
 import divestoclimb.lib.scuba.Mix;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -18,7 +18,7 @@ import android.widget.SeekBar;
  * @author Ben Roberts (divestoclimb@gmail.com)
  */
 public class TrimixSelector extends RelativeLayout
-		implements SeekBar.OnSeekBarChangeListener, BaseNumberSelector.ValueChangedListener {
+		implements SeekBar.OnSeekBarChangeListener, NumberSelector.ValueChangedListener {
 
 	public static interface MixChangeListener {
 		abstract void onChange(TrimixSelector ts, Mix m);
@@ -26,7 +26,7 @@ public class TrimixSelector extends RelativeLayout
 
 	private LayoutInflater mInflater;
 	private SeekBar mO2Bar, mHeBar;
-	private BaseNumberSelector mO2Field, mHeField;
+	private NumberSelector mO2Field, mHeField;
 
 	protected final int SELECTOR_LAYOUT = R.layout.trimix_selector;
 
@@ -77,8 +77,8 @@ public class TrimixSelector extends RelativeLayout
 		setViewId(mO2Bar, ViewId.generateUnique(getRootView()));
 		setViewId(mHeBar, ViewId.generateUnique(getRootView()));
 
-		mO2Field = (BaseNumberSelector)findViewById(R.id.number_o2);
-		mHeField = (BaseNumberSelector)findViewById(R.id.number_he);
+		mO2Field = (NumberSelector)findViewById(R.id.number_o2);
+		mHeField = (NumberSelector)findViewById(R.id.number_he);
 		// Because the NumberSelectors save state too, ditto for them
 		setViewId(mO2Field, ViewId.generateUnique(getRootView()));
 		setViewId(mHeField, ViewId.generateUnique(getRootView()));
@@ -89,11 +89,11 @@ public class TrimixSelector extends RelativeLayout
 		mHeField.setValueChangedListener(this);
 	}
 	
-	public BaseNumberSelector getO2Field() {
+	public NumberSelector getO2Field() {
 		return mO2Field;
 	}
 	
-	public BaseNumberSelector getHeField() {
+	public NumberSelector getHeField() {
 		return mHeField;
 	}
 
@@ -101,7 +101,7 @@ public class TrimixSelector extends RelativeLayout
 	 * SeekBarChangeListener implementation
 	 */
 	public void onProgressChanged(SeekBar slider, int newPosition, boolean from_user) {
-		BaseNumberSelector field;
+		NumberSelector field;
 		if(slider == mO2Bar) {
 			field = mO2Field;
 		} else {
@@ -119,7 +119,7 @@ public class TrimixSelector extends RelativeLayout
 	/**
 	 * NumberSelector ValueChangeListener implementation
 	 */
-	public void onChange(BaseNumberSelector ns, Float new_val, boolean from_user) {
+	public void onChange(NumberSelector ns, Float new_val, boolean from_user) {
 		SeekBar sb;
 		if(ns == mO2Field) {
 			sb = mO2Bar;
@@ -138,8 +138,8 @@ public class TrimixSelector extends RelativeLayout
 		}
 	}
 
-	private void handlePercentUpdate(BaseNumberSelector field) {
-		BaseNumberSelector other_field;
+	private void handlePercentUpdate(NumberSelector field) {
+		NumberSelector other_field;
 		if(field == mO2Field) {
 			other_field = mHeField;
 		} else {

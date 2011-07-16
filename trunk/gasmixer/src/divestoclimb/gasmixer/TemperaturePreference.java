@@ -3,6 +3,7 @@ package divestoclimb.gasmixer;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
+import divestoclimb.android.widget.NumberPreference;
 import divestoclimb.lib.scuba.Units;
 import android.content.Context;
 import android.content.SharedPreferences;

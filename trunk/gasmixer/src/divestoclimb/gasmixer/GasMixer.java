@@ -3,7 +3,7 @@ package divestoclimb.gasmixer;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
-import divestoclimb.android.widget.BaseNumberSelector;
+import divestoclimb.android.widget.NumberSelector;
 import divestoclimb.gasmixer.prefs.Settings;
 import divestoclimb.gasmixer.prefs.SyncedPrefsHelper;
 import divestoclimb.lib.scuba.Cylinder;
@@ -42,7 +42,7 @@ import android.widget.ToggleButton;
  *
  */
 public class GasMixer extends TabActivity implements Button.OnClickListener,
-		TrimixSelector.MixChangeListener, BaseNumberSelector.ValueChangedListener,
+		TrimixSelector.MixChangeListener, NumberSelector.ValueChangedListener,
 		CompoundButton.OnCheckedChangeListener {
 
 	protected SharedPreferences mSettings, mState;
@@ -53,7 +53,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 	private Mix mBlendStartMix;
 
 	private TrimixSelector mDesiredGas, mTopupGas;
-	private BaseNumberSelector mMaxDepth, mMaxEnd, mMaxPo2, mBlendDesiredPressure,
+	private NumberSelector mMaxDepth, mMaxEnd, mMaxPo2, mBlendDesiredPressure,
 			mTopupStartPressure, mTopupFinalPressure;
 	private TextView mMaxDepthUnit, mMaxEndUnit, mBlendDesiredPressureUnit,
 			mTopupStartPressureUnit, mDesiredMOD, mDesiredEADENDLabel,
@@ -116,7 +116,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 			blendTab = tabcontent.findViewById(R.id.tab_blend),
 			topupTab = tabcontent.findViewById(R.id.tab_topup),
 			bestmixTab = tabcontent.findViewById(R.id.tab_bestmix);
-		mBlendDesiredPressure = (BaseNumberSelector)blendTab.findViewById(R.id.desired_pres);
+		mBlendDesiredPressure = (NumberSelector)blendTab.findViewById(R.id.desired_pres);
 		mBlendDesiredPressureUnit = (TextView)blendTab.findViewById(R.id.desired_pres_unit);
 		mDesiredGas = (TrimixSelector)blendTab.findViewById(R.id.desired);
 		mDesiredMOD = (TextView)blendTab.findViewById(R.id.desired_mod);
@@ -127,22 +127,22 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 
 		mStartingMix = (TextView)blendTab.findViewById(R.id.start_mix);
 
-		mMaxDepth = (BaseNumberSelector)bestmixTab.findViewById(R.id.maxdepth);
+		mMaxDepth = (NumberSelector)bestmixTab.findViewById(R.id.maxdepth);
 		mMaxDepth.setValueChangedListener(this);
-		mMaxEnd = (BaseNumberSelector)bestmixTab.findViewById(R.id.maxend);
+		mMaxEnd = (NumberSelector)bestmixTab.findViewById(R.id.maxend);
 		mMaxEnd.setValueChangedListener(this);
 		mMaxDepthUnit = (TextView)bestmixTab.findViewById(R.id.maxdepth_unit);
 		mMaxEndUnit = (TextView)bestmixTab.findViewById(R.id.maxend_unit);
-		mMaxPo2 = (BaseNumberSelector)bestmixTab.findViewById(R.id.maxpo2);
+		mMaxPo2 = (NumberSelector)bestmixTab.findViewById(R.id.maxpo2);
 		mMaxPo2.setValueChangedListener(this);
 		mBestMixResult = (TextView)bestmixTab.findViewById(R.id.bestmix_result);
 
 		mCylinderDescription = (TextView)topupTab.findViewById(R.id.cylinder);
-		mTopupStartPressure = (BaseNumberSelector)topupTab.findViewById(R.id.topup_start_pres);
+		mTopupStartPressure = (NumberSelector)topupTab.findViewById(R.id.topup_start_pres);
 		mTopupStartPressureUnit = (TextView)topupTab.findViewById(R.id.topup_start_pres_unit);
 		mTopupGas = (TrimixSelector)topupTab.findViewById(R.id.topup);
 		mTopupGas.getHeField().setIncrement(1);
-		mTopupFinalPressure = (BaseNumberSelector)topupTab.findViewById(R.id.topup_final_pres);
+		mTopupFinalPressure = (NumberSelector)topupTab.findViewById(R.id.topup_final_pres);
 
 		mTogglePo2 = (ToggleButton)blendTab.findViewById(R.id.button_po2_hi);
 
@@ -430,7 +430,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 	 * also converts all values in the state to the new system of units.
 	 */
 	public void updateUnits(Integer last_unit) {
-		final BaseNumberSelector blend_desired_pressure = mBlendDesiredPressure,
+		final NumberSelector blend_desired_pressure = mBlendDesiredPressure,
 				topup_start_pressure = mTopupStartPressure,
 				topup_final_pressure = mTopupFinalPressure,
 				max_depth = mMaxDepth,
@@ -540,18 +540,21 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 	}
 
 	// TrimixSelector.onMixChangeListener implementation
+	@Override
 	public void onChange(TrimixSelector ts, Mix m) {
 		if(m != null) {
 			updateModEnd(m);
 		}
 	}
 	
-	// Implementation of BaseNumberSelector.valueChangedListener
-	public void onChange(BaseNumberSelector ns, Float new_val, boolean from_user) {
+	// Implementation of NumberSelector.ValueChangedListener
+	@Override
+	public void onChange(NumberSelector ns, Float new_val, boolean from_user) {
 		updateBestMix();
 	}
 	
 	// Implementation of OnCheckedChangedListener
+	@Override
 	public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 		updateModEnd(mDesiredGas.getMix());
 	}

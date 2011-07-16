@@ -2,11 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry kind="lib" path="Jama-1.0.2.jar"/>
 	<classpathentry kind="src" path="gen"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/android_common"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/scubalib"/>
-	<classpathentry kind="lib" path="CylinderORMapper-1.0.0.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Core"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="src" path="android_common"/>
+	<classpathentry kind="lib" path="libs/Jama-1.0.2.jar"/>
+	<classpathentry kind="lib" path="libs/CylinderORMapper.jar"/>
+	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

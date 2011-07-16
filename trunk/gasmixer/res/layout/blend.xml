@@ -9,7 +9,7 @@
 		android:text="@string/desired"
 		android:paddingLeft="5dp"
 		android:textSize="20sp"/>
-	<divestoclimb.gasmixer.NumberSelector
+	<divestoclimb.android.widget.NumberSelector
 		android:id="@+id/desired_pres"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"

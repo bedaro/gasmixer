@@ -3,7 +3,7 @@ package divestoclimb.gasmixer.prefs;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
-import divestoclimb.android.widget.BaseNumberPreference;
+import divestoclimb.android.widget.NumberPreference;
 import divestoclimb.gasmixer.AndroidLocalizer;
 import divestoclimb.gasmixer.Params;
 import divestoclimb.gasmixer.R;
@@ -27,7 +27,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
 
 	private TrimixPreference mTopupGasPreference;
 	private TemperaturePreference mTemperaturePreference;
-	private BaseNumberPreference mMaxPo2Preference, mMaxHighPo2Preference;
+	private NumberPreference mMaxPo2Preference, mMaxHighPo2Preference;
 	private ListPreference mUnitsPreference;
 	private SyncedPrefsHelper mSyncedPrefsHelper;
 
@@ -46,8 +46,8 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
 		mTopupGasPreference = (TrimixPreference)screen.findPreference("topup_gas");
 		mTemperaturePreference = (TemperaturePreference)screen.findPreference("temperature");
 		mUnitsPreference = (ListPreference)screen.findPreference("units");
-		mMaxPo2Preference = (BaseNumberPreference)screen.findPreference("max_norm_po2");
-		mMaxHighPo2Preference = (BaseNumberPreference)screen.findPreference("max_hi_po2");
+		mMaxPo2Preference = (NumberPreference)screen.findPreference("max_norm_po2");
+		mMaxHighPo2Preference = (NumberPreference)screen.findPreference("max_hi_po2");
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
 			}
 			return;
 		} else if(key.equals("max_norm_po2") || key.equals("max_hi_po2")) {
-			BaseNumberPreference pref;
+			NumberPreference pref;
 			float defaultValue;
 			if(key.equals("max_norm_po2")) {
 				pref = mMaxPo2Preference;
