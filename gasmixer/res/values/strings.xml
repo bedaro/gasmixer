@@ -9,6 +9,8 @@
 	<string name="pres_metric">bar</string>
 	<string name="depth_imperial">fsw</string>
 	<string name="depth_metric">msw</string>
+	<string name="capacity_imperial">ft<sup><small>3</small></sup></string>
+	<string name="capacity_metric">L</string>
 	<string name="switch_to_metric">Metric</string>
 	<string name="switch_to_imperial">Imperial</string>
 	<string name="desired">Desired Mix</string>
@@ -38,7 +40,7 @@
 	<string name="gas_amount">%1$s %2$s of %3$s</string>
 	<string name="result_drain">Drain to %1$s %2$s</string>
 	<string name="result_fillto">Fill to %1$s %2$s with %3$s</string>
-	<string name="result_add">Add %s</string>
+	<!-- <string name="result_add">Add %s</string> -->
 	<string name="result_topup">Top up with %s</string>
 	<string name="result_end">End with %s</string>
 	<string name="topup_result">Result is %s</string>

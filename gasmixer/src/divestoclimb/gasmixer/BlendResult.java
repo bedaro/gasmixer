@@ -1,6 +1,8 @@
 package divestoclimb.gasmixer;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import divestoclimb.gasmixer.prefs.SyncedPrefsHelper;
 import divestoclimb.lib.scuba.Cylinder;
@@ -11,14 +13,21 @@ import divestoclimb.lib.scuba.Units;
 import divestoclimb.scuba.equipment.storage.CylinderORMapper;
 
 import Jama.Matrix;
-import android.app.Activity;
+import android.app.ListActivity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
+import android.text.SpannableStringBuilder;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,7 +70,7 @@ import android.widget.Toast;
 // [ fo2,i	0	fo2,t ] [ vi    ]   [ vf*fo2,f ]
 // [ fhe,i	1	fhe,t ] [ vhe,a ] = [ vf*fhe,f ]
 // [ fn2,i	0	fn2,t ] [ vt,a  ]   [ vf*fn2,f ]
-public class BlendResult extends Activity implements AdapterView.OnItemSelectedListener,
+public class BlendResult extends ListActivity implements AdapterView.OnItemSelectedListener,
 		View.OnClickListener {
 
 	// Our known parameters
@@ -69,11 +78,20 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 	private Mix mStart, mDesired, mTopup;
 	// The parameters we are solving for
 	private double vi, vo2a, vhea, vta;
-	private GasSupply have, want;
+	// The starting pressure for the blend, accounting for draining
+	private float mStartPressure;
+	// have is the GasSupply the user entered.
+	// want is the GasSupply the user desires at the end.
+	// start is the GasSupply that is used to begin blending, after any draining
+	private GasSupply have, want, start;
 	private SharedPreferences mSettings, mState;
 	private Units mUnits;
-	private NumberFormat mPressureFormat;
+	private NumberFormat mPressureFormat, mCapacityFormat;
 	private String mPressureUnit;
+	private CharSequence mCapacityUnit;
+
+	private View mResultFooterView, mStartView, mImpossibleView, mCopyButton;
+	private TextView mStartPressureView, mStartMixView, mResultView;
 
 	private int mBlendMode;
 	private static final int BLEND_MODE_PARTIAL_PRESSURE = 0;
@@ -81,7 +99,6 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 	private static final int BLEND_MODE_CONTINUOUS_TRIMIX = 2;
 
 	private boolean mSolutionFound;
-	private String mResultText;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -105,7 +122,9 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 
 		mBlendMode = mSettings.getInt("blend_mode", 0);
 		mPressureFormat = Params.getPressureFormat(mUnits);
+		mCapacityFormat = Params.getCapacityFormat(mUnits);
 		mPressureUnit = getString(mUnits.pressureUnit() == Units.IMPERIAL? R.string.pres_imperial: R.string.pres_metric);
+		mCapacityUnit = getText(mUnits.capacityUnit() == Units.IMPERIAL? R.string.capacity_imperial: R.string.capacity_metric);
 
 		// Set the Localizer Engine for displaying GasSources
 		Localizer.setEngine(new AndroidLocalizer(this));
@@ -114,8 +133,19 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 		mode.setSelection(mBlendMode);
 		mode.setOnItemSelectedListener(this);
 
+		// Inflate the header and footer views for the list
+		LayoutInflater li = getLayoutInflater();
+		mStartView = li.inflate(R.layout.blend_result_line, null);
+		mStartPressureView = (TextView)mStartView.findViewById(R.id.pressure);
+		mStartMixView = (TextView)mStartView.findViewById(R.id.gas);
+		mStartMixView.setTypeface(Typeface.defaultFromStyle(Typeface.ITALIC), Typeface.ITALIC);
+		mResultFooterView = li.inflate(R.layout.blend_result_footer, null);
+		mResultView = (TextView)mResultFooterView.findViewById(R.id.final_result);
+		mImpossibleView = li.inflate(R.layout.blend_result_impossible, null);
+
 		// set button listeners
-		findViewById(R.id.button_copy).setOnClickListener(this);
+		mCopyButton = findViewById(R.id.button_copy);
+		mCopyButton.setOnClickListener(this);
 		findViewById(R.id.button_close).setOnClickListener(this);
 
 		recalculate();
@@ -162,6 +192,79 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 
 		showResult();
 	}
+	
+	private class BlendStep {
+		public Float pressure;
+		public int volume;
+		public Mix mix;
+
+		public BlendStep(Float pressure, int volume, Mix mix) {
+			this.pressure = pressure;
+			this.volume = volume;
+			this.mix = mix;
+		}
+		
+		public CharSequence toCharSequence() {
+			SpannableStringBuilder builder = new SpannableStringBuilder(String.format(getString(R.string.result_fillto),
+					mPressureFormat.format(pressure),
+					mPressureUnit,
+					mix.toString()) + " (" + mCapacityFormat.format(volume) + " ");
+			builder.append(mCapacityUnit);
+			builder.append(")");
+			return builder;
+		}
+	}
+	
+	public class BlendStepAdapter extends ArrayAdapter<BlendStep> {
+
+		public BlendStepAdapter(Context context, int textViewResourceId,
+				List<BlendStep> objects) {
+			super(context, textViewResourceId);
+			add(null);
+			for(BlendStep s : objects) {
+				add(s);
+			}
+			if(mSolutionFound) {
+				add(null);
+			}
+		}
+		
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			if(position == 0) {
+				return mSolutionFound? mStartView: mImpossibleView;
+			} else if(position == getCount() - 1 && mSolutionFound) {
+				return mResultFooterView;
+			}
+			View row = getLayoutInflater().inflate(R.layout.blend_result_line, null);
+
+			BlendStep data = getItem(position);
+			TextView pressure = (TextView)row.findViewById(R.id.pressure);
+			pressure.setText(data.pressure != null? mPressureFormat.format(data.pressure) + " " + mPressureUnit: "");
+
+			TextView volume = (TextView)row.findViewById(R.id.volume);
+			// Imperial capacity units are styled, so we must treat the unit as a CharSequence
+			volume.setText("+" + mCapacityFormat.format(data.volume) + " ");
+			volume.append(mCapacityUnit);
+
+			TextView gas = (TextView)row.findViewById(R.id.gas);
+			gas.setText(data.mix.toString());
+
+			if(data.pressure == null) {
+				// This is not a discrete operation. Make it italic.
+				volume.setTypeface(Typeface.defaultFromStyle(Typeface.ITALIC), Typeface.ITALIC);
+				gas.setTypeface(Typeface.defaultFromStyle(Typeface.ITALIC), Typeface.ITALIC);
+			}
+
+			// TODO change color of row based on mix type?
+			return row;
+		}
+		
+		@Override
+		public boolean isEnabled(int position) {
+			return mSolutionFound;
+		}
+	}
 
 	/**
 	 * Reads the volume-based solution stored in member variables and
@@ -169,36 +272,42 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 	 * using the current blend mode.
 	 */
 	private void showResult() {
-		if(! mSolutionFound) {
-			mResultText = getString(R.string.result_impossible);
-		} else {
-			mResultText = String.format(getString(R.string.start_with),
-					(pi == 0)? getString(R.string.empty_tank)
-					: String.format(getString(R.string.gas_amount),
-							mPressureFormat.format(pi),
-							mPressureUnit,
-							mStart.toString()
-					)
-			) + "\n";
+		List<BlendStep> steps;
+		// Disable the "Copy This" button if there's no solution to copy
+		mCopyButton.setEnabled(mSolutionFound);
+		if(mSolutionFound) {
+
+			if(mStartPressure < pi) {
+				// Needed to drain some gas
+				mStartPressureView.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD_ITALIC), Typeface.BOLD_ITALIC);
+			} else {
+				mStartPressureView.setTypeface(Typeface.defaultFromStyle(Typeface.ITALIC), Typeface.ITALIC);
+			}
+			if(mStartPressure > 0) {
+				mStartMixView.setTypeface(Typeface.defaultFromStyle(Typeface.ITALIC), Typeface.ITALIC);
+				mStartMixView.setText(mStart.toString());
+			}
+
+			mStartPressureView.setText(mPressureFormat.format(mStartPressure) + " " + mPressureUnit);
+			
+			mResultView.setText(mDesired.toString());
+
 			switch(mBlendMode) {
 			case BLEND_MODE_CONTINUOUS_NITROX:
-				mResultText += getContinuousNxSteps();
+				steps = getContinuousNxSteps(start);
 				break;
 			case BLEND_MODE_CONTINUOUS_TRIMIX:
-				mResultText += getContinuousTmxSteps();
+				steps = getContinuousTmxSteps(start);
 				break;
 			case BLEND_MODE_PARTIAL_PRESSURE:
 			default:
-				mResultText += getPPSteps();
+				steps = getPPSteps(start);
 				break;
 			}
+		} else {
+			steps = new ArrayList<BlendStep>();
 		}
-
-		TextView resultView = (TextView) findViewById(R.id.blend_result);
-		resultView.setText(mResultText);
-		if(mSolutionFound) {
-			((TextView) findViewById(R.id.reminder1)).setText(getString(R.string.analyze_warning));
-		}
+		setListAdapter(new BlendStepAdapter(this, R.layout.blend_result_line, steps));
 	}
 
 	/**
@@ -291,7 +400,17 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 		// The final checks ensure that vi is within a realistic range.
 		// The blender can't drain to a negative volume, and we can't
 		// start with any more gas than is already in the cylinder.
-		return vi >= 0 && vi <= have.getGasAmount();
+		if(vi < 0 || vi > have.getGasAmount()) {
+			return false;
+		}
+		start = have.clone();
+		float pdrain = (float)start.drainToGasAmount(vi).getPressure();
+		mStartPressure = pi;
+		if(pi - pdrain >= Math.pow(10, mUnits.pressurePrecision() * -1) * 0.5) {
+			// Need to drain the gas
+			mStartPressure = pdrain;
+		}
+		return true;
 	}
 
 	/**
@@ -299,183 +418,157 @@ public class BlendResult extends Activity implements AdapterView.OnItemSelectedL
 	 * explanation for how to replicate it.
 	 * @return A descriptive version of the blend that was done
 	 */
-	private String getPPSteps() {
-		float po2, phe, pt, pdrain;
-		final NumberFormat nf = mPressureFormat;
-		final String presUnit = mPressureUnit;
-		// Convert the volumes built by solve() into pressures by doing the blending
-		// operation on have.
-		GasSupply blend = have.clone();
-
-		pdrain = (float)blend.drainToGasAmount(vi).getPressure();
+	private List<BlendStep> getPPSteps(GasSupply supply) {
+		float po2, phe, pt, pdrain = (float)supply.getPressure();
+		
 		float pretop;
+		List<BlendStep> steps = new ArrayList<BlendStep>(4);
 		if(mSettings.getBoolean("he_first", false)) {
-			phe = vhea > 0? (float)blend.addHe(vhea).getPressure(): pdrain;
-			po2 = vo2a > 0? (float)blend.addO2(vo2a).getPressure(): phe;
+			phe = vhea > 0? (float)supply.addHe(vhea).getPressure(): pdrain;
+			if(Math.round(phe) > Math.round(pdrain)) {
+				steps.add(new BlendStep(phe, (int)Math.round(vhea), new Mix(0, 1)));
+			}
+			po2 = vo2a > 0? (float)supply.addO2(vo2a).getPressure(): phe;
+			if(Math.round(po2) > Math.round(phe)) {
+				steps.add(new BlendStep(po2, (int)Math.round(vo2a), new Mix(1, 0)));
+			}
 			pretop = po2;
 		} else {
-			po2 = vo2a > 0? (float)blend.addO2(vo2a).getPressure(): pdrain;
-			phe = vhea > 0? (float)blend.addHe(vhea).getPressure(): po2;
+			po2 = vo2a > 0? (float)supply.addO2(vo2a).getPressure(): pdrain;
+			if(Math.round(po2) > Math.round(pdrain)) {
+				steps.add(new BlendStep(po2, (int)Math.round(vo2a), new Mix(1, 0)));
+			}
+			phe = vhea > 0? (float)supply.addHe(vhea).getPressure(): po2;
+			if(Math.round(phe) > Math.round(po2)) {
+				steps.add(new BlendStep(phe, (int)Math.round(vhea), new Mix(0, 1)));
+			}
 			pretop = phe;
 		}
-		pt = vta > 0? (float)blend.addGas(mTopup, vta).getPressure(): pretop;
-
-		String result = "";
-
-		if(pi - pdrain >= Math.pow(10, mUnits.pressurePrecision() * -1) * 0.5) {
-			// Drain
-			result += "- "+String.format(getString(R.string.result_drain),
-					nf.format(pdrain),
-					presUnit
-			) + "\n";
-		}
-		if(mSettings.getBoolean("he_first", false)) {
-			if(Math.round(phe) > Math.round(pdrain)) {
-				result += "- " + String.format(getString(R.string.result_fillto),
-						nf.format(phe),
-						presUnit,
-						getString(R.string.helium)
-				) + "\n";
-			}
-			if(Math.round(po2) > Math.round(phe)) {
-				result+= "- " + String.format(getString(R.string.result_fillto),
-						nf.format(po2),
-						presUnit,
-						getString(R.string.oxygen)
-				) + "\n";
-			}
-		} else {
-			if(Math.round(po2) > Math.round(pdrain)) {
-				result += "- " + String.format(getString(R.string.result_fillto),
-						nf.format(po2),
-						presUnit,
-						getString(R.string.oxygen)
-				) + "\n";
-			}
-			if(Math.round(phe) > Math.round(po2)) {
-				result += "- " + String.format(getString(R.string.result_fillto),
-						nf.format(phe),
-						presUnit,
-						getString(R.string.helium)
-				) + "\n";
-			}
-		}
+		pt = vta > 0? (float)supply.addGas(mTopup, vta).getPressure(): pretop;
 		if(Math.round(pt) > Math.round(pretop)) {
-			result += "- " + String.format(getString(R.string.result_fillto),
-					nf.format(pt),
-					presUnit,
-					mTopup.toString()
-			) + "\n";
+			steps.add(new BlendStep(pt, (int)Math.round(vta), mTopup));
 		}
-		result += String.format(getString(R.string.result_end),
-				String.format(getString(R.string.gas_amount),
-						nf.format(pf),
-						presUnit,
-						mDesired.toString()
-				)
-		);
-		return result;
+		return steps;
 	}
 
-	private String getContinuousNxSteps() {
-		float pnx, phe, pdrain;
-		final NumberFormat nf = mPressureFormat;
-		final String presUnit = mPressureUnit;
+	private List<BlendStep> getContinuousNxSteps(GasSupply supply) {
+		float pnx, phe, pdrain = (float)supply.getPressure();
 		// Take vo2a and vta and combine them into a single Mix.
 		final double vca = vo2a + vta;
 		final Mix continuousAdd = new Mix((vo2a + vta * mTopup.getfO2()) / vca, 0);
 
 		// Now do the blend
-		GasSupply blend = have.clone();
-		pdrain = (float)blend.drainToGasAmount(vi).getPressure();
+		List<BlendStep> steps = new ArrayList<BlendStep>(4);
+
 		// Always add helium first. Although we could use the he_first setting to decide,
 		// it's unlikely anyone would want to top up with helium last.
-		phe = vhea > 0? (float)blend.addHe(vhea).getPressure(): pdrain;
-		pnx = vca > 0? (float)blend.addGas(continuousAdd, vca).getPressure(): phe;
-		String result = "";
+		phe = vhea > 0? (float)supply.addHe(vhea).getPressure(): pdrain;
+		pnx = vca > 0? (float)supply.addGas(continuousAdd, vca).getPressure(): phe;
 
-		if(pi - pdrain >= Math.pow(10, mUnits.pressurePrecision() * -1) * 0.5) {
-			// Drain
-			result += "- " + String.format(getString(R.string.result_drain),
-					nf.format(pdrain),
-					presUnit
-			) + "\n";
-		}
 		if(Math.round(phe) > Math.round(pdrain)) {
-			result += "- " + String.format(getString(R.string.result_fillto),
-					nf.format(phe),
-					presUnit,
-					getString(R.string.helium)
-			)+"\n";
+			steps.add(new BlendStep(phe, (int)Math.round(vhea), new Mix(0, 1)));
 		}
 		if(Math.round(pnx) > Math.round(phe)) {
-			result+= "- " + String.format(getString(R.string.result_fillto),
-					nf.format(pnx),
-					presUnit,
-					continuousAdd.toString()
-			) + "\n";
+			if(vo2a > 0) {
+				steps.add(new BlendStep(null, (int)Math.round(vo2a), new Mix(1, 0)));
+			}
+			if(vta > 0) {
+				steps.add(new BlendStep(null, (int)Math.round(vta), mTopup));
+			}
+			steps.add(new BlendStep(pnx, (int)Math.round(vca), continuousAdd));
 		}
-		result += String.format(getString(R.string.result_end),
-				String.format(getString(R.string.gas_amount),
-						nf.format(pf),
-						presUnit,
-						mDesired.toString()
-				)
-		);
-		return result;
+		return steps;
 	}
 
-	private String getContinuousTmxSteps() {
-		float ptmx, pdrain;
-		final NumberFormat nf = mPressureFormat;
-		final String presUnit = mPressureUnit;
+	private List<BlendStep> getContinuousTmxSteps(GasSupply supply) {
+		float ptmx, pdrain = (float)supply.getPressure();
 		// Take vo2a and vta and combine them into a single Mix.
 		final double vca = vo2a + vhea + vta;
 		final Mix continuousAdd = new Mix((vo2a + vta * mTopup.getfO2()) / vca, (vhea + vta * mTopup.getfHe()) / vca);
 
 		// Now do the blend
-		GasSupply blend = have.clone();
-		pdrain = (float)blend.drainToGasAmount(vi).getPressure();
-		ptmx = vca > 0? (float)blend.addGas(continuousAdd, vca).getPressure(): pdrain;
-		String result = "";
+		List<BlendStep> steps = new ArrayList<BlendStep>(4);
 
-		if(pi - pdrain >= Math.pow(10, mUnits.pressurePrecision() * -1) * 0.5) {
-			// Drain
-			result += "- " + String.format(getString(R.string.result_drain),
-					nf.format(pdrain),
-					presUnit
-			) + "\n";
-		}
+		ptmx = vca > 0? (float)supply.addGas(continuousAdd, vca).getPressure(): pdrain;
+
 		if(Math.round(ptmx) > Math.round(pdrain)) {
-			result += "- " + String.format(getString(R.string.result_fillto),
-					nf.format(ptmx),
-					presUnit,
-					continuousAdd.toString()
-			)+"\n";
+			if(vo2a > 0) {
+				steps.add(new BlendStep(null, (int)Math.round(vo2a), new Mix(1, 0)));
+			}
+			if(vhea > 0) {
+				steps.add(new BlendStep(null, (int)Math.round(vhea), new Mix(0, 1)));
+			}
+			if(vta > 0) {
+				steps.add(new BlendStep(null, (int)Math.round(vta), mTopup));
+			}
+			steps.add(new BlendStep(ptmx, (int)Math.round(vca), continuousAdd));
 		}
-		result += String.format(getString(R.string.result_end),
-				String.format(getString(R.string.gas_amount),
-						nf.format(pf),
-						presUnit,
-						mDesired.toString()
-				)
-		);
-		return result;
+		return steps;
 	}
+	
+	// ItemSelected listener for the blend mode spinner
+	
+	// Workaround for Android bug that causes onItemSelected to fire during layout
+	private boolean firstSelection = true;
 
+	@Override
 	public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+		if(firstSelection) {
+			firstSelection = false;
+			return;
+		}
 		mSettings.edit().putInt("blend_mode", position).commit();
 		mBlendMode = position;
 		showResult();
 	}
 
+	@Override
 	public void onNothingSelected(AdapterView<?> parent) { }
 
+	// Get the CharSequence representation of the given step
+	private CharSequence getStep(int step) {
+		NumberFormat nf = mPressureFormat;
+		String presUnit = mPressureUnit;
+		if(step == 0) {
+			return String.format(getString(R.string.start_with),
+					mStartPressure > 0? String.format(getString(R.string.gas_amount),
+							nf.format(mStartPressure),
+							presUnit,
+							mStart.toString())
+					: getString(R.string.empty_tank));
+		} else if(getListView().getCount() - 1 == step) {
+			return String.format(getString(R.string.result_end), String.format(getString(R.string.gas_amount),
+							nf.format(pf),
+							presUnit,
+					mDesired.toString()));
+		}
+		return ((BlendStep)getListView().getItemAtPosition(step)).toCharSequence();
+	}
+
+	private Toast mActiveMessage = null;
+
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		super.onListItemClick(l, v, position, id);
+		if(mActiveMessage != null) {
+			mActiveMessage.cancel();
+		}
+		mActiveMessage = Toast.makeText(this, getStep(position), Toast.LENGTH_LONG);
+		mActiveMessage.show();
+	}
+
+	@Override
 	public void onClick(View v) {
 		switch(v.getId()) {
 		case R.id.button_copy:
+			SpannableStringBuilder b = new SpannableStringBuilder();
+			for(int i = 0; i < getListView().getCount(); i ++) {
+				b.append("- ");
+				b.append(getStep(i));
+				b.append("\n");
+			}
 			ClipboardManager c = (ClipboardManager)BlendResult.this.getSystemService(CLIPBOARD_SERVICE);
-			c.setText(mResultText);
+			c.setText(b);
 			break;
 		case R.id.button_close:
 			finish();

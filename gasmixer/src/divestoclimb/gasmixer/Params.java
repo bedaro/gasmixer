@@ -29,4 +29,9 @@ public class Params {
 		}
 	}
 	
+	public static NumberFormat getCapacityFormat(Units u) {
+		// Right now all unit systems use the same precision for capacities.
+		return NumberFormat.getIntegerInstance();
+	}
+	
 }
