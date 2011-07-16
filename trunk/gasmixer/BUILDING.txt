@@ -22,7 +22,7 @@ http://code.google.com/p/anddive
 Scuba Tanks can be found at http://code.google.com/p/gasmixer
 
 For scubalib, see the build instructions to produce a .jar of each in the
-"bin" directory. Then either copy or symlink that jar into the "libs"
+"build" directory. Then either copy or symlink that jar into the "libs"
 directory of Gas Mixer.
 android_common is an Android library that gets included differently. You will
 need to check out the source, then create a file "build.properties" in Gas

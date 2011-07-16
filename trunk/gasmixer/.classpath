@@ -4,9 +4,9 @@
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/scubalib"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Core"/>
 	<classpathentry kind="src" path="android_common"/>
 	<classpathentry kind="lib" path="libs/Jama-1.0.2.jar"/>
 	<classpathentry kind="lib" path="libs/CylinderORMapper.jar"/>
-	<classpathentry kind="output" path="bin/classes"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Core"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>
