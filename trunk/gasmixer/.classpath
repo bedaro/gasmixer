@@ -6,7 +6,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/scubalib"/>
 	<classpathentry kind="src" path="android_common"/>
 	<classpathentry kind="lib" path="libs/Jama-1.0.2.jar"/>
-	<classpathentry kind="lib" path="libs/CylinderORMapper.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Core"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/scubatanks"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
