@@ -6,7 +6,7 @@
 		android:layout_width="wrap_content"
 		android:text="@string/maxdepth"
 		android:textSize="20dp" />
-	<divestoclimb.gasmixer.NumberSelector
+	<divestoclimb.android.widget.NumberSelector
 		android:id="@+id/maxdepth"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
@@ -28,7 +28,7 @@
 		android:layout_below="@id/maxdepth"
 		android:text="@string/maxpo2"
 		android:textSize="20dp"/>
-	<divestoclimb.gasmixer.NumberSelector
+	<divestoclimb.android.widget.NumberSelector
 		android:id="@+id/maxpo2"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
@@ -54,7 +54,7 @@
 		android:layout_below="@id/maxpo2"
 		android:text="@string/maxend"
 		android:textSize="20dp"/>
-	<divestoclimb.gasmixer.NumberSelector
+	<divestoclimb.android.widget.NumberSelector
 		android:id="@+id/maxend"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"

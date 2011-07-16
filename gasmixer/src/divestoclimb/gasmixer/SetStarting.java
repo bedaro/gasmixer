@@ -1,6 +1,6 @@
 package divestoclimb.gasmixer;
 
-import divestoclimb.android.widget.BaseNumberSelector;
+import divestoclimb.android.widget.NumberSelector;
 import divestoclimb.gasmixer.prefs.SyncedPrefsHelper;
 import divestoclimb.lib.scuba.Cylinder;
 import divestoclimb.lib.scuba.Mix;
@@ -23,7 +23,7 @@ import android.widget.TextView;
  */
 public class SetStarting extends Activity implements Button.OnClickListener {
 
-	private BaseNumberSelector mPressureSelector;
+	private NumberSelector mPressureSelector;
 	private TextView mPressureUnit, mCylinderDescription;
 	private TrimixSelector mGasSelector;
 	private SharedPreferences mSettings, mState;
@@ -58,7 +58,7 @@ public class SetStarting extends Activity implements Button.OnClickListener {
 
 		mCylORMapper = new CylinderORMapper(this, mUnits);
 
-		mPressureSelector = (BaseNumberSelector)findViewById(R.id.pressure);
+		mPressureSelector = (NumberSelector)findViewById(R.id.pressure);
 		mPressureUnit = (TextView)findViewById(R.id.pressure_unit);
 		mGasSelector = (TrimixSelector)findViewById(R.id.mix);
 		mCylinderDescription = (TextView)findViewById(R.id.cylinder);

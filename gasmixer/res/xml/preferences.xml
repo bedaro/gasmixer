@@ -42,7 +42,7 @@
 			android:dialogIcon="@drawable/units_imperial"
 			android:defaultValue="0" />
 
-		<divestoclimb.gasmixer.NumberPreference
+		<divestoclimb.android.widget.NumberPreference
 			android:key="max_norm_po2"
 			android:title="@string/max_norm_po2"
 			android:defaultValue="1.4"
@@ -53,7 +53,7 @@
 			app:lowerlimit="0.4"
 			app:upperlimit="1.4" />
 
-		<divestoclimb.gasmixer.NumberPreference
+		<divestoclimb.android.widget.NumberPreference
 			android:key="max_hi_po2"
 			android:title="@string/max_hi_po2"
 			android:defaultValue="1.6"
