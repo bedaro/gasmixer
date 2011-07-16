@@ -63,7 +63,7 @@
 	<string name="multiple_need_hydro">%d need hydro</string>
 	<string name="multiple_need_visual">%d need visual</string>
 	<string name="backup_restored">Automatically restored backed up cylinder data</string>
-	<string name="save_error">Sorry, an unexpected error occurred while saving.</string>
+	<string name="save_error">Sorry, an unexpected error occurred while saving. Name and serial number must be unique!</string>
 	<string name="delete_error">Sorry, an unexpected error occurred while deleting.</string>
 	<string name="no_specific">You don\'t have any cylinders listed.
 		\n\nYou can track specific cylinders by serial number and test/inspection dates. Tap

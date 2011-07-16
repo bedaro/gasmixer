@@ -55,6 +55,9 @@ public class EquipmentContentProvider extends ContentProvider {
 	public Uri insert(Uri uri, ContentValues values) {
 		final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 		final long new_id = db.insert(TABLE_CYLINDERSIZES, null, values);
+		if(new_id == -1) {
+			return null;
+		}
 		final Uri newUri = Uri.withAppendedPath(CylinderORMapper.CONTENT_URI,
 				String.valueOf(new_id));
 		getContext().getContentResolver().notifyChange(newUri, null);

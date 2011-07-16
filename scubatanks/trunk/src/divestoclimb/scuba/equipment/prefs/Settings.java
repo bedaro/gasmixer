@@ -3,8 +3,8 @@ package divestoclimb.scuba.equipment.prefs;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import divestoclimb.android.widget.NumberPreference;
 import divestoclimb.scuba.equipment.R;
-import divestoclimb.scuba.equipment.widget.NumberPreference;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;

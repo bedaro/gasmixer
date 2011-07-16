@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
 import divestoclimb.android.database.ORMapper;
 import divestoclimb.lib.scuba.Cylinder;
 import divestoclimb.lib.scuba.Units;
@@ -95,18 +96,11 @@ public class CylinderORMapper extends ORMapper<Cylinder> {
 		final Cursor c = mCtx.getContentResolver().query(
 				Uri.withAppendedPath(CONTENT_URI, String.valueOf(id)),
 				null, null, null, null);
-		if(c != null) {
-			c.moveToFirst();
-			final Cylinder cylinder = fetch(c);
-			c.close();
-			return cylinder;
-		}
-		return null;
+		return fetchUniqueResult(c);
 	}
 	
 	@Override
-	protected void columnToField(Cursor c, Cylinder instance, Method setter) {
-		final String fieldName = setter.getName().substring(3);
+	protected void columnToField(Cursor c, Cylinder instance, String fieldName, Method setter) {
 		if(fieldName.equals("ServicePressure")) {
 			final int servicePressure = Math.round(mUnits.convertPressure(c.getFloat(c.getColumnIndexOrThrow(SERVICE_PRESSURE)), Units.METRIC));
 			instance.setServicePressure(servicePressure);
@@ -114,7 +108,7 @@ public class CylinderORMapper extends ORMapper<Cylinder> {
 			final float internalVolume = mUnits.convertCapacity(c.getFloat(c.getColumnIndexOrThrow(INTERNAL_VOLUME)), Units.METRIC);
 			instance.setInternalVolume(internalVolume);
 		} else {
-			super.columnToField(c, instance, setter);
+			super.columnToField(c, instance, fieldName, setter);
 		}
 	}
 	
@@ -134,6 +128,8 @@ public class CylinderORMapper extends ORMapper<Cylinder> {
 	
 	@Override
 	protected boolean doCreate(Cylinder c, ContentValues values) {
+		values.remove(_ID);
+		Log.i("CylinderORMapper", values.toString());
 		final Uri newItem = mCtx.getContentResolver().insert(CONTENT_URI, values);
 		if(newItem == null) {
 			return false;

@@ -1,21 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<declare-styleable name="NumberSelector">
-		<attr name="textboxwidth" format="dimension" />
-		<attr name="decimalplaces" format="integer" />
-		<attr name="increment" format="float" />
-		<attr name="lowerlimit" format="float" />
-		<attr name="upperlimit" format="float" />
-	</declare-styleable>
-	
 	<declare-styleable name="DatePicker">
-        <!-- The first year (inclusive) i.e. 1940 -->
-        <attr name="startYear" format="integer" />
-        <!-- The last year (inclusive) i.e. 2010 -->
-        <attr name="endYear" format="integer" />
-    </declare-styleable>
-    
-    <declare-styleable name="NumberPreference">
-		<attr name="unitLabel" format="string" />
+		<!-- The first year (inclusive) i.e. 1940 -->
+		<attr name="startYear" format="integer" />
+		<!-- The last year (inclusive) i.e. 2010 -->
+		<attr name="endYear" format="integer" />
 	</declare-styleable>
 </resources>

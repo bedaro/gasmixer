@@ -2,7 +2,7 @@
 <PreferenceScreen
 		xmlns:android="http://schemas.android.com/apk/res/android"
 		xmlns:app="http://schemas.android.com/apk/res/divestoclimb.scuba.equipment">
-	<divestoclimb.scuba.equipment.widget.NumberPreference
+	<divestoclimb.android.widget.NumberPreference
 			android:key="hydro_interval_years"
 			android:title="@string/hydro_interval"
 			android:defaultValue="5"
@@ -11,7 +11,7 @@
 			app:lowerlimit="1"
 			app:upperlimit="5" />
 
-	<divestoclimb.scuba.equipment.widget.NumberPreference
+	<divestoclimb.android.widget.NumberPreference
 			android:key="visual_interval_months"
 			android:title="@string/visual_interval"
 			android:defaultValue="12"
