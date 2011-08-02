@@ -58,9 +58,9 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
 		if(key.equals("hydro_interval_years")) {
-			mHydroInterval.setSummary(String.format("%d %s", sharedPreferences.getInt(key, 5), getString(R.string.years)));
+			mHydroInterval.setSummary(String.format("%d %s", (int)sharedPreferences.getFloat(key, 5), getString(R.string.years)));
 		} else if(key.equals("visual_interval_months")) {
-			mVisualInterval.setSummary(String.format("%d %s", sharedPreferences.getInt(key, 12), getString(R.string.months)));
+			mVisualInterval.setSummary(String.format("%d %s", (int)sharedPreferences.getFloat(key, 12), getString(R.string.months)));
 		} else if(key.equals("units")) {
 			mUnitsPreference.setSummary(getResources().getStringArray(R.array.units)[Integer.valueOf(sharedPreferences.getString(key, "0"))]);
 		} else if(key.equals("date_format")) {
