@@ -82,8 +82,7 @@ public class BlendResult extends ListActivity implements AdapterView.OnItemSelec
 	private float mStartPressure;
 	// have is the GasSupply the user entered.
 	// want is the GasSupply the user desires at the end.
-	// start is the GasSupply that is used to begin blending, after any draining
-	private GasSupply have, want, start;
+	private GasSupply have, want;
 	private SharedPreferences mSettings, mState;
 	private Units mUnits;
 	private NumberFormat mPressureFormat, mCapacityFormat;
@@ -205,12 +204,20 @@ public class BlendResult extends ListActivity implements AdapterView.OnItemSelec
 		}
 		
 		public CharSequence toCharSequence() {
-			SpannableStringBuilder builder = new SpannableStringBuilder(String.format(getString(R.string.result_fillto),
-					mPressureFormat.format(pressure),
-					mPressureUnit,
-					mix.toString()) + " (" + mCapacityFormat.format(volume) + " ");
-			builder.append(mCapacityUnit);
-			builder.append(")");
+			SpannableStringBuilder builder;
+			if(pressure != null) {
+				builder = new SpannableStringBuilder(String.format(getString(R.string.result_fillto),
+						mPressureFormat.format(pressure),
+						mPressureUnit,
+						mix.toString()) + " (" + mCapacityFormat.format(volume) + " ")
+					.append(mCapacityUnit)
+					.append(")");
+			} else {
+				builder = new SpannableStringBuilder("(" + mCapacityFormat.format(volume) + " ")
+					.append(mCapacityUnit)
+					.append(" " + mix.toString() + ")");
+			}
+			
 			return builder;
 		}
 	}
@@ -276,6 +283,7 @@ public class BlendResult extends ListActivity implements AdapterView.OnItemSelec
 		// Disable the "Copy This" button if there's no solution to copy
 		mCopyButton.setEnabled(mSolutionFound);
 		if(mSolutionFound) {
+			GasSupply start = have.clone();
 
 			if(mStartPressure < pi) {
 				// Needed to drain some gas
@@ -403,8 +411,7 @@ public class BlendResult extends ListActivity implements AdapterView.OnItemSelec
 		if(vi < 0 || vi > have.getGasAmount()) {
 			return false;
 		}
-		start = have.clone();
-		float pdrain = (float)start.drainToGasAmount(vi).getPressure();
+		float pdrain = (float)have.drainToGasAmount(vi).getPressure();
 		mStartPressure = pi;
 		if(pi - pdrain >= Math.pow(10, mUnits.pressurePrecision() * -1) * 0.5) {
 			// Need to drain the gas
@@ -563,9 +570,9 @@ public class BlendResult extends ListActivity implements AdapterView.OnItemSelec
 		case R.id.button_copy:
 			SpannableStringBuilder b = new SpannableStringBuilder();
 			for(int i = 0; i < getListView().getCount(); i ++) {
-				b.append("- ");
-				b.append(getStep(i));
-				b.append("\n");
+				b.append("- ")
+					.append(getStep(i))
+					.append("\n");
 			}
 			ClipboardManager c = (ClipboardManager)BlendResult.this.getSystemService(CLIPBOARD_SERVICE);
 			c.setText(b);
