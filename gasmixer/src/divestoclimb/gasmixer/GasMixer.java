@@ -227,15 +227,16 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 							// Pick the first available cylinder from the list of cylinder
 							// sizes
 							final Cursor c = mCylORMapper.fetchCylinders();
-							c.moveToFirst();
-							Cylinder cyl = mCylORMapper.fetch(c);
-							if(cyl != null) {
-								messageHandler.sendMessage(Message.obtain(messageHandler, MESSAGE_SAVE_CYLINDER, cyl));
+							if(c != null) {
+								c.moveToFirst();
+								Cylinder cyl = mCylORMapper.fetch(c);
+								if(cyl != null) {
+									messageHandler.sendMessage(Message.obtain(messageHandler, MESSAGE_SAVE_CYLINDER, cyl));
+								}
+								// TODO if cyl is null there are no cylinders defined in Scuba
+								// Tanks. Deal with this.
+								c.close();
 							}
-							// TODO if cyl is null there are no cylinders defined in Scuba
-							// Tanks. Deal with this.
-							
-							c.close();
 						}
 						// Explicitly set the preference value to on, since it may have been
 						// undefined before
@@ -541,7 +542,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 
 	// TrimixSelector.onMixChangeListener implementation
 	@Override
-	public void onChange(TrimixSelector ts, Mix m) {
+	public void onChange(NitroxSelector ts, Mix m) {
 		if(m != null) {
 			updateModEnd(m);
 		}
