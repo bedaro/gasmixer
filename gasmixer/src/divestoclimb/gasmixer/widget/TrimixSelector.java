@@ -1,7 +1,8 @@
-package divestoclimb.gasmixer;
+package divestoclimb.gasmixer.widget;
 
 import divestoclimb.android.util.ViewId;
 import divestoclimb.android.widget.NumberSelector;
+import divestoclimb.gasmixer.R;
 import divestoclimb.lib.scuba.Mix;
 import android.content.Context;
 import android.content.res.TypedArray;

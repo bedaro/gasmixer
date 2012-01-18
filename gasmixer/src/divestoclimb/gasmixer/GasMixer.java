@@ -6,6 +6,8 @@ import java.text.ParseException;
 import divestoclimb.android.widget.NumberSelector;
 import divestoclimb.gasmixer.prefs.Settings;
 import divestoclimb.gasmixer.prefs.SyncedPrefsHelper;
+import divestoclimb.gasmixer.widget.NitroxSelector;
+import divestoclimb.gasmixer.widget.TrimixSelector;
 import divestoclimb.lib.scuba.Cylinder;
 import divestoclimb.lib.scuba.Localizer;
 import divestoclimb.lib.scuba.Mix;

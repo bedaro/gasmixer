@@ -65,6 +65,7 @@
 	<string name="max_norm_po2">Max Normal pO2</string>
 	<string name="max_hi_po2">Max High pO2</string>
 	<string name="topup_gas">Top-Up Gas</string>
+	<string name="rich_gas">O2-Rich Gas</string>
 	<string name="real_gas">Use Real Gas Equations</string>
 	<string name="real_gas_summary">Improves accuracy of blend and topup calculations</string>
 	<string name="add_he_first">Add Helium First</string>

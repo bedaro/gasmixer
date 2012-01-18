@@ -1,4 +1,4 @@
-package divestoclimb.gasmixer;
+package divestoclimb.gasmixer.widget;
 
 import android.content.Context;
 import android.os.Parcel;
@@ -12,6 +12,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import divestoclimb.android.util.ViewId;
 import divestoclimb.android.widget.NumberSelector;
 import divestoclimb.android.widget.NumberSelector.ValueChangedListener;
+import divestoclimb.gasmixer.R;
 import divestoclimb.lib.scuba.Mix;
 
 public class NitroxSelector extends RelativeLayout implements

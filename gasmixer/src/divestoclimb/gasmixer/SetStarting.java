@@ -2,6 +2,7 @@ package divestoclimb.gasmixer;
 
 import divestoclimb.android.widget.NumberSelector;
 import divestoclimb.gasmixer.prefs.SyncedPrefsHelper;
+import divestoclimb.gasmixer.widget.TrimixSelector;
 import divestoclimb.lib.scuba.Cylinder;
 import divestoclimb.lib.scuba.Mix;
 import divestoclimb.lib.scuba.Units;

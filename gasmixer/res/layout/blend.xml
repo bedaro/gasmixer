@@ -23,7 +23,7 @@
 		android:layout_toLeftOf="@id/desired_pres"
 		android:layout_alignTop="@id/desired_pres"
 		android:layout_marginTop="7sp" />
-	<divestoclimb.gasmixer.TrimixSelector
+	<divestoclimb.gasmixer.widget.TrimixSelector
 		android:id="@+id/desired"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
