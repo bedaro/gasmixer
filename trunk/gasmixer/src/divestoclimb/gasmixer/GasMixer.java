@@ -544,7 +544,7 @@ public class GasMixer extends TabActivity implements Button.OnClickListener,
 
 	// TrimixSelector.onMixChangeListener implementation
 	@Override
-	public void onChange(TrimixSelector ts, Mix m) {
+	public void onChange(NitroxSelector ts, Mix m) {
 		if(m != null) {
 			updateModEnd(m);
 		}
