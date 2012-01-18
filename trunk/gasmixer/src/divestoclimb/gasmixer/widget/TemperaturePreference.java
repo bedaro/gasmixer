@@ -1,9 +1,10 @@
-package divestoclimb.gasmixer;
+package divestoclimb.gasmixer.widget;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
 
 import divestoclimb.android.widget.NumberPreference;
+import divestoclimb.gasmixer.R;
 import divestoclimb.lib.scuba.Units;
 import android.content.Context;
 import android.content.SharedPreferences;

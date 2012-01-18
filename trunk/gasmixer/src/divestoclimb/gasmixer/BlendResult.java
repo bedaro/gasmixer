@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import divestoclimb.gasmixer.prefs.SyncedPrefsHelper;
+import divestoclimb.gasmixer.widget.TrimixPreference;
 import divestoclimb.lib.scuba.Cylinder;
 import divestoclimb.lib.scuba.GasSupply;
 import divestoclimb.lib.scuba.Localizer;
@@ -75,7 +76,7 @@ public class BlendResult extends ListActivity implements AdapterView.OnItemSelec
 
 	// Our known parameters
 	private float pi, pf, t;
-	private Mix mStart, mDesired, mTopup;
+	private Mix mStart, mDesired, mTopup, mRich;
 	// The parameters we are solving for
 	private double vi, vo2a, vhea, vta;
 	// The starting pressure for the blend, accounting for draining
@@ -83,6 +84,10 @@ public class BlendResult extends ListActivity implements AdapterView.OnItemSelec
 	// have is the GasSupply the user entered.
 	// want is the GasSupply the user desires at the end.
 	private GasSupply have, want;
+	// This keeps track of whether or not an actual cylinder size is
+	// being used, or if it's being simulated (which can happen in ideal
+	// blending mode)
+	private boolean isCylinderReal;
 	private SharedPreferences mSettings, mState;
 	private Units mUnits;
 	private NumberFormat mPressureFormat, mCapacityFormat;
@@ -165,6 +170,7 @@ public class BlendResult extends ListActivity implements AdapterView.OnItemSelec
 		mStart = new Mix(mState.getFloat("start_o2", 0.21f), mState.getFloat("start_he", 0));
 		mDesired = new Mix(mState.getFloat("desired_o2", 0.21f), mState.getFloat("desired_he", 0f));
 		mTopup = TrimixPreference.stringToMix(mSettings.getString("topup_gas", "0.21 0"));
+		mRich = new Mix(mSettings.getFloat("rich_gas", 100) / 100, 0);
 		if(mTopup == null) {
 			// Not sure how this happens, but to someone it did
 			mTopup = new Mix(0.21f, 0);
@@ -172,14 +178,18 @@ public class BlendResult extends ListActivity implements AdapterView.OnItemSelec
 		}
 
 		boolean real = mSettings.getBoolean("vdw", false);
+		// TODO resolve the content provider and fetch cylinder even if
+		// ideal, for showing volumes
 		Cylinder c = null;
 		CylinderORMapper com = null;
 		if(real) {
 			com = new CylinderORMapper(this, mUnits);
-			c = com.fetchCylinder(mState.getLong("cylinderid", -1)); 
+			c = com.fetchCylinder(mState.getLong("cylinderid", -1));
+			isCylinderReal = true;
 		}
 		if(! real || c == null) {
 			c = new Cylinder(mUnits, mUnits.volumeNormalTank(), (int)mUnits.pressureTankFull());
+			isCylinderReal = false;
 		}
 
 		have = new GasSupply(c, mStart, (int)pi, ! real, t);
@@ -209,13 +219,16 @@ public class BlendResult extends ListActivity implements AdapterView.OnItemSelec
 				builder = new SpannableStringBuilder(String.format(getString(R.string.result_fillto),
 						mPressureFormat.format(pressure),
 						mPressureUnit,
-						mix.toString()) + " (" + mCapacityFormat.format(volume) + " ")
-					.append(mCapacityUnit)
-					.append(")");
+						mix.toString()));
+					if(isCylinderReal) {
+						builder.append(" (" + mCapacityFormat.format(volume) + " ")
+							.append(mCapacityUnit)
+							.append(")");
+					}
 			} else {
-				builder = new SpannableStringBuilder("(" + mCapacityFormat.format(volume) + " ")
+				builder = new SpannableStringBuilder(isCylinderReal? "(" + mCapacityFormat.format(volume) + " ": "")
 					.append(mCapacityUnit)
-					.append(" " + mix.toString() + ")");
+					.append(" " + mix.toString() + (isCylinderReal? ")": ""));
 			}
 			
 			return builder;
@@ -249,17 +262,22 @@ public class BlendResult extends ListActivity implements AdapterView.OnItemSelec
 			TextView pressure = (TextView)row.findViewById(R.id.pressure);
 			pressure.setText(data.pressure != null? mPressureFormat.format(data.pressure) + " " + mPressureUnit: "");
 
-			TextView volume = (TextView)row.findViewById(R.id.volume);
-			// Imperial capacity units are styled, so we must treat the unit as a CharSequence
-			volume.setText("+" + mCapacityFormat.format(data.volume) + " ");
-			volume.append(mCapacityUnit);
+			TextView volume = null;
+			if(isCylinderReal) {
+				volume = (TextView)row.findViewById(R.id.volume);
+				// Imperial capacity units are styled, so we must treat the unit as a CharSequence
+				volume.setText("+" + mCapacityFormat.format(data.volume) + " ");
+				volume.append(mCapacityUnit);
+			}
 
 			TextView gas = (TextView)row.findViewById(R.id.gas);
 			gas.setText(data.mix.toString());
 
 			if(data.pressure == null) {
 				// This is not a discrete operation. Make it italic.
-				volume.setTypeface(Typeface.defaultFromStyle(Typeface.ITALIC), Typeface.ITALIC);
+				if(volume != null) {
+					volume.setTypeface(Typeface.defaultFromStyle(Typeface.ITALIC), Typeface.ITALIC);
+				}
 				gas.setTypeface(Typeface.defaultFromStyle(Typeface.ITALIC), Typeface.ITALIC);
 			}
 
@@ -329,12 +347,13 @@ public class BlendResult extends ListActivity implements AdapterView.OnItemSelec
 		// Object property caching for performance 
 		double fo2i = mStart.getfO2(), fhei = mStart.getfHe(),
 			fo2t = mTopup.getfO2(), fhet = mTopup.getfHe(),
+			fo2r = mRich.getfO2(),
 			vo2i = have.getO2Amount(), vn2i = have.getN2Amount(),
 			vhei = have.getHeAmount(), vo2f = want.getO2Amount(),
 			vn2f = want.getN2Amount(), vhef = want.getHeAmount();
 
 		vi = have.getGasAmount();
-		double a[][] = { {1, 0, fo2t}, {0, 1, fhet}, {0, 0, 1 - fo2t - fhet} };
+		double a[][] = { {fo2r, 0, fo2t}, {0, 1, fhet}, {1 - fo2r, 0, 1 - fo2t - fhet} };
 		double b[][] = { {vo2f - vo2i}, {vhef - vhei}, {vn2f - vn2i} };
 		Matrix aM = new Matrix(a), bM = new Matrix(b);
 		try {
@@ -437,13 +456,13 @@ public class BlendResult extends ListActivity implements AdapterView.OnItemSelec
 			}
 			po2 = vo2a > 0? (float)supply.addO2(vo2a).getPressure(): phe;
 			if(Math.round(po2) > Math.round(phe)) {
-				steps.add(new BlendStep(po2, (int)Math.round(vo2a), new Mix(1, 0)));
+				steps.add(new BlendStep(po2, (int)Math.round(vo2a), mRich));
 			}
 			pretop = po2;
 		} else {
 			po2 = vo2a > 0? (float)supply.addO2(vo2a).getPressure(): pdrain;
 			if(Math.round(po2) > Math.round(pdrain)) {
-				steps.add(new BlendStep(po2, (int)Math.round(vo2a), new Mix(1, 0)));
+				steps.add(new BlendStep(po2, (int)Math.round(vo2a), mRich));
 			}
 			phe = vhea > 0? (float)supply.addHe(vhea).getPressure(): po2;
 			if(Math.round(phe) > Math.round(po2)) {

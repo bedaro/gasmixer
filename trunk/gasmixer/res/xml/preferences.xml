@@ -4,20 +4,26 @@
 		xmlns:app="http://schemas.android.com/apk/res/divestoclimb.gasmixer">
 	<PreferenceCategory
 		android:title="@string/blend_opts">
-		<divestoclimb.gasmixer.TrimixPreference
+		<divestoclimb.gasmixer.widget.TrimixPreference
 			android:key="topup_gas"
 			android:title="@string/topup_gas"
 			android:defaultValue="0.21 0"
 			android:dialogIcon="@drawable/topup_pick"
 			app:minO2="0" />
 
+		<divestoclimb.gasmixer.widget.NitroxPreference
+			android:key="rich_gas"
+			android:title="@string/rich_gas"
+			android:defaultValue="100"
+			app:minO2="21" />
+
 		<!-- Temperature preference is always stored in Kelvin -->
-		<divestoclimb.gasmixer.TemperaturePreference
+		<divestoclimb.gasmixer.widget.TemperaturePreference
 			android:key="temperature"
 			android:title="@string/temperature"
 			android:defaultValue="294"
 			app:textboxwidth="50sp" />
-		
+
 		<CheckBoxPreference
 			android:key="vdw"
 			android:title="@string/real_gas"

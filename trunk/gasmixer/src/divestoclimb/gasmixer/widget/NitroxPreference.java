@@ -1,11 +1,6 @@
-package divestoclimb.gasmixer;
-
-import java.text.NumberFormat;
-import java.text.ParseException;
+package divestoclimb.gasmixer.widget;
 
 import divestoclimb.lib.scuba.Mix;
-import divestoclimb.util.Formatting;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Parcel;
@@ -16,95 +11,75 @@ import android.view.View;
 import android.view.ViewGroup;
 
 /**
- * A DialogPreference that displays a single TrimixSelector
+ * A preference for selecting a Nitrox mix. The result is stored as a float.
  * @author Ben Roberts (divestoclimb@gmail.com)
  */
-public class TrimixPreference extends DialogPreference {
-	private TrimixSelector mTrimixSelector;
-
+public class NitroxPreference extends DialogPreference implements MixPreference {
+	private NitroxSelector mNitroxSelector;
+	
 	private Mix mMix;
-	private String mMixString;
-	private static final NumberFormat nf = Formatting.buildNormalizedFormat(".###");
 
-	public TrimixPreference(Context context, AttributeSet attrs, int defStyle) {
+	public NitroxPreference(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 
-		mTrimixSelector = new TrimixSelector(context, attrs);
+		mNitroxSelector = new NitroxSelector(context, attrs);
 	}
-
-	public TrimixPreference(Context context, AttributeSet attrs) {
+	
+	public NitroxPreference(Context context, AttributeSet attrs) {
 		this(context, attrs, android.R.attr.dialogPreferenceStyle);
 	}
-
-	public TrimixPreference(Context context) {
+	
+	public NitroxPreference(Context context) {
 		this(context, null);
 	}
-
-	private static String mixToString(Mix mix) {
-		return nf.format(mix.getfO2())+" "+nf.format(mix.getfHe());
+	
+	public void setMix(float fo2) {
+		mMix = new Mix((double)fo2 / 100, 0);
+		persistFloat(fo2);
 	}
-
-	public static Mix stringToMix(String s) {
-		String ss[] = s.split("\\s");
-		try {
-			return new Mix(nf.parse(ss[0]).floatValue(), nf.parse(ss[1]).floatValue());
-		} catch(ParseException e) { return null; }
-	}
-
-	public void setMix(String mixString) {
-		mMix = stringToMix(mixString);
-		if(mMix == null) {
-			// Correct corrupted mix
-			mixString = "0.21 0";
-			mMix = new Mix(0.21f, 0);
-		}
-		mMixString = mixString;
-
-		persistString(mixString);
-	}
-
+	
 	public Mix getMix() {
 		return mMix;
 	}
-
+	
 	@Override
 	protected View onCreateDialogView() {
-		return mTrimixSelector;
+		return mNitroxSelector;
 	}
 
 	@Override
 	protected void onBindDialogView(View view) {
 		super.onBindDialogView(view);
 
-		mTrimixSelector.setMix(mMix);
+		mNitroxSelector.setMix(mMix);
 
 	}
-
+	
 	@Override
 	protected void onDialogClosed(boolean positiveResult) {
 		super.onDialogClosed(positiveResult);
 
 		if(positiveResult) {
-			String mixString = mixToString(mTrimixSelector.getMix());
-			if(callChangeListener(mixString)) {
-				setMix(mixString);
+			float newFo2 = mNitroxSelector.getMix().getO2();
+			if(callChangeListener(newFo2)) {
+				setMix(newFo2);
 			}
 		}
-		((ViewGroup)mTrimixSelector.getParent()).removeView(mTrimixSelector);
+		((ViewGroup)mNitroxSelector.getParent()).removeView(mNitroxSelector);
 	}
 
 	@Override
 	protected Object onGetDefaultValue(TypedArray a, int index) {
-		return a.getString(index);
+		return a.getFloat(index, 0.21f);
 	}
 
 	@Override
 	protected void onSetInitialValue(boolean restoreValue, Object defaultValue) {
-		setMix(restoreValue? getPersistedString(mMixString): (String)defaultValue);
+		setMix(restoreValue? getPersistedFloat(0.21f): (Float)defaultValue);
 	}
 
-	public TrimixSelector getTrimixSelector() {
-		return mTrimixSelector;
+	public NitroxSelector getSelector() {
+		return mNitroxSelector;
 	}
 
 	@Override
@@ -116,7 +91,7 @@ public class TrimixPreference extends DialogPreference {
 		}
 
 		final SavedState myState = new SavedState(superState);
-		myState.mixString = mixToString(mMix);
+		myState.fo2 = mMix.getO2();
 		return myState;
 	}
 
@@ -130,21 +105,21 @@ public class TrimixPreference extends DialogPreference {
 
 		SavedState myState = (SavedState) state;
 		super.onRestoreInstanceState(myState.getSuperState());
-		setMix(myState.mixString);
+		setMix(myState.fo2);
 	}
 
 	private static class SavedState extends BaseSavedState {
-		String mixString;
+		float fo2;
 
 		public SavedState(Parcel source) {
 			super(source);
-			mixString = source.readString();
+			fo2 = source.readFloat();
         }
 
 		@Override
 		public void writeToParcel(Parcel dest, int flags) {
 			super.writeToParcel(dest, flags);
-			dest.writeString(mixString);
+			dest.writeFloat(fo2);
         }
 
 		public SavedState(Parcelable superState) {

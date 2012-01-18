@@ -3,6 +3,7 @@ package divestoclimb.gasmixer;
 import java.text.NumberFormat;
 
 import divestoclimb.gasmixer.prefs.SyncedPrefsHelper;
+import divestoclimb.gasmixer.widget.TrimixPreference;
 import divestoclimb.lib.scuba.Cylinder;
 import divestoclimb.lib.scuba.GasSupply;
 import divestoclimb.lib.scuba.Localizer;

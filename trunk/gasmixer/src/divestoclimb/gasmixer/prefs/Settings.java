@@ -7,8 +7,9 @@ import divestoclimb.android.widget.NumberPreference;
 import divestoclimb.gasmixer.AndroidLocalizer;
 import divestoclimb.gasmixer.Params;
 import divestoclimb.gasmixer.R;
-import divestoclimb.gasmixer.TemperaturePreference;
-import divestoclimb.gasmixer.TrimixPreference;
+import divestoclimb.gasmixer.widget.NitroxPreference;
+import divestoclimb.gasmixer.widget.TemperaturePreference;
+import divestoclimb.gasmixer.widget.TrimixPreference;
 import divestoclimb.lib.scuba.Localizer;
 import divestoclimb.lib.scuba.Mix;
 import divestoclimb.lib.scuba.Units;
@@ -26,6 +27,7 @@ import android.preference.PreferenceScreen;
 public class Settings extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 
 	private TrimixPreference mTopupGasPreference;
+	private NitroxPreference mRichGasPreference;
 	private TemperaturePreference mTemperaturePreference;
 	private NumberPreference mMaxPo2Preference, mMaxHighPo2Preference;
 	private ListPreference mUnitsPreference;
@@ -44,6 +46,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
 
 		PreferenceScreen screen = getPreferenceScreen();
 		mTopupGasPreference = (TrimixPreference)screen.findPreference("topup_gas");
+		mRichGasPreference = (NitroxPreference)screen.findPreference("rich_gas");
 		mTemperaturePreference = (TemperaturePreference)screen.findPreference("temperature");
 		mUnitsPreference = (ListPreference)screen.findPreference("units");
 		mMaxPo2Preference = (NumberPreference)screen.findPreference("max_norm_po2");
@@ -57,6 +60,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
 		settings.registerOnSharedPreferenceChangeListener(this);
 		settings.registerOnSharedPreferenceChangeListener(mSyncedPrefsHelper);
 		onSharedPreferenceChanged(settings, "topup_gas");
+		onSharedPreferenceChanged(settings, "rich_gas");
 		onSharedPreferenceChanged(settings, "units");
 		// Temperature is automatically set when units is updated, so we don't
 		// explicitly call it
@@ -78,6 +82,9 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
 			if(topup != null) {
 				mTopupGasPreference.setSummary(topup.toString());
 			}
+			return;
+		} else if(key.equals("rich_gas")) {
+			mRichGasPreference.setSummary(mRichGasPreference.getMix().toString());
 			return;
 		} else if(key.equals("max_norm_po2") || key.equals("max_hi_po2")) {
 			NumberPreference pref;
