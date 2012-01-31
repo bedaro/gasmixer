@@ -1,0 +1,2 @@
+The latest version of scubalib can be found at:
+https://anddive.googlecode.com/svn/scubalib/trunk
