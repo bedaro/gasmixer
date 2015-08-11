@@ -1,0 +1,7 @@
+(this is a stub at the moment, I'll get to it soon)
+
+# Introduction #
+
+Scuba Tanks is an app I wrote to handle storage of cylinder sizes the user has available for blending. It contains two publicly accessible API's for other apps, both of which are used by Gas Mixer:
+  1. An Intent to select a cylinder size from the app's database of sizes
+  1. A Content Provider to query information on cylinder sizes directly

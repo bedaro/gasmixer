@@ -1,0 +1,25 @@
+# Introduction #
+
+Gas Mixer's blending algorithm is intelligent enough to handle any trimix blending situation. The following contrived cases illustrate what you can see when blending:
+
+# Normal #
+
+The typical blend requires adding some amount of oxygen, helium, and topup gas in different amounts. This occurs when a lower nitrogen/oxygen ratio is needed than is present in the topup gas. For instance, ask for a 18/40 mix starting with an empty tank, using air as a topup gas.
+
+# The Impossible Task #
+
+Ask for a mix that has 21% O2, 0% He, begin with 0psi/0bar, and set the top-up gas to 32% O2. It is impossible to generate the desired mix under these constraints, and the app will tell you this.
+
+These situations almost always arise because your top-up gas is set to something strange, so the app reminds you to confirm it's set properly.
+
+# Wasted Gas: Too Much Nitrogen #
+
+Ask for a mix to 3000psi/207bar of 18/40, but start with 2000psi/137bar of 24% O2. Top-up gas should be air. This is not possible because there's too much nitrogen in the cylinder already. Gas Mixer will tell you to drain the cylinder to about 1700psi/117bar, then add oxygen and helium.
+
+# Wasted Gas: Too Much Oxygen #
+
+This is a similar situation to the above excess nitrogen scenario. Ask for a mix to 3000psi/207bar of 18/40, starting with 2000psi/137bar of 32% O2. Top-up gas should again be air. In this case there is too much oxygen in the cylinder already, so Gas Mixer will tell you to drain some of the contents, then add helium and top up with a little air.
+
+# Wasted Gas: Too Much Helium #
+
+The most painful situation for any trimix diver! If there's too much helium in the cylinder, you'll have to drain. Ask for any nitrox mix but set a starting mix that has helium in it, with air as a topup gas. When you blend, the cylinder will first get drained to 0psi/0bar before adding oxygen and nitrogen.
