@@ -1,0 +1,5 @@
+Gas Mixer does not directly collect any personal information.
+
+The only information collected is done so by Google when you purchase the app from Google Play.
+Google will share some of this information with the developer such as your name, for billing
+purposes only. This information is not used or shared for any other purpose.
